@@ -7,7 +7,7 @@ from pathlib import Path
 
 import yaml
 
-from espejo.config import PROJECT_ROOT
+from espejo.common.config_io import PROJECT_ROOT
 from espejo.dataset.inspection import SPLITS
 from espejo.dataset.yolo_labels import (
     YoloBox,

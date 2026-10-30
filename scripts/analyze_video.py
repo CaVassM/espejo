@@ -4,9 +4,9 @@ import argparse
 import logging
 from pathlib import Path
 
+from espejo.common.config_io import OUTPUTS_DIR
 from espejo.config import (
     DEFAULT_VISION_CONFIG,
-    PROJECT_ROOT,
     load_vision_config,
     with_model_overrides,
 )
@@ -17,7 +17,7 @@ from espejo.vision.report_writer import format_metrics_summary
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--video", type=Path, required=True, help="ruta del video de la clase")
-    parser.add_argument("--output", type=Path, default=PROJECT_ROOT / "outputs")
+    parser.add_argument("--output", type=Path, default=OUTPUTS_DIR)
     parser.add_argument("--config", type=Path, default=DEFAULT_VISION_CONFIG)
     parser.add_argument(
         "--debug-video",

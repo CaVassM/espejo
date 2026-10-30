@@ -1,33 +1,24 @@
 """Serialización del reporte de visión a JSON y resumen legible para consola."""
 
-import json
 from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from espejo.common.json_io import write_json
+from espejo.common.time_format import format_mmss, round_seconds
 from espejo.vision.schemas import Segment, VisionReport
 
-SECONDS_PER_MINUTE = 60
 RATIO_DECIMALS = 3
-SECONDS_DECIMALS = 2
-
-
-def format_mmss(seconds: float) -> str:
-    """Formato mm:ss; los minutos pueden pasar de 59 en clases largas."""
-    total_seconds = int(round(seconds))
-    minutes = total_seconds // SECONDS_PER_MINUTE
-    remaining_seconds = total_seconds % SECONDS_PER_MINUTE
-    return f"{minutes:02d}:{remaining_seconds:02d}"
 
 
 def segment_to_dict(segment: Segment) -> dict[str, Any]:
     return {
         "label": segment.label,
-        "start_s": round(segment.start_s, SECONDS_DECIMALS),
-        "end_s": round(segment.end_s, SECONDS_DECIMALS),
+        "start_s": round_seconds(segment.start_s),
+        "end_s": round_seconds(segment.end_s),
         "start": format_mmss(segment.start_s),
         "end": format_mmss(segment.end_s),
-        "duration_s": round(segment.duration_s(), SECONDS_DECIMALS),
+        "duration_s": round_seconds(segment.duration_s()),
     }
 
 
@@ -56,9 +47,9 @@ def report_to_dict(report: VisionReport) -> dict[str, Any]:
     video = report.video
     metadata = {
         "video": Path(video.path).name,
-        "duration_s": round(video.duration_s, SECONDS_DECIMALS),
+        "duration_s": round_seconds(video.duration_s),
         "duration": format_mmss(video.duration_s),
-        "native_fps": round(video.native_fps, SECONDS_DECIMALS),
+        "native_fps": round_seconds(video.native_fps),
         "resolution": {"width": video.width, "height": video.height},
         "sample_fps": report.sample_fps,
         "models": report.models,
@@ -72,9 +63,7 @@ def report_to_dict(report: VisionReport) -> dict[str, Any]:
 
 
 def save_report_json(report: VisionReport, output_path: Path) -> None:
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    content = json.dumps(report_to_dict(report), indent=2, ensure_ascii=False)
-    output_path.write_text(content, encoding="utf-8")
+    write_json(report_to_dict(report), output_path)
 
 
 def format_metrics_summary(report: VisionReport) -> str:

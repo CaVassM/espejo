@@ -2,7 +2,8 @@
 
 import logging
 
-from espejo.config import PROJECT_ROOT, load_dataset_config
+from espejo.common.config_io import PROJECT_ROOT
+from espejo.config import load_dataset_config
 from espejo.dataset.preview import save_previews
 
 PREVIEW_DIR = PROJECT_ROOT / "outputs" / "dataset_preview"

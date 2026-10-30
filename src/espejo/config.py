@@ -2,12 +2,9 @@
 
 from dataclasses import dataclass, replace
 from pathlib import Path
-from typing import Any
 
-import yaml
+from espejo.common.config_io import CONFIGS_DIR, read_yaml, resolve_project_path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-CONFIGS_DIR = PROJECT_ROOT / "configs"
 DEFAULT_VISION_CONFIG = CONFIGS_DIR / "vision.yaml"
 DEFAULT_DATASET_CONFIG = CONFIGS_DIR / "dataset.yaml"
 
@@ -111,21 +108,6 @@ class DatasetConfig:
 
     def data_yaml_path(self, dataset_name: str) -> Path:
         return CONFIGS_DIR / f"data_{dataset_name}.yaml"
-
-
-def read_yaml(path: Path) -> dict[str, Any]:
-    if not path.exists():
-        raise FileNotFoundError(f"No se encontró el archivo de configuración {path}.")
-    with path.open(encoding="utf-8") as config_file:
-        return yaml.safe_load(config_file)
-
-
-def resolve_project_path(relative_path: str) -> Path:
-    """Las rutas del YAML son relativas a la raíz del repo, no al directorio actual."""
-    path = Path(relative_path)
-    if path.is_absolute():
-        return path
-    return PROJECT_ROOT / path
 
 
 def load_dataset_config(path: Path = DEFAULT_DATASET_CONFIG) -> DatasetConfig:

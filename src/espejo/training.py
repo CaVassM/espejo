@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ultralytics import YOLO
 
-from espejo.config import CONFIGS_DIR, PROJECT_ROOT
+from espejo.common.config_io import CONFIGS_DIR, PROJECT_ROOT
 
 logger = logging.getLogger(__name__)
 

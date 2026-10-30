@@ -1,6 +1,6 @@
 import pytest
 
-from espejo.vision.report_writer import format_mmss
+from espejo.common.time_format import format_mmss
 from espejo.vision.schemas import Segment
 from espejo.vision.timeline import TimedLabel, TimelineBuilder
 

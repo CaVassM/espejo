@@ -1,0 +1,24 @@
+# Parámetros para descargar, inspeccionar y preparar SCB-Dataset.
+
+repo_id: wintonYF/SCB-Dataset
+# En el repo publicado, SCB5-F (teacher) y SCB5-D (conductas) vienen fusionados en este subconjunto,
+# con 8 clases. Derivamos dos datasets YOLO separados a partir de él.
+subset_folder: SCB5_Teacher_Behavior_Stand_BlackBoard_Sreen_20250406
+raw_dir: data/raw
+processed_dir: data/processed
+reference_class: teacher       # para medir en cuántas imágenes de cada clase aparece el docente
+preview_image_count: 8
+preview_seed: 42
+
+# Cada dataset derivado mapea "nombre nuevo: nombre en el dataset del autor".
+# El orden define el id de clase. Las clases que no aparecen (stand, screen, blackBoard) se descartan.
+# Solo se conservan las imágenes que tengan al menos una caja de estas clases: así una imagen
+# sin anotar no le enseña al modelo que el docente o la conducta son fondo.
+derived_datasets:
+  teacher:
+    teacher: teacher
+  behavior:
+    guide: guide
+    board_writing: blackboard-writing
+    answer: answer
+    stage_interaction: On-stage interaction

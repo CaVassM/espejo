@@ -1,0 +1,15 @@
+# Datos, pesos y resultados: SCB-Dataset es de uso académico y no se redistribuye
+data/
+runs/
+weights/
+samples/
+outputs/
+*.pt
+*.mp4
+*.mov
+
+# Python y herramientas
+__pycache__/
+*.egg-info/
+.ruff_cache/
+.pytest_cache/

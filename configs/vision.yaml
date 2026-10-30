@@ -1,0 +1,54 @@
+# Parámetros del pipeline de visión. Todos los umbrales viven aquí, no en el código.
+
+sampling:
+  sample_fps: 2.0                # frames analizados por segundo de video
+
+models:
+  teacher_weights: weights/teacher.pt
+  behavior_weights: weights/behavior.pt
+  pose_weights: yolov8n-pose.pt  # ultralytics lo descarga solo la primera vez
+  tracker_config: bytetrack.yaml
+  image_size: 640
+
+teacher:
+  detection_conf: 0.25           # confianza mínima para que el tracker considere una caja
+  teacher_fallback_conf: 0.5     # sin el track dominante, aceptamos otra caja solo si es muy segura
+  # Clase que se toma como docente. Con el modelo genérico de COCO (prueba sin pesos propios)
+  # se cambia a "person".
+  class_name: teacher
+
+behavior:
+  detection_conf: 0.25
+  behavior_iou_threshold: 0.3    # solape mínimo entre la caja de conducta y la del docente
+  guide_class: guide
+  board_writing_class: board_writing
+  # Conductas de alumnos: no se asignan al docente, se cuentan como señal de participación
+  participation_classes:
+    - answer
+    - stage_interaction
+
+pose:
+  detection_conf: 0.25
+  match_iou_threshold: 0.3       # solape mínimo entre la caja de la pose y la del docente
+  face_kp_conf: 0.5
+  shoulder_kp_conf: 0.5
+
+timeline:
+  smoothing_window_s: 3.0        # ventana del voto mayoritario
+  min_segment_s: 1.5             # segmentos más cortos se unen con su vecino
+
+metrics:
+  # Rúbrica del Minedu "Evalúa el progreso de los aprendizajes": el docente debe monitorear
+  # activamente (recorrer y guiar en las carpetas) al menos el 25 % de la sesión.
+  monitoring_threshold: 0.25
+
+heatmap:
+  grid_columns: 8
+  grid_rows: 6
+  background_blur_kernel: 151    # impar y grande: el fondo no debe permitir reconocer a nadie
+  heat_blur_kernel: 61           # suaviza el calor para que se vea como zonas y no como puntos
+  overlay_alpha: 0.6             # peso del calor sobre el fondo desenfocado
+
+debug_video:
+  box_thickness: 2
+  font_scale: 0.7

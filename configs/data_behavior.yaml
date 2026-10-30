@@ -1,0 +1,8 @@
+# Generado por scripts/prepare_dataset.py. No editar a mano.
+train: ../data/processed/behavior/images/train
+val: ../data/processed/behavior/images/val
+names:
+  0: guide
+  1: board_writing
+  2: answer
+  3: stage_interaction

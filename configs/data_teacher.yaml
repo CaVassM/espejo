@@ -1,0 +1,5 @@
+# Generado por scripts/prepare_dataset.py. No editar a mano.
+train: ../data/processed/teacher/images/train
+val: ../data/processed/teacher/images/val
+names:
+  0: teacher

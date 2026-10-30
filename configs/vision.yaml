@@ -9,7 +9,9 @@ models:
   behavior_weights: weights/behavior.pt
   pose_weights: yolov8n-pose.pt  # solo se usa si pose.enabled es true
   tracker_config: bytetrack.yaml
-  image_size: 640
+  # 960 y no 640: con cámara al fondo el docente sale pequeño. En una clase real (fragmento
+  # de 5 min) lo encontró en el 98 % de los frames contra el 80 % con 640, en el mismo tiempo.
+  image_size: 960
 
 teacher:
   detection_conf: 0.25           # confianza mínima para que el tracker considere una caja

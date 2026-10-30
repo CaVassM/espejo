@@ -196,6 +196,7 @@ class ResponsesConfig:
 @dataclass(frozen=True)
 class HallucinationConfig:
     min_vad_overlap: float
+    max_words_for_vad_check: int
     phrases: list[str]
 
 

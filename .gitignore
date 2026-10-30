@@ -11,6 +11,9 @@ outputs/
 # Secretos (token de Hugging Face)
 .env
 
+# Manual del Minedu: se descarga del repositorio oficial (ver README), no se sube
+docs/manual_rubricas_minedu.pdf
+
 # Python y herramientas
 __pycache__/
 *.egg-info/

@@ -37,10 +37,17 @@ class HallucinationFilter:
         self.config = config
 
     def is_hallucination(self, segment: TranscriptSegment, intervals: list[SpeechInterval]) -> bool:
-        overlap_ratio = safe_ratio(speech_overlap_s(segment, intervals), segment.duration_s())
-        if overlap_ratio < self.config.min_vad_overlap:
+        """Frase típica inventada, o segmento corto casi sin voz detectada.
+
+        La regla de la voz solo se aplica a segmentos cortos: Silero no oye bien a quien habla
+        lejos o bajo, y en segmentos largos borraba habla real (p. ej. respuestas de alumnos).
+        """
+        if is_typical_hallucination(segment, self.config.phrases):
             return True
-        return is_typical_hallucination(segment, self.config.phrases)
+        if len(segment.text.split()) > self.config.max_words_for_vad_check:
+            return False
+        overlap_ratio = safe_ratio(speech_overlap_s(segment, intervals), segment.duration_s())
+        return overlap_ratio < self.config.min_vad_overlap
 
     def filter(
         self, segments: list[TranscriptSegment], intervals: list[SpeechInterval]

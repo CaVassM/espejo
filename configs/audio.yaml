@@ -75,9 +75,12 @@ responses:
   response_window_s: 10.0
 
 hallucinations:
-  # Whisper inventa texto en silencios o ruido. Se descarta un segmento si menos de esta
+  # Whisper inventa texto en silencios o ruido. Se descarta un segmento corto si menos de esta
   # fracción de su duración coincide con voz detectada por Silero...
   min_vad_overlap: 0.3
+  # ...pero solo si tiene a lo más estas palabras: Silero no oye bien voces lejanas o bajas, y en
+  # una clase real esta regla borraba respuestas largas de alumnos que sí se dijeron.
+  max_words_for_vad_check: 3
   # ...o si es solo una de estas frases típicas inventadas (se comparan sin tildes ni signos).
   phrases:
     - gracias

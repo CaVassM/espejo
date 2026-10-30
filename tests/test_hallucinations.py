@@ -2,7 +2,9 @@ from espejo.audio.hallucinations import HallucinationFilter
 from espejo.audio.schemas import SpeechInterval, TranscriptSegment
 from espejo.config import HallucinationConfig
 
-CONFIG = HallucinationConfig(min_vad_overlap=0.3, phrases=["gracias", "gracias por ver"])
+CONFIG = HallucinationConfig(
+    min_vad_overlap=0.3, max_words_for_vad_check=3, phrases=["gracias", "gracias por ver"]
+)
 VOICE = [SpeechInterval(0.0, 10.0)]
 
 
@@ -22,10 +24,16 @@ def test_segment_with_voice_is_kept() -> None:
     assert not HallucinationFilter(CONFIG).is_hallucination(segment, VOICE)
 
 
-def test_segment_without_voice_is_discarded() -> None:
+def test_short_segment_without_voice_is_discarded() -> None:
     # Solo 1 de 10 s coincide con voz: Whisper lo inventó sobre silencio
-    segment = make_segment("Y así termina la historia", 9.0, 19.0)
+    segment = make_segment("Y así termina", 9.0, 19.0)
     assert HallucinationFilter(CONFIG).is_hallucination(segment, VOICE)
+
+
+def test_long_segment_without_detected_voice_is_kept() -> None:
+    # Silero no oye bien voces lejanas: una respuesta larga sin voz detectada se conserva
+    segment = make_segment("Que los hijos estarían ayudando a su labrador", 12.0, 16.0)
+    assert not HallucinationFilter(CONFIG).is_hallucination(segment, VOICE)
 
 
 def test_typical_phrase_is_discarded_even_with_voice() -> None:

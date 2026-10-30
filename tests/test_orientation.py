@@ -13,6 +13,7 @@ VISIBLE = 0.9
 HIDDEN = 0.1
 
 POSE_CONFIG = PoseConfig(
+    enabled=True,
     detection_conf=0.25,
     match_iou_threshold=0.3,
     face_kp_conf=FACE_CONF,

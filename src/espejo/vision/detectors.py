@@ -7,10 +7,8 @@ from ultralytics import YOLO
 from ultralytics.engine.results import Results
 
 from espejo.config import BehaviorConfig, ModelsConfig, PoseConfig, TeacherConfig
-from espejo.vision.geometry import BoundingBox, iou
+from espejo.vision.geometry import BoundingBox
 from espejo.vision.schemas import (
-    Behavior,
-    BehaviorResult,
     Detection,
     Frame,
     Keypoint,
@@ -132,64 +130,6 @@ class BehaviorDetector:
             verbose=False,
         )
         return detections_from_result(results[0])
-
-    def assign(
-        self, detections: list[Detection], teacher_box: BoundingBox | None
-    ) -> BehaviorResult:
-        return assign_behavior(detections, teacher_box, self.behavior_config)
-
-
-def assign_behavior(
-    detections: list[Detection],
-    teacher_box: BoundingBox | None,
-    config: BehaviorConfig,
-) -> BehaviorResult:
-    """Elige la conducta del docente y cuenta las señales de participación de alumnos."""
-    participation_events = count_participation(detections, config.participation_classes)
-    if teacher_box is None:
-        return BehaviorResult(Behavior.NOT_VISIBLE, None, participation_events)
-
-    best_detection = best_teacher_behavior(detections, teacher_box, config)
-    if best_detection is None:
-        return BehaviorResult(Behavior.OTHER, None, participation_events)
-
-    behavior = behavior_for_class(best_detection.class_name, config)
-    return BehaviorResult(behavior, best_detection.box, participation_events)
-
-
-def best_teacher_behavior(
-    detections: list[Detection],
-    teacher_box: BoundingBox,
-    config: BehaviorConfig,
-) -> Detection | None:
-    """Entre las conductas de docente que se solapan con su caja, gana la más confiable."""
-    teacher_classes = {config.guide_class, config.board_writing_class}
-    best_detection = None
-
-    for detection in detections:
-        if detection.class_name not in teacher_classes:
-            continue
-        if iou(detection.box, teacher_box) < config.behavior_iou_threshold:
-            continue
-        if best_detection is None or detection.confidence > best_detection.confidence:
-            best_detection = detection
-    return best_detection
-
-
-def behavior_for_class(class_name: str, config: BehaviorConfig) -> Behavior:
-    if class_name == config.guide_class:
-        return Behavior.GUIDE
-    if class_name == config.board_writing_class:
-        return Behavior.BOARD_WRITING
-    return Behavior.OTHER
-
-
-def count_participation(detections: list[Detection], participation_classes: list[str]) -> int:
-    total = 0
-    for detection in detections:
-        if detection.class_name in participation_classes:
-            total += 1
-    return total
 
 
 class PoseEstimator:

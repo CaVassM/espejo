@@ -1,4 +1,4 @@
-"""Datos que viajan entre las etapas del pipeline de visión."""
+"""Datos que viajan entre las etapas del módulo de visión."""
 
 from dataclasses import dataclass, field
 from enum import StrEnum
@@ -9,16 +9,20 @@ from espejo.vision.geometry import BoundingBox
 
 
 class Behavior(StrEnum):
-    """Conducta del docente en un frame."""
+    """Estado del docente en un frame. Prioridad: board_writing > guide > other.
 
-    GUIDE = "guide"
+    "other" no es una clase aprendida: es el relleno cuando no se detecta una acción del docente.
+    "not_visible" no es una conducta: indica que en ese frame no se encontró al docente.
+    """
+
     BOARD_WRITING = "board_writing"
+    GUIDE = "guide"
     OTHER = "other"
     NOT_VISIBLE = "not_visible"
 
 
 class Orientation(StrEnum):
-    """Hacia dónde mira el docente respecto de la clase."""
+    """Solo la usa el estimador de pose, que hoy está desactivado (pose.enabled = false)."""
 
     FACING = "facing"
     BACK = "back"
@@ -77,34 +81,45 @@ class PersonPose:
 
 @dataclass(frozen=True)
 class FrameDetections:
-    """Salida cruda de los tres modelos en un frame; no guarda la imagen."""
+    """Salida cruda de los modelos en un frame; no guarda la imagen."""
 
     frame_index: int
     timestamp_s: float
     teacher_detections: list[Detection]
     behavior_detections: list[Detection]
-    poses: list[PersonPose]
+    poses: list[PersonPose] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
-class BehaviorResult:
-    """Conducta asignada al docente y señales de participación del resto del aula."""
+class VideoInfo:
+    """Metadatos del video de entrada."""
 
-    behavior: Behavior
-    behavior_box: BoundingBox | None
-    participation_events: int
+    path: str
+    duration_s: float
+    native_fps: float
+    width: int
+    height: int
+
+
+@dataclass(frozen=True)
+class DetectionRun:
+    """Todo lo que VER produce sobre el video; INTERPRETAR trabaja solo con esto."""
+
+    video: VideoInfo
+    sample_fps: float
+    models: dict[str, str]
+    frames: list[FrameDetections]
 
 
 @dataclass(frozen=True)
 class TeacherObservation:
-    """Todo lo que sabemos del docente en un frame muestreado."""
+    """Lo que sabemos del docente y del aula en un frame muestreado."""
 
     frame_index: int
     timestamp_s: float
     teacher_box: BoundingBox | None
-    behavior: Behavior
-    orientation: Orientation
-    participation_events: int
+    state: Behavior
+    stage_interaction_present: bool
 
     def is_teacher_visible(self) -> bool:
         return self.teacher_box is not None
@@ -123,34 +138,26 @@ class Segment:
 
 
 @dataclass(frozen=True)
+class PathSummary:
+    """Recorrido del docente después de filtrar el temblor de la caja y los saltos imposibles."""
+
+    length_normalized: float
+    discarded_jumps: int
+
+
+@dataclass(frozen=True)
 class VisionMetrics:
     analyzed_duration_s: float
     teacher_visible_ratio: float
-    monitoring_ratio: float
-    meets_monitoring_threshold: bool
     board_writing_ratio: float
-    back_to_class_ratio: float
-    path_length_normalized: float
-    room_coverage_ratio: float
-    student_participation_events: int
+    guide_ratio: float
+    stage_interaction_count: int
+    path: PathSummary
 
 
 @dataclass(frozen=True)
-class VideoInfo:
-    """Metadatos del video de entrada."""
-
-    path: str
-    duration_s: float
-    native_fps: float
-    width: int
-    height: int
-
-
-@dataclass(frozen=True)
-class VisionReport:
-    video: VideoInfo
-    sample_fps: float
-    models: dict[str, str]
-    behavior_timeline: list[Segment] = field(default_factory=list)
-    orientation_timeline: list[Segment] = field(default_factory=list)
-    metrics: VisionMetrics | None = None
+class VisionInterpretation:
+    observations: list[TeacherObservation]
+    timeline: list[Segment]
+    stage_interaction_events: list[Segment]
+    metrics: VisionMetrics

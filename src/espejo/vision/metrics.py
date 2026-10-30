@@ -2,6 +2,7 @@
 
 import math
 
+from espejo.common.ratios import safe_ratio
 from espejo.vision.geometry import FloorGrid, GridCell
 from espejo.vision.schemas import (
     Behavior,
@@ -65,12 +66,6 @@ def label_duration_s(timeline: list[Segment], label: str) -> float:
 def label_ratio(timeline: list[Segment], label: str) -> float:
     """Fracción de la duración analizada con esa etiqueta."""
     return safe_ratio(label_duration_s(timeline, label), timeline_duration_s(timeline))
-
-
-def safe_ratio(numerator: float, denominator: float) -> float:
-    if denominator <= 0:
-        return 0.0
-    return numerator / denominator
 
 
 def path_length_normalized(observations: list[TeacherObservation], frame_width: int) -> float:

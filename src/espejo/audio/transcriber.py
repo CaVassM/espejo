@@ -1,8 +1,6 @@
 """Transcripción con faster-whisper sobre el audio crudo, con timestamps por palabra."""
 
 import logging
-import os
-import sys
 from dataclasses import replace
 from pathlib import Path
 
@@ -10,6 +8,7 @@ from faster_whisper import WhisperModel
 from faster_whisper.transcribe import Segment as WhisperSegment
 
 from espejo.audio.schemas import TranscriberSetup, TranscriptSegment, Word
+from espejo.common.gpu import register_cuda_libraries
 from espejo.config import TranscriptionConfig
 
 logger = logging.getLogger(__name__)
@@ -20,8 +19,6 @@ DEVICE_CPU = "cpu"
 BYTES_PER_GB = 1024**3
 GPU_INDEX = 0
 PROGRESS_LOG_INTERVAL_SEGMENTS = 50
-WINDOWS_PLATFORM = "win32"
-CUBLAS_DLL_NAME = "cublas64_12.dll"
 
 
 class Transcriber:
@@ -122,29 +119,6 @@ def resolve_device(config: TranscriptionConfig) -> str:
         logger.info("GPU ocupada (%.1f GB libres); se transcribe en CPU", free_memory_gb)
         return DEVICE_CPU
     return DEVICE_CUDA
-
-
-def register_cuda_libraries() -> bool:
-    """En Windows, ctranslate2 no encuentra solo las DLL de CUDA 12; torch (cu12) ya las trae.
-
-    Agregamos la carpeta lib de torch a la búsqueda de DLL. En Linux no hace falta.
-    """
-    if sys.platform != WINDOWS_PLATFORM:
-        return True
-
-    # Import local: torch solo se necesita para ubicar sus DLL
-    try:
-        import torch
-    except ImportError:
-        return False
-
-    torch_lib_dir = Path(torch.__file__).parent / "lib"
-    if not (torch_lib_dir / CUBLAS_DLL_NAME).exists():
-        return False
-
-    os.add_dll_directory(str(torch_lib_dir))
-    os.environ["PATH"] = str(torch_lib_dir) + os.pathsep + os.environ.get("PATH", "")
-    return True
 
 
 def free_gpu_memory_gb() -> float | None:

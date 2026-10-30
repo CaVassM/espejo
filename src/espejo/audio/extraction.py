@@ -21,6 +21,10 @@ STDERR_TAIL_CHARS = 500
 NO_AUDIO_MESSAGES = ("does not contain any stream", "matches no streams")
 
 
+class NoAudioTrackError(ValueError):
+    """El video no trae pista de audio: el análisis puede seguir solo con el video."""
+
+
 @dataclass(frozen=True)
 class ExtractedAudio:
     """Los dos wav temporales. Whisper usa el crudo; el VAD, el filtrado."""
@@ -72,7 +76,7 @@ class AudioExtractor:
 def raise_ffmpeg_error(video_path: Path, stderr: str) -> None:
     for message in NO_AUDIO_MESSAGES:
         if message in stderr:
-            raise ValueError(f"El video {video_path.name} no tiene pista de audio.")
+            raise NoAudioTrackError(f"El video {video_path.name} no tiene pista de audio.")
     stderr_tail = stderr[-STDERR_TAIL_CHARS:]
     raise RuntimeError(f"ffmpeg no pudo extraer el audio de {video_path.name}: {stderr_tail}")
 

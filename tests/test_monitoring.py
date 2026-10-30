@@ -3,7 +3,6 @@ import pytest
 from espejo.analysis.monitoring import (
     TimeInterval,
     compute_monitoring,
-    episode_end_s,
     guide_intervals,
     question_episodes,
     union_duration_s,
@@ -13,7 +12,7 @@ from espejo.vision.schemas import Behavior, Segment
 
 DURATION_S = 100.0
 THRESHOLD = 0.25
-MAX_WAIT_S = 15.0
+MAX_EPISODE_S = 15.0
 
 
 def make_question(
@@ -22,6 +21,7 @@ def make_question(
     response: StudentResponse | None = None,
     wait_time_s: float | None = None,
     reliable: bool = True,
+    is_tag: bool = False,
 ) -> Question:
     return Question(
         text="¿Qué observan?",
@@ -30,6 +30,7 @@ def make_question(
         speaker="unknown",
         role=SpeakerRole.UNKNOWN,
         reliable=reliable,
+        is_tag=is_tag,
         wait_time_s=wait_time_s,
         response=response,
     )
@@ -75,20 +76,28 @@ def test_guide_intervals_come_from_guide_segments() -> None:
     assert guide_intervals(timeline) == [TimeInterval(0, 10), TimeInterval(20, 25)]
 
 
-def test_episode_ends_with_the_response() -> None:
-    response = StudentResponse(14.0, 18.0, "SPEAKER_01", ResponseCertainty.HIGH)
-    question = make_question(10.0, 12.0, response=response, wait_time_s=2.0)
-    assert episode_end_s(question, MAX_WAIT_S) == pytest.approx(18.0)
+def answer(start_s: float, end_s: float) -> StudentResponse:
+    return StudentResponse(start_s, end_s, "SPEAKER_01", ResponseCertainty.HIGH)
 
 
-def test_episode_without_response_ends_after_the_wait() -> None:
-    question = make_question(10.0, 12.0, wait_time_s=4.0)
-    assert episode_end_s(question, MAX_WAIT_S) == pytest.approx(16.0)
+def test_episode_goes_from_question_to_end_of_answer() -> None:
+    questions = [make_question(10.0, 12.0, response=answer(14.0, 18.0))]
+    assert question_episodes(questions, MAX_EPISODE_S, DURATION_S) == [TimeInterval(10, 18)]
 
 
-def test_unreliable_questions_are_left_out() -> None:
-    questions = [make_question(10, 12, wait_time_s=1.0), make_question(30, 32, reliable=False)]
+def test_long_answer_is_capped() -> None:
+    questions = [make_question(10.0, 12.0, response=answer(14.0, 60.0))]
+    assert question_episodes(questions, MAX_EPISODE_S, DURATION_S) == [TimeInterval(10, 25)]
 
-    episodes = question_episodes(questions, MAX_WAIT_S, DURATION_S)
 
-    assert episodes == [TimeInterval(10, 13)]
+def test_unanswered_questions_do_not_count() -> None:
+    questions = [make_question(10.0, 12.0, wait_time_s=4.0)]
+    assert question_episodes(questions, MAX_EPISODE_S, DURATION_S) == []
+
+
+def test_tag_questions_and_unreliable_audio_do_not_count() -> None:
+    questions = [
+        make_question(10.0, 11.0, response=answer(12.0, 13.0), is_tag=True),
+        make_question(30.0, 32.0, response=answer(33.0, 35.0), reliable=False),
+    ]
+    assert question_episodes(questions, MAX_EPISODE_S, DURATION_S) == []

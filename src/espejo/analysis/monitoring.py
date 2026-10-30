@@ -57,24 +57,22 @@ def guide_intervals(video_timeline: list[Segment]) -> list[TimeInterval]:
     return intervals
 
 
-def episode_end_s(question: Question, max_wait_s: float) -> float:
-    """El episodio termina con la respuesta; si nadie respondió, al terminar la espera."""
-    if question.response is not None:
-        return question.response.end_s
-    if question.wait_time_s is not None:
-        return question.question_end_s + question.wait_time_s
-    return question.question_end_s + max_wait_s
+def counts_for_monitoring(question: Question) -> bool:
+    """Solo preguntas reales (no muletillas), en audio confiable y que alguien respondió."""
+    if question.is_rhetorical() or not question.reliable:
+        return False
+    return question.response is not None
 
 
 def question_episodes(
-    questions: list[Question], max_wait_s: float, duration_s: float
+    questions: list[Question], max_episode_s: float, duration_s: float
 ) -> list[TimeInterval]:
-    """Episodios de pregunta a la clase. Solo preguntas en audio confiable."""
+    """Cada episodio va desde la pregunta hasta el fin de la respuesta, con un máximo."""
     episodes = []
     for question in questions:
-        if not question.reliable:
+        if not counts_for_monitoring(question):
             continue
-        end_s = min(episode_end_s(question, max_wait_s), duration_s)
+        end_s = min(question.response.end_s, question.start_s + max_episode_s, duration_s)
         episodes.append(TimeInterval(question.start_s, end_s))
     return episodes
 

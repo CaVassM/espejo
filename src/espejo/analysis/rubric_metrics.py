@@ -11,6 +11,7 @@ R3 = "R3"  # Evalúa el progreso de los aprendizajes
 R4 = "R4"  # Propicia un ambiente de respeto y proximidad
 NO_VIDEO_NOTE = "sin video"
 NO_AUDIO_NOTE = "sin audio"
+NO_LLM_NOTE = "sin análisis LLM"
 
 
 def video_metrics(vision: VisionInterpretation | None) -> list[RubricMetric]:
@@ -93,6 +94,19 @@ def audio_metrics(
             "questions_per_minute", metrics.questions_per_minute, [R2, R3], "Preguntas por minuto"
         ),
         RubricMetric(
+            "rhetorical_question_count",
+            metrics.rhetorical_question_count,
+            [R2],
+            "Muletillas o preguntas retóricas (no cuentan como preguntas)",
+        ),
+        RubricMetric(
+            "open_question_ratio",
+            metrics.open_question_ratio,
+            [R2],
+            "Preguntas abiertas / (abiertas + cerradas), según el LLM",
+            open_ratio_note(metrics.open_question_ratio),
+        ),
+        RubricMetric(
             "mean_wait_time_s",
             metrics.mean_wait_time_s,
             [R2],
@@ -127,10 +141,18 @@ def audio_metrics(
     ]
 
 
+def open_ratio_note(open_ratio: float | None) -> str | None:
+    if open_ratio is None:
+        return NO_LLM_NOTE
+    return None
+
+
 def empty_audio_metrics() -> list[RubricMetric]:
     names_and_rubrics = [
         ("teacher_question_count", [R2, R3]),
         ("questions_per_minute", [R2, R3]),
+        ("rhetorical_question_count", [R2]),
+        ("open_question_ratio", [R2]),
         ("mean_wait_time_s", [R2]),
         ("median_wait_time_s", [R2]),
         ("wait_time_ok_ratio", [R2]),

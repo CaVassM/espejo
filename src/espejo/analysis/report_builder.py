@@ -58,9 +58,9 @@ def monitoring_for(
     if video is not None:
         video_intervals = guide_intervals(video.interpretation.timeline)
     if audio is not None:
-        max_wait_s = configs.audio.wait_time.max_wait_s
+        max_episode_s = configs.analysis.monitoring.max_episode_s
         questions = audio.interpretation.questions
-        audio_intervals = question_episodes(questions, max_wait_s, duration_s)
+        audio_intervals = question_episodes(questions, max_episode_s, duration_s)
 
     threshold = configs.analysis.monitoring.threshold
     return compute_monitoring(video_intervals, audio_intervals, duration_s, threshold)
@@ -102,15 +102,18 @@ def build_metadata(video: VideoSide | None, audio: AudioSide | None) -> ReportMe
 def build_data_quality(video: VideoSide | None, audio: AudioSide | None) -> DataQuality:
     notes = []
     teacher_visible_ratio = None
+    interpolated_ratio = None
     discarded_jumps = None
     if video is None:
         notes.append(NO_VIDEO_NOTE)
     else:
         teacher_visible_ratio = video.interpretation.metrics.teacher_visible_ratio
+        interpolated_ratio = video.interpretation.metrics.interpolated_ratio
         discarded_jumps = video.interpretation.metrics.path.discarded_jumps
 
     low_confidence_ratio = None
     speech_ratio = None
+    discarded_segments = None
     diarization_used = False
     diarization_note = NO_AUDIO_NOTE
     if audio is None:
@@ -118,6 +121,7 @@ def build_data_quality(video: VideoSide | None, audio: AudioSide | None) -> Data
     else:
         low_confidence_ratio = audio.interpretation.metrics.low_confidence_ratio
         speech_ratio = audio.interpretation.metrics.speech_ratio
+        discarded_segments = audio.interpretation.discarded_segments
         diarization_used = audio.interpretation.diarization_used
         diarization_note = audio.interpretation.diarization_note
         if not diarization_used:
@@ -125,8 +129,10 @@ def build_data_quality(video: VideoSide | None, audio: AudioSide | None) -> Data
 
     return DataQuality(
         teacher_visible_ratio=teacher_visible_ratio,
+        interpolated_ratio=interpolated_ratio,
         discarded_path_jumps=discarded_jumps,
         low_confidence_audio_ratio=low_confidence_ratio,
+        discarded_hallucinated_segments=discarded_segments,
         speech_ratio=speech_ratio,
         diarization_used=diarization_used,
         diarization_note=diarization_note,

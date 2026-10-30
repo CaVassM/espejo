@@ -58,13 +58,17 @@ Prioridad: **board_writing > guide > other**.
 | Estado | Cuándo |
 |---|---|
 | `board_writing` | Una caja board_writing se superpone con la del docente (IoU ≥ `behavior_iou_threshold`). |
-| `guide` | Una caja guide se superpone con la del docente y no hay board_writing. |
+| `guide` | Una caja guide con confianza ≥ `guide_min_conf` se superpone con la del docente y no hay board_writing. Los tramos de guide más cortos que `min_guide_s` pasan a `other`. |
 | `other` | No se detectó una acción del docente. **No es una clase aprendida**: es el relleno. |
 | `not_visible` | No se encontró al docente en el frame. No es una conducta: alimenta `teacher_visible_ratio`. |
 
 - Al docente **nunca** se le asignan `answer` ni `stage_interaction`, aunque se superpongan con él.
-- Quién es el docente: el track de ByteTrack que aparece en más frames. Si en un frame no está,
-  se acepta otra caja "teacher" solo si su confianza supera `teacher_fallback_conf`.
+- Quién es el docente: en cada frame, la caja "teacher" de mayor confianza, si supera
+  `teacher_min_conf`. Si dos cajas están a menos de `similar_conf_margin` en confianza, gana la
+  más cercana a la última posición conocida. (Antes se usaba el track que más aparecía; en una
+  clase real eso eligió a un alumno quieto.)
+- Si el docente se pierde menos de `gap_fill_s` entre dos apariciones, se mantienen su último
+  estado y su posición, marcados como interpolados (`data_quality.interpolated_ratio`).
 - La línea de tiempo se suaviza con voto mayoritario en una ventana de `smoothing_window_s` y los
   segmentos menores a `min_segment_s` se unen con su vecino.
 - `board_writing` implica estar **de espaldas a la clase**: en 16 recortes al azar de
@@ -84,11 +88,18 @@ Prioridad: **board_writing > guide > other**.
 - pyannote se activa si `diarization.enabled` es true, existe `HF_TOKEN` en `.env` y se aceptaron
   las condiciones de los modelos en Hugging Face. Si algo falla, se sigue sin diarización y el
   motivo queda en el reporte.
+- pyannote se llama con `min_speakers` (2): en un aula hay al menos docente y alumnos.
+- `--topic "texto"` se pasa a Whisper como `initial_prompt` (ayuda con nombres propios del tema).
+- **Texto inventado**: se descartan los segmentos de Whisper que coinciden con voz de Silero en
+  menos de `min_vad_overlap` de su duración, y los que son solo una frase típica inventada
+  (`hallucinations.phrases`, p. ej. "Gracias."). Se cuentan en
+  `data_quality.discarded_hallucinated_segments`.
 - **Docente** = el hablante con más tiempo total de voz (heurística).
 
 | Evento | Definición |
 |---|---|
-| `teacher_question` | Oración con `¿`, `?` o que empieza con un interrogativo (`questions.interrogatives`). Con diarización, solo las del docente (`speaker_known = true`). Sin diarización, todas (`speaker_known = false`). |
+| `teacher_question` | Oración con `¿`, `?` o que empieza con un interrogativo (`questions.interrogatives`). Las oraciones se cortan después de cada `?` (aunque le siga una coma) y antes de cada `¿`. Con diarización, solo las del docente (`speaker_known = true`). Sin diarización, todas (`speaker_known = false`). |
+| `tag_question` | Muletilla (regla de respaldo): la pregunta es solo una de `questions.tag_words` ("¿no?", "¿ya?"...) o termina en una de ellas después de una afirmación ("muy bien, ¿no?"). Si hay LLM, manda su clasificación (`question_rhetorical`). **No cuenta como pregunta, ni para la espera, ni para el monitoreo.** |
 | `wait_time_s` | Desde el fin de la última palabra de la pregunta hasta el inicio del siguiente intervalo de voz de Silero. Se ignoran los huecos menores a `min_gap_s` y se limita a `max_wait_s`. Si la voz que contiene el fin de la pregunta continúa más de `min_gap_s` (el docente siguió hablando sin pausa), es 0. Si no vuelve a haber voz, `null`. |
 | `wait_time_ok` | `wait_time_s >= ok_threshold_s` (3 s, umbral de Rowe). |
 | `student_response` | Primera voz de un hablante distinto al docente dentro de `response_window_s` tras la pregunta (`certainty = "high"`). Sin diarización, cualquier voz nueva dentro de la ventana (`certainty = "low"`). |
@@ -103,19 +114,22 @@ Prioridad: **board_writing > guide > other**.
 | `student_response_count` | R1 | Preguntas con `student_response`. |
 | `response_rate` | R1 | `student_response_count / teacher_question_count` (`null` si no hay preguntas). |
 | `teacher_talk_ratio` | R1 | Tiempo de habla del docente / duración. `null` sin diarización, con el motivo. |
-| `teacher_question_count` | R2, R3 | Número de `teacher_question`. |
+| `teacher_question_count` | R2, R3 | Número de `teacher_question` que no son muletillas ni retóricas. |
+| `rhetorical_question_count` | R2 | Muletillas o preguntas retóricas (no cuentan como preguntas). |
+| `open_question_ratio` | R2 | Abiertas / (abiertas + cerradas), según el LLM. `null` sin LLM. |
 | `questions_per_minute` | R2, R3 | `teacher_question_count / (duración del audio en minutos)`. |
 | `mean_wait_time_s`, `median_wait_time_s` | R2 | Sobre preguntas `reliable` con `wait_time_s` no nulo. |
 | `wait_time_ok_ratio` | R2 | Fracción de esas preguntas con `wait_time_ok`. |
 | `monitoring_ratio` | R3 | Unión, sin doble conteo, de los tramos `guide` (video) y los episodios de pregunta (audio), dividida entre la duración analizada. |
 | `monitoring_video_ratio` | R3 | Solo los tramos `guide`. |
-| `monitoring_audio_ratio` | R3 | Solo los episodios de pregunta: desde el inicio de una pregunta `reliable` hasta el fin de su respuesta; si nadie respondió, hasta el fin de la espera (`question_end + wait_time_s`, o `+ max_wait_s` si no hubo más voz). |
+| `monitoring_audio_ratio` | R3 | Solo los episodios de pregunta: preguntas reales (no muletillas), en audio confiable y **con** `student_response`. Cada episodio va desde el inicio de la pregunta hasta el fin de la respuesta, con un máximo de `max_episode_s`. |
 | `meets_monitoring_threshold` | R3 | `monitoring_ratio >= 0.25` (el manual pide monitorear al menos el 25 % de la sesión). Sin audio se calcula solo con video y se avisa. |
 | `path_length_normalized` | R4 | Recorrido del punto de los pies en anchos de frame: mediana móvil de `median_window_frames` y descarte de pasos mayores a `max_step_ratio` × ancho (se cuentan). Es evidencia visual junto a `heatmap.png`, no un estado. |
 
 ### Calidad de los datos (`data_quality`)
 
-`teacher_visible_ratio`, `discarded_path_jumps`, `low_confidence_audio_ratio`, `speech_ratio`,
+`teacher_visible_ratio`, `interpolated_ratio`, `discarded_path_jumps`,
+`low_confidence_audio_ratio`, `discarded_hallucinated_segments`, `speech_ratio`,
 `diarization_used`, `diarization_note` y una lista de avisos (`notes`).
 
 ## Archivos de salida (`outputs/<video>/`)

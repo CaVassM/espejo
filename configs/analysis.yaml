@@ -6,3 +6,6 @@ monitoring:
   # monitorea activamente si destina al menos el 25 % de la sesión a recoger evidencia
   # (preguntas o diálogos con la clase, o recorriendo los grupos y revisando su trabajo).
   threshold: 0.25
+  # Un episodio de pregunta (por audio) va desde la pregunta hasta el fin de la respuesta,
+  # con este máximo: una respuesta larga ya no es "recoger evidencia" de esa pregunta.
+  max_episode_s: 15.0

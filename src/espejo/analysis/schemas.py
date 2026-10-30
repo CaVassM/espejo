@@ -24,8 +24,10 @@ class DataQuality:
     """Qué tan confiables son los datos; None si la fuente no estuvo disponible."""
 
     teacher_visible_ratio: float | None
+    interpolated_ratio: float | None
     discarded_path_jumps: int | None
     low_confidence_audio_ratio: float | None
+    discarded_hallucinated_segments: int | None
     speech_ratio: float | None
     diarization_used: bool
     diarization_note: str

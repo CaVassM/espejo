@@ -1,0 +1,34 @@
+# Módulo LLM: entiende el significado de lo que dice el docente. Solo recibe TEXTO
+# (transcripción y métricas), nunca audio ni video. No pone notas: marca evidencias con su cita.
+
+provider: ollama                 # ollama | anthropic | none
+definitions_path: docs/rubric_definitions.md   # parte fija del prompt, fiel al manual del Minedu
+max_attempts: 2                  # si la respuesta no es un JSON válido, se reintenta una vez
+
+ollama:
+  host: http://localhost:11434
+  # "auto": qwen2.5:14b con 12 GB de VRAM o más; si no, qwen2.5:7b (ambos manejan bien español y JSON)
+  model: auto
+  large_model: qwen2.5:14b
+  small_model: qwen2.5:7b
+  min_vram_gb_for_large: 12
+  temperature: 0
+  context_tokens: 8192           # ventana de contexto de Ollama; una ventana de 3 min cabe con holgura
+  request_timeout_s: 600
+
+anthropic:
+  model: claude-sonnet-5-5
+  api_key_env_var: ANTHROPIC_API_KEY   # se lee de .env; si no está, el proveedor no está disponible
+  max_tokens: 16000
+  # claude-sonnet-5-5 no acepta temperature: el control de variabilidad es el esquema JSON.
+  # Respaldo del lado del servidor si el modelo rechaza la solicitud (Claude API).
+  fallback_beta: server-side-fallback-2026-07-01
+  input_usd_per_million_tokens: 2.0
+  output_usd_per_million_tokens: 10.0
+
+windows:
+  window_s: 180                  # ventanas de ~3 min...
+  overlap_s: 20                  # ...con 20 s de solapamiento para no cortar intercambios
+
+validation:
+  timestamp_tolerance_s: 2.0     # una cita debe existir en la transcripción a ±2 s del minuto indicado

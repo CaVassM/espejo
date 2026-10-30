@@ -284,3 +284,65 @@ def load_dataset_config(path: Path = DEFAULT_DATASET_CONFIG) -> DatasetConfig:
     raw["raw_dir"] = resolve_project_path(raw["raw_dir"])
     raw["processed_dir"] = resolve_project_path(raw["processed_dir"])
     return DatasetConfig(**raw)
+
+
+# --- LLM ------------------------------------------------------------------------------------
+
+DEFAULT_LLM_CONFIG = CONFIGS_DIR / "llm.yaml"
+
+
+@dataclass(frozen=True)
+class OllamaConfig:
+    host: str
+    model: str
+    large_model: str
+    small_model: str
+    min_vram_gb_for_large: float
+    temperature: float
+    context_tokens: int
+    request_timeout_s: float
+
+
+@dataclass(frozen=True)
+class AnthropicConfig:
+    model: str
+    api_key_env_var: str
+    max_tokens: int
+    fallback_beta: str
+    input_usd_per_million_tokens: float
+    output_usd_per_million_tokens: float
+
+
+@dataclass(frozen=True)
+class WindowConfig:
+    window_s: float
+    overlap_s: float
+
+
+@dataclass(frozen=True)
+class LlmValidationConfig:
+    timestamp_tolerance_s: float
+
+
+@dataclass(frozen=True)
+class LlmConfig:
+    provider: str
+    definitions_path: Path
+    max_attempts: int
+    ollama: OllamaConfig
+    anthropic: AnthropicConfig
+    windows: WindowConfig
+    validation: LlmValidationConfig
+
+
+def load_llm_config(path: Path = DEFAULT_LLM_CONFIG) -> LlmConfig:
+    raw = read_yaml(path)
+    return LlmConfig(
+        provider=raw["provider"],
+        definitions_path=resolve_project_path(raw["definitions_path"]),
+        max_attempts=raw["max_attempts"],
+        ollama=OllamaConfig(**raw["ollama"]),
+        anthropic=AnthropicConfig(**raw["anthropic"]),
+        windows=WindowConfig(**raw["windows"]),
+        validation=LlmValidationConfig(**raw["validation"]),
+    )

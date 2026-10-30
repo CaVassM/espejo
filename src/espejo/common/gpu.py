@@ -2,6 +2,7 @@
 
 import os
 import sys
+from dataclasses import dataclass
 from pathlib import Path
 
 WINDOWS_PLATFORM = "win32"
@@ -9,6 +10,32 @@ CUBLAS_DLL_NAME = "cublas64_12.dll"
 # Tamaño mínimo de la convolución de calentamiento: solo sirve para cargar cuDNN
 WARMUP_IMAGE_SIDE = 8
 WARMUP_KERNEL_SIDE = 3
+BYTES_PER_GB = 1024**3
+GPU_INDEX = 0
+
+
+@dataclass(frozen=True)
+class GpuMemory:
+    free_gb: float
+    total_gb: float
+
+
+def read_gpu_memory() -> GpuMemory | None:
+    """Memoria según NVML; no crea un contexto CUDA que compita con otros procesos."""
+    # Import local: NVML solo existe en equipos con driver NVIDIA
+    try:
+        import pynvml
+    except ImportError:
+        return None
+
+    try:
+        pynvml.nvmlInit()
+        handle = pynvml.nvmlDeviceGetHandleByIndex(GPU_INDEX)
+        memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
+        pynvml.nvmlShutdown()
+    except pynvml.NVMLError:
+        return None
+    return GpuMemory(memory_info.free / BYTES_PER_GB, memory_info.total / BYTES_PER_GB)
 
 
 def torch_lib_dir() -> Path | None:

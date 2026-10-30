@@ -8,7 +8,7 @@ from faster_whisper import WhisperModel
 from faster_whisper.transcribe import Segment as WhisperSegment
 
 from espejo.audio.schemas import TranscriberSetup, TranscriptSegment, Word
-from espejo.common.gpu import register_cuda_libraries
+from espejo.common.gpu import read_gpu_memory, register_cuda_libraries
 from espejo.config import TranscriptionConfig
 
 logger = logging.getLogger(__name__)
@@ -16,8 +16,6 @@ logger = logging.getLogger(__name__)
 DEVICE_AUTO = "auto"
 DEVICE_CUDA = "cuda"
 DEVICE_CPU = "cpu"
-BYTES_PER_GB = 1024**3
-GPU_INDEX = 0
 PROGRESS_LOG_INTERVAL_SEGMENTS = 50
 
 
@@ -113,29 +111,11 @@ def resolve_device(config: TranscriptionConfig) -> str:
     if config.device != DEVICE_AUTO:
         return config.device
 
-    free_memory_gb = free_gpu_memory_gb()
-    if free_memory_gb is None:
+    memory = read_gpu_memory()
+    if memory is None:
         logger.info("No hay GPU NVIDIA disponible; se transcribe en CPU")
         return DEVICE_CPU
-    if free_memory_gb < config.min_free_gpu_memory_gb:
-        logger.info("GPU ocupada (%.1f GB libres); se transcribe en CPU", free_memory_gb)
+    if memory.free_gb < config.min_free_gpu_memory_gb:
+        logger.info("GPU ocupada (%.1f GB libres); se transcribe en CPU", memory.free_gb)
         return DEVICE_CPU
     return DEVICE_CUDA
-
-
-def free_gpu_memory_gb() -> float | None:
-    """Memoria libre según NVML; no crea un contexto CUDA que compita con otros procesos."""
-    # Import local: NVML solo existe en equipos con driver NVIDIA
-    try:
-        import pynvml
-    except ImportError:
-        return None
-
-    try:
-        pynvml.nvmlInit()
-        handle = pynvml.nvmlDeviceGetHandleByIndex(GPU_INDEX)
-        memory_info = pynvml.nvmlDeviceGetMemoryInfo(handle)
-        pynvml.nvmlShutdown()
-    except pynvml.NVMLError:
-        return None
-    return memory_info.free / BYTES_PER_GB

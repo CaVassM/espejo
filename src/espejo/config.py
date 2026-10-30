@@ -153,3 +153,84 @@ def with_model_overrides(
     if teacher_class is not None:
         teacher = replace(teacher, class_name=teacher_class)
     return replace(config, models=models, teacher=teacher)
+
+
+DEFAULT_AUDIO_CONFIG = CONFIGS_DIR / "audio.yaml"
+
+
+@dataclass(frozen=True)
+class ExtractionConfig:
+    sample_rate_hz: int
+    vad_highpass_hz: int
+
+
+@dataclass(frozen=True)
+class TranscriptionConfig:
+    language: str
+    device: str
+    gpu_model: str
+    gpu_fallback_model: str
+    gpu_compute_type: str
+    cpu_model: str
+    cpu_compute_type: str
+    min_free_gpu_memory_gb: float
+    beam_size: int
+    condition_on_previous_text: bool
+
+
+@dataclass(frozen=True)
+class VoiceActivityConfig:
+    threshold: float
+    min_speech_duration_ms: int
+    min_silence_duration_ms: int
+    speech_pad_ms: int
+
+
+@dataclass(frozen=True)
+class DiarizationConfig:
+    enabled: bool
+    model: str
+    token_env_var: str
+
+
+@dataclass(frozen=True)
+class QuestionsConfig:
+    interrogatives: list[str]
+    join_segments_max_gap_s: float
+
+
+@dataclass(frozen=True)
+class WaitTimeConfig:
+    min_gap_s: float
+    max_wait_s: float
+    ok_threshold_s: float
+
+
+@dataclass(frozen=True)
+class QualityConfig:
+    min_avg_logprob: float
+    max_no_speech_prob: float
+
+
+@dataclass(frozen=True)
+class AudioConfig:
+    extraction: ExtractionConfig
+    transcription: TranscriptionConfig
+    voice_activity: VoiceActivityConfig
+    diarization: DiarizationConfig
+    questions: QuestionsConfig
+    wait_time: WaitTimeConfig
+    quality: QualityConfig
+
+
+def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
+    raw = read_yaml(path)
+    return AudioConfig(
+        extraction=ExtractionConfig(**raw["extraction"]),
+        transcription=TranscriptionConfig(**raw["transcription"]),
+        voice_activity=VoiceActivityConfig(**raw["voice_activity"]),
+        diarization=DiarizationConfig(**raw["diarization"]),
+        questions=QuestionsConfig(**raw["questions"]),
+        wait_time=WaitTimeConfig(**raw["wait_time"]),
+        quality=QualityConfig(**raw["quality"]),
+    )

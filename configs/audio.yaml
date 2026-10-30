@@ -1,0 +1,60 @@
+# Parámetros del módulo de audio. Todos los umbrales viven aquí, no en el código.
+
+extraction:
+  sample_rate_hz: 16000          # Whisper y Silero VAD trabajan a 16 kHz mono
+  vad_highpass_hz: 100           # filtro suave solo para la copia del VAD; Whisper recibe audio crudo
+
+transcription:
+  language: es
+  # "auto": GPU con gpu_model si está libre; si está ocupada (p. ej. entrenando) o no hay, CPU.
+  # También acepta "cuda" o "cpu" para forzar.
+  device: auto
+  gpu_model: large-v3-turbo
+  gpu_fallback_model: medium     # si gpu_model no está disponible en esta versión de faster-whisper
+  gpu_compute_type: float16
+  cpu_model: small
+  cpu_compute_type: int8
+  min_free_gpu_memory_gb: 5.0    # con menos memoria libre se considera que la GPU está ocupada
+  beam_size: 5
+  # Sin condicionar en el texto previo, Whisper repite menos frases en bucle en tramos de ruido
+  condition_on_previous_text: false
+
+voice_activity:
+  threshold: 0.5                 # probabilidad de voz de Silero para marcar un frame como voz
+  min_speech_duration_ms: 250    # intervalos de voz más cortos se descartan (golpes, ruidos)
+  min_silence_duration_ms: 300   # silencios más cortos no cortan un intervalo de voz
+  speech_pad_ms: 30              # margen pequeño: un margen grande acortaría el wait time medido
+
+diarization:
+  enabled: false                 # requiere pyannote.audio y la variable de entorno HF_TOKEN
+  model: pyannote/speaker-diarization-3.1
+  token_env_var: HF_TOKEN
+
+questions:
+  # Una oración sin signos de interrogación es pregunta si empieza con alguno de estos
+  interrogatives:
+    - qué
+    - cómo
+    - por qué
+    - cuál
+    - cuáles
+    - cuándo
+    - dónde
+    - quién
+    - quiénes
+    - cuánto
+  # Whisper a veces corta una oración entre dos segmentos; se unen si la pausa es menor a esto
+  join_segments_max_gap_s: 1.0
+
+wait_time:
+  min_gap_s: 0.5                 # huecos más cortos son respiración o pausas internas, no espera
+  max_wait_s: 15.0               # tope: después de esto la pausa ya no es "esperar respuesta"
+  # Rowe (1974, 1986): con 3 s o más de espera tras una pregunta, las respuestas de los alumnos
+  # son más largas, más frecuentes y de mayor nivel cognitivo.
+  ok_threshold_s: 3.0
+
+quality:
+  # Whisper entrega por segmento la log-probabilidad media y la probabilidad de "no hay voz".
+  # Los mismos umbrales usa Whisper internamente para descartar segmentos dudosos.
+  min_avg_logprob: -1.0
+  max_no_speech_prob: 0.6

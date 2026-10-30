@@ -16,6 +16,11 @@ def parse_args() -> argparse.Namespace:
         required=True,
         help="carpeta con detections.json y/o audio_raw.json (p. ej. outputs/clase/)",
     )
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="no usa el LLM: preguntas y métricas solo con las reglas de respaldo",
+    )
     return parser.parse_args()
 
 
@@ -23,7 +28,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(name)s: %(message)s")
     args = parse_args()
 
-    result = interpret_run(args.run, load_all_configs())
+    result = interpret_run(args.run, load_all_configs(), use_llm=not args.no_llm)
 
     print("\n=== Resumen de la clase ===")
     print(format_summary(result.report))

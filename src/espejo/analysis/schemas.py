@@ -1,8 +1,9 @@
 """Datos del reporte final de la clase (class_report.json)."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from espejo.audio.schemas import Question
+from espejo.llm.schemas import LlmAnalysis
 from espejo.vision.schemas import Segment
 
 MetricValue = float | int | bool | None
@@ -17,6 +18,35 @@ class RubricMetric:
     rubrics: list[str]
     description: str
     note: str | None = None
+
+
+@dataclass(frozen=True)
+class MetricEvidence:
+    name: str
+    value: MetricValue
+
+
+@dataclass(frozen=True)
+class Citation:
+    timestamp_s: float
+    label: str
+    quote: str
+    reason: str
+
+
+@dataclass(frozen=True)
+class RubricEvidence:
+    """Ficha de una rúbrica: status es "con evidencia" o "evidencia insuficiente"."""
+
+    rubric: str
+    title: str
+    status: str
+    metrics: list[MetricEvidence] = field(default_factory=list)
+    citations: list[Citation] = field(default_factory=list)
+
+
+def no_llm_analysis() -> LlmAnalysis:
+    return LlmAnalysis(used=False, note="")
 
 
 @dataclass(frozen=True)
@@ -53,3 +83,5 @@ class ClassReport:
     questions: list[Question]
     metrics: list[RubricMetric]
     data_quality: DataQuality
+    llm: LlmAnalysis = field(default_factory=no_llm_analysis)
+    rubric_evidence: list[RubricEvidence] = field(default_factory=list)

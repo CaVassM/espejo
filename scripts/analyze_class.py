@@ -31,6 +31,11 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help='tema de la clase para ayudar a Whisper (p. ej. "Cuento: Los hijos del labrador")',
     )
+    parser.add_argument(
+        "--no-llm",
+        action="store_true",
+        help="no usa el LLM: preguntas y métricas solo con las reglas de respaldo",
+    )
     return parser.parse_args()
 
 
@@ -45,7 +50,7 @@ def main() -> None:
     if not args.no_audio:
         audio_captured = try_capture_audio(args.video, run_dir, configs.audio, args.topic)
 
-    result = interpret_run(run_dir, configs, include_audio=audio_captured)
+    result = interpret_run(run_dir, configs, include_audio=audio_captured, use_llm=not args.no_llm)
     if args.debug_video:
         write_debug_video(args.video, result, configs.vision)
 

@@ -5,10 +5,11 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
-from espejo.analysis.schemas import ClassReport, MetricValue, RubricMetric
+from espejo.analysis.schemas import ClassReport, MetricValue, RubricEvidence, RubricMetric
 from espejo.audio.schemas import Question, StudentResponse
 from espejo.common.json_io import write_json
 from espejo.common.time_format import format_mmss, round_seconds
+from espejo.llm.schemas import Evidence, LlmAnalysis, RejectedEvidence
 from espejo.vision.schemas import Segment
 
 RATIO_DECIMALS = 3
@@ -85,7 +86,74 @@ def list_of_dicts(
     return converted
 
 
+def evidence_to_dict(evidence: Evidence) -> dict[str, Any]:
+    return {
+        "timestamp_s": round_seconds(evidence.timestamp_s),
+        "timestamp": format_mmss(evidence.timestamp_s),
+        "label": evidence.label,
+        "quote": evidence.quote,
+        "reason": evidence.reason,
+        "confidence": evidence.confidence,
+        "question_id": evidence.question_id,
+    }
+
+
+def rejected_to_dict(rejected: RejectedEvidence) -> dict[str, Any]:
+    converted = evidence_to_dict(rejected.evidence)
+    converted["rejection_reason"] = rejected.reason
+    return converted
+
+
+def llm_to_dict(analysis: LlmAnalysis) -> dict[str, Any]:
+    """Proveedor, modelo, tokens, tiempo y costo (0 con Ollama), y lo que el LLM marcó."""
+    suggestion = None
+    if analysis.suggestion is not None:
+        suggestion = {
+            "text": analysis.suggestion.text,
+            "timestamp": format_mmss(analysis.suggestion.timestamp_s),
+        }
+    usage = asdict(analysis.usage)
+    usage["seconds"] = round_seconds(analysis.usage.seconds)
+    question_labels = list(analysis.question_labels.values())
+    return {
+        "used": analysis.used,
+        "note": analysis.note,
+        "provider": analysis.provider,
+        "model": analysis.model,
+        "usage": usage,
+        "question_labels": list_of_dicts(question_labels, evidence_to_dict),
+        "feedback": list_of_dicts(analysis.feedback, evidence_to_dict),
+        "regulation": list_of_dicts(analysis.regulation, evidence_to_dict),
+        "rejected_evidence": list_of_dicts(analysis.rejected, rejected_to_dict),
+        "one_suggestion": suggestion,
+    }
+
+
+def rubric_evidence_to_dict(item: RubricEvidence) -> dict[str, Any]:
+    metrics = []
+    for metric in item.metrics:
+        metrics.append({"name": metric.name, "value": round_value(metric.value)})
+    citations = []
+    for citation in item.citations:
+        citations.append(
+            {
+                "timestamp": format_mmss(citation.timestamp_s),
+                "label": citation.label,
+                "quote": citation.quote,
+                "reason": citation.reason,
+            }
+        )
+    return {
+        "rubric": item.rubric,
+        "title": item.title,
+        "status": item.status,
+        "metrics": metrics,
+        "citations": citations,
+    }
+
+
 def report_to_dict(report: ClassReport) -> dict[str, Any]:
+    llm_analysis = llm_to_dict(report.llm)
     metadata = asdict(report.metadata)
     metadata["duration_s"] = round_seconds(report.metadata.duration_s)
     metadata["duration"] = format_mmss(report.metadata.duration_s)
@@ -105,6 +173,9 @@ def report_to_dict(report: ClassReport) -> dict[str, Any]:
         "audio_events": list_of_dicts(report.questions, question_to_dict),
         "metrics": metrics,
         "data_quality": data_quality,
+        "rubric_evidence": list_of_dicts(report.rubric_evidence, rubric_evidence_to_dict),
+        "llm_analysis": llm_analysis,
+        "one_suggestion": llm_analysis["one_suggestion"],
     }
 
 
@@ -153,6 +224,7 @@ def format_summary(report: ClassReport) -> str:
     lines = [
         f"Video: {metadata.video} ({format_mmss(metadata.duration_s)})",
         f"Diarización: {report.data_quality.diarization_note}",
+        f"LLM: {report.llm.note}",
         "",
         "Métricas:",
     ]
@@ -169,4 +241,9 @@ def format_summary(report: ClassReport) -> str:
     lines.append(f"Primeras {SUMMARY_QUESTION_COUNT} preguntas:")
     for question in report.questions[:SUMMARY_QUESTION_COUNT]:
         lines.append(format_question(question))
+
+    suggestion = report.llm.suggestion
+    if suggestion is not None:
+        lines.append("")
+        lines.append(f"Consejo [{format_mmss(suggestion.timestamp_s)}]: {suggestion.text}")
     return "\n".join(lines)

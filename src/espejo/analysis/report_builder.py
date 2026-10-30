@@ -9,10 +9,12 @@ from espejo.analysis.monitoring import (
     guide_intervals,
     question_episodes,
 )
+from espejo.analysis.rubric_evidence import build_rubric_evidence
 from espejo.analysis.rubric_metrics import build_rubric_metrics
 from espejo.analysis.schemas import ClassReport, DataQuality, ReportMetadata
 from espejo.audio.schemas import AudioCapture, AudioInterpretation
 from espejo.config import AnalysisConfig, AudioConfig
+from espejo.llm.schemas import LlmAnalysis
 from espejo.vision.schemas import DetectionRun, VisionInterpretation
 
 VAD_MODEL_NAME = "silero-vad (incluido en faster-whisper)"
@@ -141,7 +143,10 @@ def build_data_quality(video: VideoSide | None, audio: AudioSide | None) -> Data
 
 
 def build_class_report(
-    video: VideoSide | None, audio: AudioSide | None, configs: ReportConfigs
+    video: VideoSide | None,
+    audio: AudioSide | None,
+    configs: ReportConfigs,
+    llm: LlmAnalysis,
 ) -> ClassReport:
     duration_s = session_duration_s(video, audio)
     monitoring = monitoring_for(video, audio, duration_s, configs)
@@ -174,4 +179,6 @@ def build_class_report(
         questions=questions,
         metrics=metrics,
         data_quality=build_data_quality(video, audio),
+        llm=llm,
+        rubric_evidence=build_rubric_evidence(metrics, llm),
     )

@@ -23,7 +23,9 @@ class AudioCaptureRunner:
         self.voice_detector = VoiceActivityDetector(config.voice_activity, sample_rate_hz)
         self.diarizer = SpeakerDiarizer(config.diarization, sample_rate_hz)
 
-    def run(self, video_path: Path, output_dir: Path, keep_audio: bool) -> AudioCapture:
+    def run(
+        self, video_path: Path, output_dir: Path, keep_audio: bool, topic: str | None = None
+    ) -> AudioCapture:
         audio = self.extractor.extract(video_path, output_dir)
 
         # Los wav son temporales: se borran aunque algún modelo falle
@@ -33,9 +35,10 @@ class AudioCaptureRunner:
                 duration_s=audio.duration_s,
                 language=self.config.transcription.language,
                 transcriber=self.transcriber.setup,
-                segments=self.transcriber.transcribe(audio.raw_path),
+                segments=self.transcriber.transcribe(audio.raw_path, topic),
                 speech_intervals=self.voice_detector.detect(audio.vad_path),
                 diarization=self.diarizer.diarize(audio.raw_path),
+                topic=topic,
             )
         finally:
             if not keep_audio:

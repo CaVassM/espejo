@@ -86,6 +86,7 @@ def save_audio_capture(capture: AudioCapture, output_path: Path) -> None:
         "video_path": capture.video_path,
         "duration_s": capture.duration_s,
         "language": capture.language,
+        "topic": capture.topic,
         "transcriber": {
             "model_name": capture.transcriber.model_name,
             "device": capture.transcriber.device,
@@ -116,4 +117,5 @@ def load_audio_capture(input_path: Path) -> AudioCapture:
         segments=segments,
         speech_intervals=intervals,
         diarization=diarization_from_dict(raw["diarization"]),
+        topic=raw.get("topic"),
     )

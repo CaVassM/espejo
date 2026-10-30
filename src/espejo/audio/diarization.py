@@ -69,7 +69,8 @@ class SpeakerDiarizer:
         # Se pasa la onda en memoria para no depender del backend de audio de torchaudio
         samples = decode_audio(str(audio_path), sampling_rate=self.sample_rate_hz)
         waveform = torch.from_numpy(samples).unsqueeze(0)
-        annotation = pipeline({"waveform": waveform, "sample_rate": self.sample_rate_hz})
+        audio_input = {"waveform": waveform, "sample_rate": self.sample_rate_hz}
+        annotation = pipeline(audio_input, min_speakers=self.config.min_speakers)
 
         turns = []
         for turn, _, speaker in annotation.itertracks(yield_label=True):

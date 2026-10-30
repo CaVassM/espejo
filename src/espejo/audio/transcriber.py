@@ -48,7 +48,8 @@ class Transcriber:
         )
         return WhisperModel(setup.model_name, device=setup.device, compute_type=setup.compute_type)
 
-    def transcribe(self, audio_path: Path) -> list[TranscriptSegment]:
+    def transcribe(self, audio_path: Path, topic: str | None = None) -> list[TranscriptSegment]:
+        """topic se pasa como initial_prompt: ayuda a Whisper con nombres propios del tema."""
         # vad_filter=False: Whisper recibe el audio completo y crudo; el VAD es una etapa aparte
         whisper_segments, _ = self.model.transcribe(
             str(audio_path),
@@ -57,6 +58,7 @@ class Transcriber:
             beam_size=self.config.beam_size,
             condition_on_previous_text=self.config.condition_on_previous_text,
             vad_filter=False,
+            initial_prompt=topic,
         )
 
         segments = []

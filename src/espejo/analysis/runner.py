@@ -86,16 +86,22 @@ def capture_audio(
     config: AudioConfig,
     keep_audio: bool,
     model_override: str | None = None,
+    topic: str | None = None,
 ) -> None:
     """VER (audio): genera audio_raw.json."""
     logger.info("VER audio: %s", video_path.name)
-    AudioCaptureRunner(config, model_override).run(video_path, run_dir, keep_audio)
+    runner = AudioCaptureRunner(config, model_override)
+    runner.run(video_path, run_dir, keep_audio, topic)
+    del runner
+    release_gpu_memory()
 
 
-def try_capture_audio(video_path: Path, run_dir: Path, config: AudioConfig) -> bool:
+def try_capture_audio(
+    video_path: Path, run_dir: Path, config: AudioConfig, topic: str | None = None
+) -> bool:
     """Como capture_audio, pero un video sin pista de audio no detiene el análisis."""
     try:
-        capture_audio(video_path, run_dir, config, keep_audio=False)
+        capture_audio(video_path, run_dir, config, keep_audio=False, topic=topic)
     except NoAudioTrackError as error:
         logger.warning("%s Se analiza solo el video.", error)
         return False

@@ -26,6 +26,11 @@ def parse_args() -> argparse.Namespace:
         help="genera un video con la caja y el estado del docente (no va a git)",
     )
     parser.add_argument("--no-audio", action="store_true", help="analiza solo el video")
+    parser.add_argument(
+        "--topic",
+        default=None,
+        help='tema de la clase para ayudar a Whisper (p. ej. "Cuento: Los hijos del labrador")',
+    )
     return parser.parse_args()
 
 
@@ -38,7 +43,7 @@ def main() -> None:
     capture_video(args.video, run_dir, configs.vision)
     audio_captured = False
     if not args.no_audio:
-        audio_captured = try_capture_audio(args.video, run_dir, configs.audio)
+        audio_captured = try_capture_audio(args.video, run_dir, configs.audio, args.topic)
 
     result = interpret_run(run_dir, configs, include_audio=audio_captured)
     if args.debug_video:

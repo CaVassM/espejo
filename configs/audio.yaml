@@ -31,6 +31,7 @@ diarization:
   enabled: true
   model: pyannote/speaker-diarization-3.1
   token_env_var: HF_TOKEN
+  min_speakers: 2                # en un aula siempre hay al menos docente y alumnos
 
 questions:
   # Una oración sin signos de interrogación es pregunta si empieza con alguno de estos
@@ -47,6 +48,19 @@ questions:
     - cuánto
   # Whisper a veces corta una oración entre dos segmentos; se unen si la pausa es menor a esto
   join_segments_max_gap_s: 1.0
+  # Muletillas (regla de respaldo si no hay LLM): una pregunta es muletilla si es solo una de
+  # estas, o si termina en una de ellas después de una afirmación ("muy bien, ¿no?").
+  # No cuentan como pregunta, ni para la espera, ni para el monitoreo.
+  tag_words:
+    - "no"
+    - ya
+    - cierto
+    - verdad
+    - sí
+    - si
+    - ok
+    - ah
+    - no es cierto
 
 wait_time:
   min_gap_s: 0.5                 # huecos más cortos son respiración o pausas internas, no espera
@@ -59,6 +73,18 @@ responses:
   # Después de una pregunta del docente, la primera voz de otro hablante dentro de esta ventana
   # cuenta como respuesta de un alumno. Sin diarización, cualquier voz cuenta (certeza baja).
   response_window_s: 10.0
+
+hallucinations:
+  # Whisper inventa texto en silencios o ruido. Se descarta un segmento si menos de esta
+  # fracción de su duración coincide con voz detectada por Silero...
+  min_vad_overlap: 0.3
+  # ...o si es solo una de estas frases típicas inventadas (se comparan sin tildes ni signos).
+  phrases:
+    - gracias
+    - gracias por ver
+    - gracias por ver el video
+    - suscribete
+    - subtitulos realizados por la comunidad de amara org
 
 quality:
   # Whisper entrega por segmento la log-probabilidad media y la probabilidad de "no hay voz".

@@ -23,6 +23,11 @@ def parse_args() -> argparse.Namespace:
         default=None,
         help="modelo de Whisper a usar (p. ej. small); por defecto lo decide la config",
     )
+    parser.add_argument(
+        "--topic",
+        default=None,
+        help='tema de la clase para ayudar a Whisper (p. ej. "Cuento: Los hijos del labrador")',
+    )
     return parser.parse_args()
 
 
@@ -32,7 +37,7 @@ def main() -> None:
     configs = load_all_configs()
     run_dir = run_dir_for(args.video, args.output)
 
-    capture_audio(args.video, run_dir, configs.audio, args.keep_audio, args.model)
+    capture_audio(args.video, run_dir, configs.audio, args.keep_audio, args.model, args.topic)
     result = interpret_run(run_dir, configs, include_video=False)
 
     print("\n=== Resumen de audio ===")

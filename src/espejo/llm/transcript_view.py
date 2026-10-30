@@ -8,6 +8,9 @@ from espejo.common.time_format import format_mmss
 from espejo.config import WindowConfig
 from espejo.llm.schemas import CandidateQuestion, TranscriptLine
 
+ANSWERED_TEXT = "un alumno respondió"
+NOT_ANSWERED_TEXT = "sin respuesta"
+
 
 @dataclass(frozen=True)
 class TranscriptWindow:
@@ -29,8 +32,11 @@ def candidates_from_questions(questions: list[Question]) -> list[CandidateQuesti
     """El id es la posición en la lista de preguntas del audio, para aplicar luego la clase."""
     candidates = []
     for question_id, question in enumerate(questions):
+        answered = question.response is not None
         candidates.append(
-            CandidateQuestion(question_id, question.start_s, question.text, question.is_tag)
+            CandidateQuestion(
+                question_id, question.start_s, question.text, question.is_tag, answered
+            )
         )
     return candidates
 
@@ -40,7 +46,9 @@ def format_line(line: TranscriptLine) -> str:
 
 
 def format_candidate(candidate: CandidateQuestion) -> str:
-    return f"{candidate.question_id} | [{format_mmss(candidate.start_s)}] | {candidate.text}"
+    answered = ANSWERED_TEXT if candidate.student_answered else NOT_ANSWERED_TEXT
+    minute = format_mmss(candidate.start_s)
+    return f"{candidate.question_id} | [{minute}] | {candidate.text} | {answered}"
 
 
 def build_windows(

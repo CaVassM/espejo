@@ -2,7 +2,6 @@
 
 from espejo.analysis.schemas import Citation, MetricEvidence, RubricEvidence, RubricMetric
 from espejo.audio.schemas import QuestionCategory
-from espejo.common.time_format import format_mmss
 from espejo.llm.schemas import (
     Evidence,
     FeedbackType,
@@ -80,25 +79,3 @@ def build_rubric_evidence(
             status = INSUFFICIENT
         rubric_evidence.append(RubricEvidence(rubric, title, status, rubric_metrics, citations))
     return rubric_evidence
-
-
-def evidence_as_text(rubric_evidence: list[RubricEvidence]) -> str:
-    """La ficha en texto plano, para el prompt del consejo final."""
-    lines = []
-    for item in rubric_evidence:
-        lines.append(f"{item.rubric} ({item.title}): {item.status}")
-        for metric in item.metrics:
-            lines.append(f"  - métrica {metric.name} = {metric.value}")
-        for citation in item.citations:
-            lines.append(
-                f'  - [{format_mmss(citation.timestamp_s)}] {citation.label}: "{citation.quote}"'
-            )
-    return "\n".join(lines)
-
-
-def evidence_times(rubric_evidence: list[RubricEvidence]) -> list[float]:
-    times = []
-    for item in rubric_evidence:
-        for citation in item.citations:
-            times.append(citation.timestamp_s)
-    return times

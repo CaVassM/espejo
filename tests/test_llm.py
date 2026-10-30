@@ -58,6 +58,9 @@ class FakeClient:
             text = self.replies.pop(0)
         return RawReply(keep_schema_keys(text, schema), LlmUsage(10, 5, calls=1))
 
+    def release(self) -> None:
+        self.released = True
+
 
 def keep_schema_keys(text: str, schema: dict[str, Any]) -> str:
     try:
@@ -71,9 +74,6 @@ def keep_schema_keys(text: str, schema: dict[str, Any]) -> str:
         if key in schema["properties"]:
             kept[key] = value
     return json.dumps(kept)
-
-    def release(self) -> None:
-        self.released = True
 
 
 def evidence(kind: EvidenceKind, label: str, timestamp_s: float, quote: str) -> Evidence:
@@ -225,16 +225,12 @@ def test_llm_classes_replace_the_rule_in_metrics(tmp_path: Path) -> None:
             {
                 "question_id": 0,
                 "label": "question_open",
-                "quote": "Cuántos hijos habrá tenido",
-                "timestamp": "00:10",
                 "reason": "pide inferir",
                 "confidence": "alta",
             },
             {
                 "question_id": 1,
                 "label": "question_rhetorical",
-                "quote": "¿ya?",
-                "timestamp": "00:16",
                 "reason": "muletilla",
                 "confidence": "alta",
             },
@@ -278,8 +274,6 @@ def test_unknown_question_id_is_rejected(tmp_path: Path) -> None:
             {
                 "question_id": 7,
                 "label": "question_open",
-                "quote": "Qué pasará",
-                "timestamp": "00:10",
                 "reason": "x",
                 "confidence": "alta",
             }
@@ -323,6 +317,7 @@ def test_participation_and_respect_are_validated_like_the_rest(tmp_path: Path) -
         "timestamp": "00:20",
         "reason": "invita a quien no participó",
         "confidence": "alta",
+        "addressee": "Juanito",
     }
     nickname = {
         "label": "respect_issue",
@@ -357,3 +352,26 @@ def test_quote_inside_a_long_line_uses_the_whole_line_span() -> None:
     ]
     assert quote_exists("¿Dónde habrá pasado?", 108.0, lines, TOLERANCE_S)
     assert not quote_exists("¿Dónde habrá pasado?", 130.0, lines, TOLERANCE_S)
+
+
+def invitation(quote: str, addressee: str) -> Evidence:
+    item = evidence(EvidenceKind.PARTICIPATION, "participation_invitation", 30.0, quote)
+    return replace(item, addressee=addressee)
+
+
+def test_invitation_must_address_one_student() -> None:
+    lines = [
+        TranscriptLine(30.0, 33.0, "DOCENTE", "¿Qué me han dicho, hija?"),
+        TranscriptLine(34.0, 37.0, "DOCENTE", "Niños, ¿cómo será la historia?"),
+    ]
+    to_one = invitation("¿Qué me han dicho, hija?", "hija")
+    to_class = replace(invitation("Niños, ¿cómo será la historia?", "Niños"), timestamp_s=34.0)
+    not_in_quote = invitation("¿Qué me han dicho, hija?", "Juanito")
+    whole_class_words = load_llm_config().validation.whole_class_words
+
+    result = validate_evidence(
+        [to_one, to_class, not_in_quote], lines, TOLERANCE_S, whole_class_words
+    )
+
+    assert result.accepted == [to_one]
+    assert len(result.rejected) == 2

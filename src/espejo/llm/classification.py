@@ -68,26 +68,58 @@ def evidence_from_raw(raw: dict[str, Any], kind: EvidenceKind, timestamp_s: floa
         quote=raw["quote"],
         reason=raw["reason"],
         confidence=raw["confidence"],
-        question_id=raw.get("question_id"),
+        addressee=raw.get("addressee"),
+    )
+
+
+def question_from_raw(raw: dict[str, Any], candidate: CandidateQuestion) -> Evidence:
+    """La cita y el minuto son los de la pregunta candidata: el LLM solo da la clase."""
+    return Evidence(
+        kind=EvidenceKind.QUESTION,
+        label=raw["label"],
+        timestamp_s=candidate.start_s,
+        quote=candidate.text,
+        reason=raw["reason"],
+        confidence=raw["confidence"],
+        question_id=candidate.question_id,
+    )
+
+
+def unknown_question(raw: dict[str, Any]) -> Evidence:
+    return Evidence(
+        EvidenceKind.QUESTION,
+        raw["label"],
+        0.0,
+        "",
+        raw["reason"],
+        raw["confidence"],
+        question_id=raw["question_id"],
     )
 
 
 def parse_reply(content: dict[str, Any], window: TranscriptWindow) -> ParsedItems:
     """Convierte el JSON en evidencias; descarta minutos ilegibles y preguntas desconocidas."""
-    candidate_ids = set()
+    candidates_by_id = {}
     for candidate in window.candidates:
-        candidate_ids.add(candidate.question_id)
+        candidates_by_id[candidate.question_id] = candidate
 
     items = []
     rejected = []
+    for raw in content.get(REPLY_KEYS[EvidenceKind.QUESTION], []):
+        candidate = candidates_by_id.get(raw["question_id"])
+        if candidate is None:
+            rejected.append(RejectedEvidence(unknown_question(raw), UNKNOWN_QUESTION_REASON))
+        else:
+            items.append(question_from_raw(raw, candidate))
+
     for kind, key in REPLY_KEYS.items():
+        if kind == EvidenceKind.QUESTION:
+            continue
         for raw in content.get(key, []):
             timestamp_s = parse_mmss(raw["timestamp"])
             evidence = evidence_from_raw(raw, kind, timestamp_s or 0.0)
             if timestamp_s is None:
                 rejected.append(RejectedEvidence(evidence, INVALID_TIME_REASON))
-            elif kind == EvidenceKind.QUESTION and evidence.question_id not in candidate_ids:
-                rejected.append(RejectedEvidence(evidence, UNKNOWN_QUESTION_REASON))
             else:
                 items.append(evidence)
     return ParsedItems(items, rejected)
@@ -130,7 +162,9 @@ class LlmClassifier:
             usage = usage.plus(reply.usage)
 
             parsed = parse_reply(reply.content, window)
-            validated = validate_evidence(parsed.items, lines, self.tolerance_s())
+            validated = validate_evidence(
+                parsed.items, lines, self.tolerance_s(), self.config.validation.whole_class_words
+            )
             accepted += validated.accepted
             rejected += parsed.rejected + validated.rejected
 

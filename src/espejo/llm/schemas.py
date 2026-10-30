@@ -78,11 +78,16 @@ class CandidateQuestion:
     start_s: float
     text: str
     rule_is_tag: bool
+    student_answered: bool = False
 
 
 @dataclass(frozen=True)
 class Evidence:
-    """Un elemento marcado por el LLM. question_id solo existe para preguntas."""
+    """Un elemento marcado por el LLM.
+
+    question_id solo existe para preguntas; addressee, solo para invitaciones a participar
+    (el nombre o la palabra con que el docente se dirige a un estudiante, copiado de la cita).
+    """
 
     kind: EvidenceKind
     label: str
@@ -91,6 +96,7 @@ class Evidence:
     reason: str
     confidence: str
     question_id: int | None = None
+    addressee: str | None = None
 
 
 @dataclass(frozen=True)
@@ -131,10 +137,43 @@ class JsonReply:
     usage: LlmUsage
 
 
+class Weakness(StrEnum):
+    """Debilidades que puede trabajar el consejo, en orden de prioridad."""
+
+    SHORT_WAIT = "short_wait"
+    ELEMENTAL_FEEDBACK = "elemental_feedback"
+    LOW_MONITORING = "low_monitoring"
+    CLOSED_QUESTIONS = "closed_questions"
+
+
+@dataclass(frozen=True)
+class SuggestionFocus:
+    """La debilidad elegida por las reglas y lo que se vio, con el minuto y la cita reales.
+
+    timestamp_s y quote son None cuando la debilidad no tiene un momento puntual (monitoreo).
+    """
+
+    weakness: Weakness
+    what_we_saw: str
+    timestamp_s: float | None = None
+    quote: str | None = None
+
+
 @dataclass(frozen=True)
 class Suggestion:
-    text: str
-    timestamp_s: float
+    """El consejo en tres partes. "Lo que vimos" sale de los datos; las otras dos, del LLM."""
+
+    focus: SuggestionFocus
+    why_it_matters: str
+    try_this: str
+    example_phrase: str
+
+    def as_text(self) -> str:
+        return (
+            f"Lo que vimos: {self.focus.what_we_saw}\n"
+            f"Por qué importa: {self.why_it_matters}\n"
+            f'Prueba esto: {self.try_this} Por ejemplo: "{self.example_phrase}"'
+        )
 
 
 @dataclass(frozen=True)

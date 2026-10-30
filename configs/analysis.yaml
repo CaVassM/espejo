@@ -9,3 +9,9 @@ monitoring:
   # Un episodio de pregunta (por audio) va desde la pregunta hasta el fin de la respuesta,
   # con este máximo: una respuesta larga ya no es "recoger evidencia" de esa pregunta.
   max_episode_s: 15.0
+
+suggestion:
+  # El consejo trabaja UNA debilidad, en este orden de prioridad: espera < wait_time.ok_threshold_s
+  # (audio.yaml), retroalimentación solo elemental, monitoreo < monitoring.threshold y preguntas
+  # mayormente cerradas, es decir, abiertas por debajo de esta proporción.
+  min_open_question_ratio: 0.5

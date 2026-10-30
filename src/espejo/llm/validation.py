@@ -4,12 +4,19 @@ import re
 from dataclasses import dataclass
 
 from espejo.common.text import normalize_text
-from espejo.llm.schemas import LABELS_BY_KIND, Evidence, RejectedEvidence, TranscriptLine
+from espejo.llm.schemas import (
+    LABELS_BY_KIND,
+    Evidence,
+    EvidenceKind,
+    RejectedEvidence,
+    TranscriptLine,
+)
 
 MMSS_PATTERN = re.compile(r"(\d+):(\d{1,2})")
 SECONDS_PER_MINUTE = 60
 INVALID_CLASS_REASON = "clase fuera de la lista permitida"
 QUOTE_NOT_FOUND_REASON = "la cita no aparece en la transcripción en ese minuto"
+WHOLE_CLASS_REASON = "no se dirige a un estudiante en particular (pregunta a toda la clase)"
 
 
 @dataclass(frozen=True)
@@ -60,8 +67,25 @@ def quote_exists(
     return False
 
 
+def addresses_one_student(item: Evidence, whole_class_words: list[str]) -> bool:
+    """La invitación nombra a quién se dirige, ese nombre está en la cita y no es "ustedes"."""
+    addressee = normalize_text(item.addressee or "")
+    if not addressee or addressee not in normalize_text(item.quote):
+        return False
+    class_words = set()
+    for word in whole_class_words:
+        class_words.add(normalize_text(word))
+    for word in addressee.split():
+        if word in class_words:
+            return False
+    return True
+
+
 def validate_evidence(
-    items: list[Evidence], lines: list[TranscriptLine], tolerance_s: float
+    items: list[Evidence],
+    lines: list[TranscriptLine],
+    tolerance_s: float,
+    whole_class_words: list[str] | None = None,
 ) -> ValidationResult:
     accepted = []
     rejected = []
@@ -70,6 +94,10 @@ def validate_evidence(
             rejected.append(RejectedEvidence(item, INVALID_CLASS_REASON))
         elif not quote_exists(item.quote, item.timestamp_s, lines, tolerance_s):
             rejected.append(RejectedEvidence(item, QUOTE_NOT_FOUND_REASON))
+        elif item.kind == EvidenceKind.PARTICIPATION and not addresses_one_student(
+            item, whole_class_words or []
+        ):
+            rejected.append(RejectedEvidence(item, WHOLE_CLASS_REASON))
         else:
             accepted.append(item)
     return ValidationResult(accepted, rejected)

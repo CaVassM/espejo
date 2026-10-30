@@ -1,4 +1,8 @@
-"""Un solo consejo para la próxima clase, basado solo en la evidencia de la ficha."""
+"""Un solo consejo para la próxima clase, sobre la debilidad que eligieron las reglas.
+
+"Lo que vimos" (minuto y cita) viene de los datos; el LLM solo escribe "Por qué importa" y
+"Prueba esto" (una acción y una frase de ejemplo).
+"""
 
 import logging
 from dataclasses import dataclass
@@ -6,8 +10,8 @@ from dataclasses import dataclass
 from espejo.config import LlmConfig
 from espejo.llm.clients import LlmClient, LlmError, complete_json
 from espejo.llm.prompts import SUGGESTION_SCHEMA, build_suggestion_prompt
-from espejo.llm.schemas import LlmUsage, Suggestion
-from espejo.llm.validation import parse_mmss
+from espejo.llm.schemas import LlmUsage, Suggestion, SuggestionFocus, TranscriptLine
+from espejo.llm.transcript_view import lines_between
 
 logger = logging.getLogger(__name__)
 
@@ -19,12 +23,13 @@ class SuggestionOutcome:
     note: str | None = None
 
 
-def cites_known_minute(timestamp_s: float, evidence_times: list[float], tolerance_s: float) -> bool:
-    """El minuto del consejo debe ser el de alguna evidencia: así no inventa un momento."""
-    for evidence_time_s in evidence_times:
-        if abs(evidence_time_s - timestamp_s) <= tolerance_s:
-            return True
-    return False
+def lines_near(
+    lines: list[TranscriptLine], timestamp_s: float | None, context_s: float
+) -> list[TranscriptLine]:
+    """Lo que se dijo alrededor del momento citado, para que el ejemplo encaje con la clase."""
+    if timestamp_s is None:
+        return []
+    return lines_between(lines, timestamp_s - context_s, timestamp_s + context_s)
 
 
 class SuggestionWriter:
@@ -33,24 +38,21 @@ class SuggestionWriter:
         self.config = config
 
     def write(
-        self, evidence_text: str, evidence_times: list[float], topic: str | None
+        self, focus: SuggestionFocus, lines: list[TranscriptLine], topic: str | None
     ) -> SuggestionOutcome:
-        if not evidence_times:
-            return SuggestionOutcome(
-                None, LlmUsage(), "sin evidencia con minuto para basar un consejo"
-            )
-
-        prompt = build_suggestion_prompt(evidence_text, topic)
+        context = lines_near(lines, focus.timestamp_s, self.config.suggestion.context_s)
+        prompt = build_suggestion_prompt(focus, context, topic)
         try:
             reply = complete_json(self.client, prompt, SUGGESTION_SCHEMA, self.config.max_attempts)
         except LlmError as error:
             logger.error("No se pudo generar el consejo: %s", error)
             return SuggestionOutcome(None, LlmUsage(), "el LLM no devolvió un consejo válido")
 
-        timestamp_s = parse_mmss(reply.content["timestamp"])
-        tolerance_s = self.config.validation.timestamp_tolerance_s
-        if timestamp_s is None or not cites_known_minute(timestamp_s, evidence_times, tolerance_s):
-            return SuggestionOutcome(
-                None, reply.usage, "consejo rechazado: cita un minuto sin evidencia"
-            )
-        return SuggestionOutcome(Suggestion(reply.content["suggestion"], timestamp_s), reply.usage)
+        content = reply.content
+        suggestion = Suggestion(
+            focus=focus,
+            why_it_matters=content["why_it_matters"].strip(),
+            try_this=content["try_this"].strip(),
+            example_phrase=content["example_phrase"].strip().strip('"«»'),
+        )
+        return SuggestionOutcome(suggestion, reply.usage)

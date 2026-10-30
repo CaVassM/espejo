@@ -173,7 +173,10 @@ intimidarlos, humillarlos, insultarlos, agredirlos o castigarlos físicamente".
   los cuatro tipos de R3. Un "muy bien" motivacional no es retroalimentación incorrecta.
 - `regulation_formative`, `regulation_external_control`, `regulation_mistreatment`: los tres
   tipos de mecanismos de R5. Felicitar por una tarea bien hecha no es regulación.
-- `participation_invitation` (R1): el docente invita a participar o dirige una pregunta a quien
-  no ha participado (R1, págs. 15 y 17).
+- `participation_invitation` (R1): el docente se dirige a UN estudiante en particular para que
+  participe: lo llama por su nombre, le dice "a ver tú", "a ver usted", "hija", o le da la
+  palabra (R1, págs. 15 y 17). Las preguntas a toda la clase no cuentan. El LLM copia la palabra
+  con que se dirige al estudiante (`addressee`) y debe estar en la cita; si es una palabra de
+  toda la clase ("ustedes", "niños"), se rechaza. Señalar con la mano no se ve en el texto.
 - `respect_issue` (R4): apodos, burlas o insultos, del docente o entre alumnos (R4, págs. 31-32).
 - Espejo NO pone niveles (I a IV): solo marca evidencias con su cita y su minuto.

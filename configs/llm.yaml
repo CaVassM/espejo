@@ -34,3 +34,10 @@ windows:
 
 validation:
   timestamp_tolerance_s: 2.0     # una cita debe existir en la transcripción a ±2 s del minuto indicado
+  # Una invitación a participar debe dirigirse a UN estudiante (su nombre, "hija", "a ver tú").
+  # Si la palabra con que se dirige es una de estas, la pregunta es a toda la clase y no cuenta.
+  whole_class_words: [ustedes, todos, todas, chicos, chicas, niños, niñas, alumnos, estudiantes,
+                      clase, grupo, salón]
+
+suggestion:
+  context_s: 30                  # líneas de la transcripción a ±30 s del momento citado en el consejo

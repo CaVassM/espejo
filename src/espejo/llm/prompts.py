@@ -14,6 +14,9 @@ from espejo.llm.schemas import (
     QUESTION_LABELS,
     REGULATION_LABELS,
     RESPECT_LABELS,
+    SuggestionFocus,
+    TranscriptLine,
+    Weakness,
 )
 from espejo.llm.transcript_view import TranscriptWindow, format_candidate, format_line
 
@@ -21,7 +24,7 @@ NO_TOPIC = "(no indicado)"
 NONE_TEXT = "(ninguna)"
 
 
-def evidence_item_schema(labels: list[str], with_question_id: bool) -> dict[str, Any]:
+def evidence_item_schema(labels: list[str], with_addressee: bool = False) -> dict[str, Any]:
     properties: dict[str, Any] = {
         "label": {"type": "string", "enum": labels},
         "quote": {"type": "string"},
@@ -30,9 +33,9 @@ def evidence_item_schema(labels: list[str], with_question_id: bool) -> dict[str,
         "confidence": {"type": "string", "enum": CONFIDENCE_LABELS},
     }
     required = ["label", "quote", "timestamp", "reason", "confidence"]
-    if with_question_id:
-        properties["question_id"] = {"type": "integer"}
-        required = ["question_id", *required]
+    if with_addressee:
+        properties["addressee"] = {"type": "string"}
+        required = [*required, "addressee"]
     return {
         "type": "object",
         "properties": properties,
@@ -48,21 +51,33 @@ def array_of(item_schema: dict[str, Any]) -> dict[str, Any]:
 EVENTS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "feedback": array_of(evidence_item_schema(FEEDBACK_LABELS, with_question_id=False)),
-        "regulation": array_of(evidence_item_schema(REGULATION_LABELS, with_question_id=False)),
-        "participation": array_of(
-            evidence_item_schema(PARTICIPATION_LABELS, with_question_id=False)
-        ),
-        "respect": array_of(evidence_item_schema(RESPECT_LABELS, with_question_id=False)),
+        "feedback": array_of(evidence_item_schema(FEEDBACK_LABELS)),
+        "regulation": array_of(evidence_item_schema(REGULATION_LABELS)),
+        "participation": array_of(evidence_item_schema(PARTICIPATION_LABELS, with_addressee=True)),
+        "respect": array_of(evidence_item_schema(RESPECT_LABELS)),
     },
     "required": ["feedback", "regulation", "participation", "respect"],
+    "additionalProperties": False,
+}
+
+# Las preguntas no llevan cita ni minuto: el question_id ya apunta a la pregunta real y el código
+# pone su texto y su minuto. Un 7B copiaba mal la cita (le pegaba el minuto) y se perdían.
+QUESTION_ITEM_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "question_id": {"type": "integer"},
+        "label": {"type": "string", "enum": QUESTION_LABELS},
+        "reason": {"type": "string"},
+        "confidence": {"type": "string", "enum": CONFIDENCE_LABELS},
+    },
+    "required": ["question_id", "label", "reason", "confidence"],
     "additionalProperties": False,
 }
 
 QUESTIONS_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "questions": array_of(evidence_item_schema(QUESTION_LABELS, with_question_id=True)),
+        "questions": array_of(QUESTION_ITEM_SCHEMA),
     },
     "required": ["questions"],
     "additionalProperties": False,
@@ -71,10 +86,11 @@ QUESTIONS_SCHEMA: dict[str, Any] = {
 SUGGESTION_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {
-        "suggestion": {"type": "string"},
-        "timestamp": {"type": "string"},
+        "why_it_matters": {"type": "string", "minLength": 1},
+        "try_this": {"type": "string", "minLength": 1},
+        "example_phrase": {"type": "string", "minLength": 1},
     },
-    "required": ["suggestion", "timestamp"],
+    "required": ["why_it_matters", "try_this", "example_phrase"],
     "additionalProperties": False,
 }
 
@@ -97,10 +113,15 @@ Tarea: revisa TODA la transcripción y marca:
 - feedback: lo que dice el docente justo DESPUÉS de una respuesta de un alumno, según los
   cuatro tipos del manual: feedback_incorrect, feedback_elemental, feedback_descriptive,
   feedback_discovery. Por ejemplo, "Muy bien" tras una respuesta es feedback_elemental.
+  feedback_incorrect es SOLO cuando el docente da información errónea o da por correcta una
+  respuesta equivocada (o al revés). Un "muy bien" para animar NO es feedback_incorrect.
 - regulation: mecanismos para regular el comportamiento: regulation_formative,
   regulation_external_control, regulation_mistreatment.
-- participation: participation_invitation, cuando el docente invita a participar o dirige una
-  pregunta a quien no ha participado (por ejemplo, llama a un alumno por su nombre).
+- participation: participation_invitation SOLO cuando el docente se dirige a UN estudiante en
+  particular: lo llama por su nombre, le dice "a ver tú", "a ver usted", "hija", "hijo", o le da
+  la palabra. En "addressee" copia el nombre o la palabra con que se dirige a ese estudiante;
+  debe estar dentro de la cita. Las preguntas a toda la clase ("¿qué pasará?", "niños...",
+  "ustedes...") NO son invitaciones: no las marques.
 - respect: respect_issue, solo si hay apodos, burlas o insultos (del docente o entre alumnos).
 """
 
@@ -111,6 +132,8 @@ de después:
 - question_closed: pide afirmar o negar, un dato puntual o recordar información ya dada.
 - question_rhetorical: muletilla ("¿no?", "¿ya?", "¿cierto?") o pregunta que no busca
   respuesta.
+Clasifica TODAS las preguntas candidatas: un elemento por cada question_id. "reason" es una
+sola línea breve, en español. "confidence" es alta, media o baja.
 """
 
 
@@ -144,23 +167,59 @@ def build_questions_prompt(window: TranscriptWindow, definitions: str, topic: st
     for candidate in window.candidates:
         candidates.append(format_candidate(candidate))
     return (
-        f"{ROLE_TEXT}\n{QUESTIONS_TASK}\n{RULES_TEXT}\n"
+        f"{ROLE_TEXT}\n{QUESTIONS_TASK}\n"
         f"{shared_context(definitions, topic, window)}\n"
-        f"PREGUNTAS CANDIDATAS (question_id | [mm:ss] | texto):\n{joined_or_none(candidates)}\n"
+        "PREGUNTAS CANDIDATAS (question_id | [mm:ss] | texto | si respondió un alumno):\n"
+        f"{joined_or_none(candidates)}\n"
     )
 
 
 SUGGESTION_INSTRUCTIONS = """\
-Eres un acompañante pedagógico cálido y profesional. Con SOLO la evidencia de abajo, escribe
-UN consejo concreto para la próxima clase del docente (dos o tres oraciones como máximo), en
-español. No califiques ni pongas notas. En "timestamp" pon el [mm:ss] de la evidencia que
-motiva el consejo; debe ser uno de los minutos que aparecen en la evidencia.
+Eres un colega docente con experiencia que acompaña a otro docente del Perú. Escribe en español,
+en tono cálido y cercano, de colega a colega (trátalo de "tú"). Usa palabras simples, sin
+términos técnicos, sin siglas y sin poner notas ni niveles.
+Ya elegimos el punto a trabajar y ya escribimos lo que vimos en la clase. Tú escribe:
+- "why_it_matters": por qué importa para el aprendizaje de los estudiantes, en una o dos
+  oraciones cortas. Empieza directo con la idea (no con "Importa porque").
+- "try_this": UNA sola acción concreta para la próxima clase, en una oración que empiece con
+  un verbo (por ejemplo "Después de preguntar, ...").
+- "example_phrase": una frase corta que el docente diría en su clase MIENTRAS hace esa acción,
+  sobre el tema de la clase. Sin comillas.
+No repitas lo que vimos y no menciones otros momentos de la clase.
 """
 
+# Lo que se sabe de cada debilidad, en palabras simples, para que el LLM no lo invente.
+WEAKNESS_TEXT = {
+    Weakness.SHORT_WAIT: (
+        "Esperar muy poco después de preguntar. Esperar al menos 3 segundos en silencio da "
+        "tiempo para pensar: responden más estudiantes y con respuestas más completas."
+    ),
+    Weakness.ELEMENTAL_FEEDBACK: (
+        'La retroalimentación solo confirma ("Muy bien"). El manual valora pedirle al '
+        "estudiante que explique cómo llegó a su respuesta, o decirle qué hizo bien y qué le "
+        "falta."
+    ),
+    Weakness.LOW_MONITORING: (
+        "Poco tiempo recogiendo evidencia de lo que entienden los estudiantes (preguntándoles o "
+        "recorriendo sus lugares para ver su trabajo). El manual pide al menos un 25 % de la clase."
+    ),
+    Weakness.CLOSED_QUESTIONS: (
+        "La mayoría de preguntas piden un dato o un sí/no. Las preguntas que piden explicar, "
+        "predecir o dar razones hacen pensar más."
+    ),
+}
 
-def build_suggestion_prompt(evidence_text: str, topic: str | None) -> str:
+
+def build_suggestion_prompt(
+    focus: SuggestionFocus, context_lines: list[TranscriptLine], topic: str | None
+) -> str:
+    context = []
+    for line in context_lines:
+        context.append(format_line(line))
     return (
         f"{SUGGESTION_INSTRUCTIONS}\n"
+        f"PUNTO A TRABAJAR: {WEAKNESS_TEXT[focus.weakness]}\n\n"
+        f"LO QUE VIMOS: {focus.what_we_saw}\n\n"
         f"TEMA DE LA CLASE: {topic or NO_TOPIC}\n\n"
-        f"EVIDENCIA DE LA CLASE:\n{evidence_text}\n"
+        f"LO QUE SE DIJO CERCA DE ESE MOMENTO:\n{joined_or_none(context)}\n"
     )

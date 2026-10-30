@@ -9,7 +9,7 @@ from espejo.analysis.schemas import ClassReport, MetricValue, RubricEvidence, Ru
 from espejo.audio.schemas import Question, StudentResponse
 from espejo.common.json_io import write_json
 from espejo.common.time_format import format_mmss, round_seconds
-from espejo.llm.schemas import Evidence, LlmAnalysis, RejectedEvidence
+from espejo.llm.schemas import Evidence, LlmAnalysis, RejectedEvidence, Suggestion
 from espejo.vision.schemas import Segment
 
 RATIO_DECIMALS = 3
@@ -95,6 +95,7 @@ def evidence_to_dict(evidence: Evidence) -> dict[str, Any]:
         "reason": evidence.reason,
         "confidence": evidence.confidence,
         "question_id": evidence.question_id,
+        "addressee": evidence.addressee,
     }
 
 
@@ -106,12 +107,6 @@ def rejected_to_dict(rejected: RejectedEvidence) -> dict[str, Any]:
 
 def llm_to_dict(analysis: LlmAnalysis) -> dict[str, Any]:
     """Proveedor, modelo, tokens, tiempo y costo (0 con Ollama), y lo que el LLM marcó."""
-    suggestion = None
-    if analysis.suggestion is not None:
-        suggestion = {
-            "text": analysis.suggestion.text,
-            "timestamp": format_mmss(analysis.suggestion.timestamp_s),
-        }
     usage = asdict(analysis.usage)
     usage["seconds"] = round_seconds(analysis.usage.seconds)
     question_labels = list(analysis.question_labels.values())
@@ -127,7 +122,26 @@ def llm_to_dict(analysis: LlmAnalysis) -> dict[str, Any]:
         "participation": list_of_dicts(analysis.participation, evidence_to_dict),
         "respect": list_of_dicts(analysis.respect, evidence_to_dict),
         "rejected_evidence": list_of_dicts(analysis.rejected, rejected_to_dict),
-        "one_suggestion": suggestion,
+        "one_suggestion": suggestion_to_dict(analysis.suggestion),
+    }
+
+
+def suggestion_to_dict(suggestion: Suggestion | None) -> dict[str, Any] | None:
+    if suggestion is None:
+        return None
+    focus = suggestion.focus
+    timestamp = None
+    if focus.timestamp_s is not None:
+        timestamp = format_mmss(focus.timestamp_s)
+    return {
+        "weakness": focus.weakness.value,
+        "timestamp": timestamp,
+        "quote": focus.quote,
+        "what_we_saw": focus.what_we_saw,
+        "why_it_matters": suggestion.why_it_matters,
+        "try_this": suggestion.try_this,
+        "example_phrase": suggestion.example_phrase,
+        "text": suggestion.as_text(),
     }
 
 
@@ -247,5 +261,6 @@ def format_summary(report: ClassReport) -> str:
     suggestion = report.llm.suggestion
     if suggestion is not None:
         lines.append("")
-        lines.append(f"Consejo [{format_mmss(suggestion.timestamp_s)}]: {suggestion.text}")
+        lines.append("Consejo:")
+        lines.append(suggestion.as_text())
     return "\n".join(lines)

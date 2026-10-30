@@ -244,13 +244,22 @@ class MonitoringConfig:
 
 
 @dataclass(frozen=True)
+class SuggestionFocusConfig:
+    min_open_question_ratio: float
+
+
+@dataclass(frozen=True)
 class AnalysisConfig:
     monitoring: MonitoringConfig
+    suggestion: SuggestionFocusConfig
 
 
 def load_analysis_config(path: Path = DEFAULT_ANALYSIS_CONFIG) -> AnalysisConfig:
     raw = read_yaml(path)
-    return AnalysisConfig(monitoring=MonitoringConfig(**raw["monitoring"]))
+    return AnalysisConfig(
+        monitoring=MonitoringConfig(**raw["monitoring"]),
+        suggestion=SuggestionFocusConfig(**raw["suggestion"]),
+    )
 
 
 # --- Dataset --------------------------------------------------------------------------------
@@ -323,6 +332,12 @@ class WindowConfig:
 @dataclass(frozen=True)
 class LlmValidationConfig:
     timestamp_tolerance_s: float
+    whole_class_words: list[str]
+
+
+@dataclass(frozen=True)
+class SuggestionConfig:
+    context_s: float
 
 
 @dataclass(frozen=True)
@@ -334,6 +349,7 @@ class LlmConfig:
     anthropic: AnthropicConfig
     windows: WindowConfig
     validation: LlmValidationConfig
+    suggestion: SuggestionConfig
 
 
 def load_llm_config(path: Path = DEFAULT_LLM_CONFIG) -> LlmConfig:
@@ -346,4 +362,5 @@ def load_llm_config(path: Path = DEFAULT_LLM_CONFIG) -> LlmConfig:
         anthropic=AnthropicConfig(**raw["anthropic"]),
         windows=WindowConfig(**raw["windows"]),
         validation=LlmValidationConfig(**raw["validation"]),
+        suggestion=SuggestionConfig(**raw["suggestion"]),
     )

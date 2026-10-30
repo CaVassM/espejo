@@ -7,10 +7,10 @@ from pathlib import Path
 
 import cv2
 
+from espejo.analysis.focus import FocusThresholds, choose_focus
 from espejo.analysis.llm_stage import with_llm_labels
 from espejo.analysis.report_builder import AudioSide, ReportConfigs, VideoSide, build_class_report
 from espejo.analysis.report_io import save_class_report
-from espejo.analysis.rubric_evidence import evidence_as_text, evidence_times
 from espejo.analysis.schemas import ClassReport
 from espejo.analysis.transcript import save_transcript
 from espejo.audio.capture import AudioCaptureRunner
@@ -168,7 +168,7 @@ def interpret_run(
     report_configs = ReportConfigs(configs.analysis, configs.audio)
     report = build_class_report(video, audio, report_configs, llm_analysis)
     if analyzer is not None and audio is not None:
-        report = add_suggestion(analyzer, report, audio.capture.topic)
+        report = add_suggestion(analyzer, report, audio, configs)
         analyzer.release()
     save_class_report(report, run_dir / REPORT_FILENAME)
 
@@ -184,11 +184,23 @@ def classify_with_llm(analyzer: LlmAnalyzer, audio: AudioSide) -> LlmAnalysis:
     return analyzer.classify(interpretation.segments, interpretation.questions, audio.capture.topic)
 
 
-def add_suggestion(analyzer: LlmAnalyzer, report: ClassReport, topic: str | None) -> ClassReport:
-    """Último llamado al LLM: un consejo basado solo en la ficha por rúbrica."""
-    rubric_evidence = report.rubric_evidence
+def focus_thresholds(configs: AllConfigs) -> FocusThresholds:
+    return FocusThresholds(
+        wait_ok_s=configs.audio.wait_time.ok_threshold_s,
+        monitoring=configs.analysis.monitoring.threshold,
+        min_open_question_ratio=configs.analysis.suggestion.min_open_question_ratio,
+    )
+
+
+def add_suggestion(
+    analyzer: LlmAnalyzer, report: ClassReport, audio: AudioSide, configs: AllConfigs
+) -> ClassReport:
+    """Último llamado al LLM: un consejo sobre la debilidad más importante de la ficha."""
+    focus = choose_focus(
+        report.metrics, report.questions, report.llm.feedback, focus_thresholds(configs)
+    )
     analysis = analyzer.add_suggestion(
-        report.llm, evidence_as_text(rubric_evidence), evidence_times(rubric_evidence), topic
+        report.llm, focus, audio.interpretation.segments, audio.capture.topic
     )
     return replace(report, llm=analysis)
 

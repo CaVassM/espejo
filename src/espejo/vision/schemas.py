@@ -120,6 +120,7 @@ class TeacherObservation:
     teacher_box: BoundingBox | None
     state: Behavior
     stage_interaction_present: bool
+    interpolated: bool = False
 
     def is_teacher_visible(self) -> bool:
         return self.teacher_box is not None
@@ -149,6 +150,7 @@ class PathSummary:
 class VisionMetrics:
     analyzed_duration_s: float
     teacher_visible_ratio: float
+    interpolated_ratio: float
     board_writing_ratio: float
     guide_ratio: float
     stage_interaction_count: int

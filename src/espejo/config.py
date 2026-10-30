@@ -31,7 +31,9 @@ class ModelsConfig:
 @dataclass(frozen=True)
 class TeacherConfig:
     detection_conf: float
-    teacher_fallback_conf: float
+    teacher_min_conf: float
+    similar_conf_margin: float
+    gap_fill_s: float
     class_name: str
 
 
@@ -40,6 +42,8 @@ class BehaviorConfig:
     detection_conf: float
     behavior_iou_threshold: float
     guide_class: str
+    guide_min_conf: float
+    min_guide_s: float
     board_writing_class: str
     stage_interaction_class: str
 
@@ -167,12 +171,14 @@ class DiarizationConfig:
     enabled: bool
     model: str
     token_env_var: str
+    min_speakers: int
 
 
 @dataclass(frozen=True)
 class QuestionsConfig:
     interrogatives: list[str]
     join_segments_max_gap_s: float
+    tag_words: list[str]
 
 
 @dataclass(frozen=True)
@@ -185,6 +191,12 @@ class WaitTimeConfig:
 @dataclass(frozen=True)
 class ResponsesConfig:
     response_window_s: float
+
+
+@dataclass(frozen=True)
+class HallucinationConfig:
+    min_vad_overlap: float
+    phrases: list[str]
 
 
 @dataclass(frozen=True)
@@ -202,6 +214,7 @@ class AudioConfig:
     questions: QuestionsConfig
     wait_time: WaitTimeConfig
     responses: ResponsesConfig
+    hallucinations: HallucinationConfig
     quality: QualityConfig
 
 
@@ -215,6 +228,7 @@ def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
         questions=QuestionsConfig(**raw["questions"]),
         wait_time=WaitTimeConfig(**raw["wait_time"]),
         responses=ResponsesConfig(**raw["responses"]),
+        hallucinations=HallucinationConfig(**raw["hallucinations"]),
         quality=QualityConfig(**raw["quality"]),
     )
 
@@ -225,6 +239,7 @@ def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
 @dataclass(frozen=True)
 class MonitoringConfig:
     threshold: float
+    max_episode_s: float
 
 
 @dataclass(frozen=True)

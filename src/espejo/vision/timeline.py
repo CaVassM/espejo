@@ -93,6 +93,19 @@ def group_into_segments(timed_labels: list[TimedLabel], end_s: float) -> list[Se
     return segments
 
 
+def relabel_short_segments(
+    segments: list[Segment], label: str, min_duration_s: float, replacement: str
+) -> list[Segment]:
+    """Los segmentos de esa etiqueta más cortos que min_duration_s pasan a ser replacement."""
+    relabeled = []
+    for segment in segments:
+        if segment.label == label and segment.duration_s() < min_duration_s:
+            relabeled.append(Segment(replacement, segment.start_s, segment.end_s))
+        else:
+            relabeled.append(segment)
+    return join_adjacent_equal_labels(relabeled)
+
+
 def join_adjacent_equal_labels(segments: list[Segment]) -> list[Segment]:
     if not segments:
         return []

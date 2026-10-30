@@ -33,6 +33,7 @@ class VisionMetricsCalculator:
         return VisionMetrics(
             analyzed_duration_s=analyzed_duration_s,
             teacher_visible_ratio=safe_ratio(visible_s, analyzed_duration_s),
+            interpolated_ratio=interpolated_ratio(observations),
             board_writing_ratio=label_ratio(timeline, Behavior.BOARD_WRITING),
             guide_ratio=label_ratio(timeline, Behavior.GUIDE),
             stage_interaction_count=len(stage_interaction_events),
@@ -58,6 +59,15 @@ def label_duration_s(timeline: list[Segment], label: str) -> float:
 def label_ratio(timeline: list[Segment], label: str) -> float:
     """Fracción de la duración analizada con esa etiqueta."""
     return safe_ratio(label_duration_s(timeline, label), timeline_duration_s(timeline))
+
+
+def interpolated_ratio(observations: list[TeacherObservation]) -> float:
+    """Fracción de frames en que la posición del docente se rellenó con la última conocida."""
+    interpolated_count = 0
+    for observation in observations:
+        if observation.interpolated:
+            interpolated_count += 1
+    return safe_ratio(interpolated_count, len(observations))
 
 
 def visible_foot_points(observations: list[TeacherObservation]) -> list[Point]:

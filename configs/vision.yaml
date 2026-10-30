@@ -14,8 +14,12 @@ models:
   image_size: 960
 
 teacher:
-  detection_conf: 0.25           # confianza mínima para que el tracker considere una caja
-  teacher_fallback_conf: 0.5     # sin el track dominante, aceptamos otra caja solo si es muy segura
+  detection_conf: 0.25           # confianza mínima para que el detector guarde una caja
+  # En cada frame, el docente es la caja "teacher" más confiable, si supera este mínimo.
+  # (Antes se elegía el track que más aparecía, y en una clase real eso eligió a un alumno quieto.)
+  teacher_min_conf: 0.7
+  similar_conf_margin: 0.1       # cajas a menos de esto en confianza: gana la más cercana a la última posición
+  gap_fill_s: 3.0                # si el docente se pierde menos que esto, se mantiene su último estado (interpolado)
   # Clase que se toma como docente. Con el modelo genérico de COCO (prueba sin pesos propios)
   # se cambia a "person".
   class_name: teacher
@@ -24,6 +28,8 @@ behavior:
   detection_conf: 0.25
   behavior_iou_threshold: 0.3    # solape mínimo entre la caja de conducta y la del docente
   guide_class: guide
+  guide_min_conf: 0.5            # guide solo cuenta con esta confianza mínima...
+  min_guide_s: 2.0               # ...y si dura al menos esto (estar parado junto a una carpeta no es guiar)
   board_writing_class: board_writing
   # Evento de alumnos: nunca se asigna al docente, se cuenta como evento (R1).
   # "answer" también se detecta y queda en detections.json, pero no se usa en el reporte.

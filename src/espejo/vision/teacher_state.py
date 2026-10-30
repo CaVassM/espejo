@@ -16,9 +16,12 @@ def has_overlapping_class(
     class_name: str,
     teacher_box: BoundingBox,
     config: BehaviorConfig,
+    min_confidence: float,
 ) -> bool:
     for detection in detections:
-        if detection.class_name == class_name and overlaps_teacher(detection, teacher_box, config):
+        if detection.class_name != class_name or detection.confidence < min_confidence:
+            continue
+        if overlaps_teacher(detection, teacher_box, config):
             return True
     return False
 
@@ -32,13 +35,18 @@ def assign_teacher_state(
 
     Solo cuentan las conductas del docente que se superponen con su caja. answer y
     stage_interaction son de alumnos y nunca se asignan al docente, aunque se superpongan.
+    guide exige además guide_min_conf: con poca confianza suele ser el docente parado
+    junto a una carpeta, sin revisar el trabajo de nadie.
     """
     if teacher_box is None:
         return Behavior.NOT_VISIBLE
 
-    if has_overlapping_class(detections, config.board_writing_class, teacher_box, config):
+    board_class = config.board_writing_class
+    if has_overlapping_class(detections, board_class, teacher_box, config, config.detection_conf):
         return Behavior.BOARD_WRITING
-    if has_overlapping_class(detections, config.guide_class, teacher_box, config):
+    if has_overlapping_class(
+        detections, config.guide_class, teacher_box, config, config.guide_min_conf
+    ):
         return Behavior.GUIDE
     return Behavior.OTHER
 

@@ -2,7 +2,7 @@ import pytest
 
 from espejo.common.time_format import format_mmss
 from espejo.vision.schemas import Segment
-from espejo.vision.timeline import TimedLabel, TimelineBuilder
+from espejo.vision.timeline import TimedLabel, TimelineBuilder, relabel_short_segments
 
 SAMPLE_INTERVAL_S = 0.5
 
@@ -89,3 +89,16 @@ def test_format_mmss() -> None:
     assert format_mmss(0) == "00:00"
     assert format_mmss(75.4) == "01:15"
     assert format_mmss(3725) == "62:05"
+
+
+def test_short_guide_segments_become_other() -> None:
+    segments = [
+        Segment("other", 0.0, 10.0),
+        Segment("guide", 10.0, 11.5),
+        Segment("other", 11.5, 20.0),
+        Segment("guide", 20.0, 25.0),
+    ]
+
+    relabeled = relabel_short_segments(segments, "guide", 2.0, "other")
+
+    assert relabeled == [Segment("other", 0.0, 20.0), Segment("guide", 20.0, 25.0)]

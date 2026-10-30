@@ -90,8 +90,8 @@ Prioridad: **board_writing > guide > other**.
   motivo queda en el reporte.
 - pyannote se llama con `min_speakers` (2): en un aula hay al menos docente y alumnos.
 - `--topic "texto"` se pasa a Whisper como `initial_prompt` (ayuda con nombres propios del tema).
-- **Texto inventado**: se descartan los segmentos de Whisper que coinciden con voz de Silero en
-  menos de `min_vad_overlap` de su duración, y los que son solo una frase típica inventada
+- **Texto inventado**: se descartan los segmentos de Whisper de `max_words_for_vad_check`
+  palabras o menos que coinciden con voz de Silero en menos de `min_vad_overlap` de su duración, y los que son solo una frase típica inventada
   (`hallucinations.phrases`, p. ej. "Gracias."). Se cuentan en
   `data_quality.discarded_hallucinated_segments`.
 - **Docente** = el hablante con más tiempo total de voz (heurística).
@@ -132,6 +132,33 @@ Prioridad: **board_writing > guide > other**.
 `low_confidence_audio_ratio`, `discarded_hallucinated_segments`, `speech_ratio`,
 `diarization_used`, `diarization_note` y una lista de avisos (`notes`).
 
+## LLM (solo texto)
+
+El LLM recibe la transcripción, las preguntas candidatas y las métricas; nunca audio ni video.
+Proveedor en `configs/llm.yaml` (`ollama` por defecto, `anthropic` opcional). Parte fija del
+prompt: `docs/rubric_definitions.md`. Ventanas de `window_s` con `overlap_s` de solapamiento;
+por ventana, un llamado de eventos y otro de preguntas; la unión elimina duplicados.
+
+| Clase | Rúbrica | Qué marca |
+|---|---|---|
+| `question_open` / `question_closed` / `question_rhetorical` | R2 | Clasificación de cada pregunta candidata. Las retóricas no cuentan como preguntas, ni para la espera, ni para el monitoreo. |
+| `feedback_discovery` / `feedback_descriptive` / `feedback_elemental` / `feedback_incorrect` | R3 | Retroalimentación del docente después de una respuesta. |
+| `regulation_formative` / `regulation_external_control` / `regulation_mistreatment` | R5 (maltrato también R4) | Mecanismos de regulación del comportamiento. |
+| `participation_invitation` | R1 | Invita a participar o dirige una pregunta a quien no ha participado. |
+| `respect_issue` | R4 | Apodos, burlas o insultos. |
+
+Cada elemento lleva `timestamp`, clase, cita textual, razón breve y confianza (alta/media/baja).
+**Validación anti-invento:** la cita debe existir textualmente (sin importar mayúsculas, tildes
+ni signos) en una línea cuyo tramo contiene el minuto indicado (± `timestamp_tolerance_s`); si
+no, se rechaza. Clases fuera de la lista: rechazadas. JSON inválido: un reintento.
+
+- `open_question_ratio` (R2) = abiertas / (abiertas + cerradas), con la clasificación del LLM.
+- `rubric_evidence`: por rúbrica R1 a R5, métricas con valor y citas; si no hay ninguna,
+  "evidencia insuficiente".
+- `one_suggestion`: un consejo basado solo en la ficha; su minuto debe ser el de una evidencia.
+- Sin LLM: reglas de respaldo y "sin análisis LLM" en el reporte.
+- `llm_analysis.usage`: proveedor, modelo, tokens, tiempo y costo (0 con Ollama).
+
 ## Archivos de salida (`outputs/<video>/`)
 
 | Archivo | Etapa | Contenido |
@@ -139,7 +166,7 @@ Prioridad: **board_writing > guide > other**.
 | `detections.json` | VER | Cajas por frame muestreado. |
 | `background_blurred.png` | VER | Primer frame muy desenfocado. |
 | `audio_raw.json` | VER | Whisper, Silero y pyannote. |
-| `class_report.json` | INTERPRETAR | `metadata`, `video_timeline`, `stage_interaction_events`, `audio_events` (preguntas con espera y respuesta), `metrics` (cada una con `value`, `rubric`, `description`, `note`) y `data_quality`. |
+| `class_report.json` | INTERPRETAR | `metadata`, `video_timeline`, `stage_interaction_events`, `audio_events` (preguntas con espera y respuesta), `metrics` (cada una con `value`, `rubric`, `description`, `note`), `data_quality`, `rubric_evidence`, `llm_analysis` y `one_suggestion`. |
 | `transcript.txt` | INTERPRETAR | `[mm:ss] DOCENTE: ...`, `ALUMNO` o `HABLANTE` (sin diarización); `[AUDIO DUDOSO]` en segmentos de baja confianza. |
 | `heatmap.png` | INTERPRETAR | Recorrido del docente sobre el fondo desenfocado. |
 | `debug.mp4` | Opcional | Caja y estado del docente dibujados (`--debug-video`). |

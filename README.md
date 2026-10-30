@@ -5,8 +5,8 @@ con su celular y recibe un reporte con evidencias (cuánto tiempo monitoreó a s
 escribió en la pizarra, por dónde se movió en el aula) alineadas a las rúbricas de observación de
 aula del Minedu (Perú).
 
-Este repositorio contiene el **módulo de visión**. Los módulos de audio (`src/espejo/audio/`) y de
-reporte con LLM (`src/espejo/report/`) se agregarán en las siguientes fases.
+Este repositorio contiene el **módulo de visión** y el **módulo de audio**. El módulo de reporte con
+LLM (`src/espejo/report/`) se agregará en la siguiente fase.
 
 ## Pipeline de visión
 
@@ -163,6 +163,96 @@ Estructura de `vision_report.json` (valores ilustrativos):
 }
 ```
 
+## Módulo de audio
+
+El audio cubre lo que la visión no ve: lo que dice el docente. Funciona con **un solo celular**,
+sin micrófonos adicionales.
+
+```mermaid
+flowchart LR
+    A[Video de la clase] --> B[ffmpeg<br/>wav 16 kHz mono]
+    B -->|audio crudo| C[faster-whisper<br/>timestamps por palabra]
+    B -->|copia con paso alto 100 Hz| D[Silero VAD<br/>intervalos de voz]
+    B -.->|opcional| E[pyannote<br/>diarización]
+    C --> F[Calidad<br/>segmentos dudosos]
+    F --> G[Rol del docente]
+    E -.-> G
+    G --> H[Preguntas]
+    H --> I[Wait time]
+    D --> I
+    I --> J[AudioMetrics]
+    J --> K[audio_report.json<br/>transcript.txt]
+```
+
+| Etapa | Qué hace |
+|---|---|
+| `extraction.py` | Con ffmpeg genera `audio_raw.wav` (16 kHz, mono, sin filtros) y `audio_vad.wav` (lo mismo con un paso alto suave). Son temporales: se borran al terminar salvo con `--keep-audio`. |
+| `transcriber.py` | faster-whisper en español con timestamps por palabra. Con `device: auto` usa `large-v3-turbo` en GPU si está libre y `small` en CPU si está ocupada o no hay GPU. |
+| `voice_activity.py` | Silero VAD (la versión ONNX incluida en faster-whisper) sobre la copia filtrada: tramos con voz, sin importar quién habla. |
+| `diarization.py` | Opcional. Separa hablantes con pyannote y asigna uno a cada segmento por solapamiento temporal. |
+| `speaker_roles.py` | El hablante con más tiempo total de voz es el docente; los demás son alumnos. |
+| `questions.py` | Una oración es pregunta si tiene `¿` o `?`, o si empieza con un interrogativo (`qué`, `cómo`, `por qué`, ...). |
+| `wait_time.py` | Segundos desde el fin de la pregunta hasta que vuelve a haber voz. |
+| `quality.py` | Marca segmentos de baja confianza según `avg_logprob` y `no_speech_prob` de Whisper. |
+
+### Decisiones técnicas
+
+- **Whisper recibe el audio crudo.** El denoising previo empeora la transcripción de Whisper
+  (arXiv 2603.04710; en un estudio con audio médico, el audio ruidoso ganó en 40 de 40
+  configuraciones). Solo la copia que usa el VAD lleva un filtro paso alto de 100 Hz.
+- **El wait time no necesita saber quién habla**, solo cuándo hay voz. Para cada pregunta se toma el
+  siguiente intervalo de voz del VAD que empieza después de la pregunta. Los huecos menores a
+  `min_gap_s` se ignoran (respiración, cola de la propia pregunta) y el resultado se limita a
+  `max_wait_s`. Si la voz que contiene el fin de la pregunta continúa más de `min_gap_s`, el docente
+  siguió hablando sin pausa y el wait time es 0. `wait_time_ok` exige al menos 3 s (Rowe, 1974).
+- **Rol del docente (heurística).** El hablante con más tiempo de voz es el docente. Suele acertar en
+  clases expositivas, pero puede fallar en debates o exposiciones de alumnos.
+- **Calidad.** Las preguntas que caen en segmentos de baja confianza se marcan `reliable: false` y
+  no entran en las métricas de wait time.
+
+### Métricas
+
+- `analyzed_duration_s` y `speech_ratio` (tiempo con voz / duración).
+- `teacher_talk_ratio`: requiere diarización; si no la hay, es `null` y se informa el motivo.
+- `question_count` y `questions_per_minute`.
+- `mean_wait_time_s`, `median_wait_time_s` y `wait_time_ok_ratio`, solo con preguntas confiables.
+- `low_confidence_ratio`: proporción del tiempo con audio dudoso.
+
+### Uso
+
+```bash
+python scripts/analyze_audio.py --video samples/clase.mp4
+python scripts/analyze_audio.py --video samples/clase.mp4 --output outputs/ --keep-audio --model small
+```
+
+Requiere ffmpeg en el PATH (o en el entorno: `conda install -n ml_env -c conda-forge ffmpeg`).
+Genera en `outputs/<nombre_video>/`:
+
+- `audio_report.json`: metadata (modelo de Whisper, dispositivo, diarización), segmentos con sus
+  palabras, preguntas con su wait time y métricas. Tiempos en segundos y en `mm:ss`.
+- `transcript.txt`: una línea por segmento, pensado para el LLM de la siguiente fase:
+
+```
+[00:05] HABLANTE: ¿Qué creen que pasará con el agua si la calentamos?
+[00:12] HABLANTE: Se evapora.
+[00:15] HABLANTE: Muy bien. ¿Cómo se llama ese proceso?
+```
+
+Con diarización las etiquetas son `DOCENTE` y `ESTUDIANTE`. Los segmentos de baja confianza llevan
+la marca `[AUDIO DUDOSO]`.
+
+### Activar la diarización (opcional)
+
+1. Acepta las condiciones de uso de
+   [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) y
+   [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0) en Hugging Face.
+2. Instala `pyannote.audio` (versión 3.x) y exporta tu token: `export HF_TOKEN=hf_...`
+   (en PowerShell: `$env:HF_TOKEN = "hf_..."`).
+3. Pon `diarization.enabled: true` en [`configs/audio.yaml`](configs/audio.yaml).
+
+Si la diarización está desactivada o falla, el pipeline sigue igual: los segmentos quedan con
+`speaker: "unknown"`, se cuentan todas las preguntas y `teacher_talk_ratio` sale `null`.
+
 ## Tests y calidad
 
 ```bash
@@ -171,8 +261,9 @@ ruff format .
 ruff check .
 ```
 
-Los tests cubren la lógica pura (geometría, orientación, timeline, métricas y selección del
-docente) y no necesitan modelos ni GPU.
+Los tests cubren la lógica pura (geometría, orientación, timeline, métricas, selección del
+docente, preguntas, wait time, roles de hablante y calidad del audio) y no necesitan modelos, GPU
+ni audio real.
 
 ## Estructura
 
@@ -180,10 +271,12 @@ docente) y no necesitan modelos ni GPU.
 configs/            umbrales del pipeline y YAML de los datasets
 scripts/            puntos de entrada delgados (CLI)
 src/espejo/
-  config.py         carga de la configuración en dataclasses tipadas
+  config.py         configuración en dataclasses tipadas
+  common/           utilidades compartidas (rutas, YAML, mm:ss, JSON)
   training.py       entrenamiento y evaluación de los detectores
   dataset/          descarga, inspección, preparación y preview de SCB-Dataset
   vision/           etapas del pipeline de visión
+  audio/            etapas del pipeline de audio
 tests/              tests de la lógica pura
 ```
 

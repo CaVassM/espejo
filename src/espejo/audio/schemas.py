@@ -1,6 +1,6 @@
-"""Datos que viajan entre las etapas del pipeline de audio."""
+"""Datos que viajan entre las etapas del módulo de audio."""
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from enum import StrEnum
 
 UNKNOWN_SPEAKER = "unknown"
@@ -10,6 +10,13 @@ class SpeakerRole(StrEnum):
     TEACHER = "teacher"
     STUDENT = "student"
     UNKNOWN = "unknown"
+
+
+class ResponseCertainty(StrEnum):
+    """Con diarización sabemos que respondió otra persona; sin ella, solo que hubo voz."""
+
+    HIGH = "high"
+    LOW = "low"
 
 
 @dataclass(frozen=True)
@@ -22,7 +29,7 @@ class Word:
 
 @dataclass(frozen=True)
 class TranscriptSegment:
-    """Segmento de Whisper. speaker, role y low_confidence se completan en etapas posteriores."""
+    """Segmento de Whisper. speaker, role y low_confidence se completan al interpretar."""
 
     start_s: float
     end_s: float
@@ -59,30 +66,14 @@ class SpeakerTurn:
 
 
 @dataclass(frozen=True)
-class Question:
-    text: str
-    start_s: float
-    question_end_s: float
-    speaker: str
-    role: SpeakerRole
-    reliable: bool
-    wait_time_s: float | None = None
-    wait_time_ok: bool | None = None
+class DiarizationOutcome:
+    """Resultado de intentar diarizar: los turnos o el motivo por el que no se hizo."""
 
+    turns: list[SpeakerTurn] | None
+    note: str
 
-@dataclass(frozen=True)
-class AudioMetrics:
-    analyzed_duration_s: float
-    speech_ratio: float
-    teacher_talk_ratio: float | None
-    teacher_talk_ratio_reason: str | None
-    question_count: int
-    questions_per_minute: float
-    mean_wait_time_s: float | None
-    median_wait_time_s: float | None
-    wait_time_ok_ratio: float | None
-    reliable_question_count: int
-    low_confidence_ratio: float
+    def succeeded(self) -> bool:
+        return self.turns is not None
 
 
 @dataclass(frozen=True)
@@ -95,24 +86,62 @@ class TranscriberSetup:
 
 
 @dataclass(frozen=True)
-class DiarizationOutcome:
-    """Resultado de intentar diarizar: los turnos o el motivo por el que no se hizo."""
+class AudioCapture:
+    """Todo lo que VER produce sobre el audio; INTERPRETAR trabaja solo con esto."""
 
-    turns: list[SpeakerTurn] | None
-    note: str
-
-    def succeeded(self) -> bool:
-        return self.turns is not None
+    video_path: str
+    duration_s: float
+    language: str
+    transcriber: TranscriberSetup
+    segments: list[TranscriptSegment]
+    speech_intervals: list[SpeechInterval]
+    diarization: DiarizationOutcome
 
 
 @dataclass(frozen=True)
-class AudioReport:
-    video_path: str
-    duration_s: float
-    transcriber: TranscriberSetup
-    language: str
+class StudentResponse:
+    start_s: float
+    end_s: float
+    speaker: str
+    certainty: ResponseCertainty
+
+
+@dataclass(frozen=True)
+class Question:
+    text: str
+    start_s: float
+    question_end_s: float
+    speaker: str
+    role: SpeakerRole
+    reliable: bool
+    speaker_known: bool = False
+    wait_time_s: float | None = None
+    wait_time_ok: bool | None = None
+    response: StudentResponse | None = None
+
+
+@dataclass(frozen=True)
+class AudioMetrics:
+    analyzed_duration_s: float
+    speech_ratio: float
+    teacher_talk_ratio: float | None
+    teacher_talk_ratio_reason: str | None
+    teacher_question_count: int
+    reliable_question_count: int
+    questions_per_minute: float
+    mean_wait_time_s: float | None
+    median_wait_time_s: float | None
+    wait_time_ok_ratio: float | None
+    student_response_count: int
+    response_rate: float | None
+    low_confidence_ratio: float
+
+
+@dataclass(frozen=True)
+class AudioInterpretation:
+    segments: list[TranscriptSegment]
+    questions: list[Question]
+    metrics: AudioMetrics
     diarization_used: bool
     diarization_note: str
-    segments: list[TranscriptSegment] = field(default_factory=list)
-    questions: list[Question] = field(default_factory=list)
-    metrics: AudioMetrics | None = None
+    teacher_speaker: str | None = None

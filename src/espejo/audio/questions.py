@@ -103,14 +103,17 @@ class QuestionDetector:
         self.config = config
 
     def detect(self, segments: list[TranscriptSegment], teacher_only: bool) -> list[Question]:
-        """Con diarización solo cuentan las preguntas del docente."""
+        """Con diarización solo cuentan las preguntas del docente (teacher_only).
+
+        Sin diarización se cuentan todas y quedan con speaker_known = False.
+        """
         questions = []
         for sentence in self.build_sentences(segments):
             if teacher_only and sentence.role != SpeakerRole.TEACHER:
                 continue
             if not is_question(sentence.text, self.config.interrogatives):
                 continue
-            questions.append(to_question(sentence))
+            questions.append(to_question(sentence, speaker_known=teacher_only))
         return questions
 
     def build_sentences(self, segments: list[TranscriptSegment]) -> list[Sentence]:
@@ -140,7 +143,7 @@ class QuestionDetector:
         return speaker_changed or gap_s > self.config.join_segments_max_gap_s
 
 
-def to_question(sentence: Sentence) -> Question:
+def to_question(sentence: Sentence, speaker_known: bool) -> Question:
     return Question(
         text=sentence.text,
         start_s=sentence.start_s,
@@ -148,4 +151,5 @@ def to_question(sentence: Sentence) -> Question:
         speaker=sentence.speaker,
         role=sentence.role,
         reliable=sentence.reliable,
+        speaker_known=speaker_known,
     )

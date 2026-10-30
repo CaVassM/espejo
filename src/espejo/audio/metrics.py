@@ -1,4 +1,4 @@
-"""Métricas del habla del docente."""
+"""Métricas del habla en clase: preguntas, tiempo de espera y respuestas."""
 
 import statistics
 
@@ -28,6 +28,8 @@ class AudioMetricsCalculator:
         diarization_used: bool,
     ) -> AudioMetrics:
         wait_times_s = reliable_wait_times_s(questions)
+        response_count = count_responses(questions)
+
         teacher_talk_ratio = None
         teacher_talk_ratio_reason = NO_DIARIZATION_REASON
         if diarization_used:
@@ -39,12 +41,14 @@ class AudioMetricsCalculator:
             speech_ratio=safe_ratio(total_speech_s(speech_intervals), duration_s),
             teacher_talk_ratio=teacher_talk_ratio,
             teacher_talk_ratio_reason=teacher_talk_ratio_reason,
-            question_count=len(questions),
+            teacher_question_count=len(questions),
+            reliable_question_count=count_reliable(questions),
             questions_per_minute=safe_ratio(len(questions), duration_s / SECONDS_PER_MINUTE),
             mean_wait_time_s=mean_or_none(wait_times_s),
             median_wait_time_s=median_or_none(wait_times_s),
             wait_time_ok_ratio=wait_time_ok_ratio(questions),
-            reliable_question_count=count_reliable(questions),
+            student_response_count=response_count,
+            response_rate=ratio_or_none(response_count, len(questions)),
             low_confidence_ratio=safe_ratio(low_confidence_duration_s(segments), duration_s),
         )
 
@@ -72,6 +76,14 @@ def count_reliable(questions: list[Question]) -> int:
     return total
 
 
+def count_responses(questions: list[Question]) -> int:
+    total = 0
+    for question in questions:
+        if question.response is not None:
+            total += 1
+    return total
+
+
 def reliable_wait_times_s(questions: list[Question]) -> list[float]:
     """Solo preguntas en audio confiable y con voz posterior; las demás no son medibles."""
     wait_times_s = []
@@ -90,10 +102,14 @@ def wait_time_ok_ratio(questions: list[Question]) -> float | None:
         measured += 1
         if question.wait_time_ok:
             ok_count += 1
+    return ratio_or_none(ok_count, measured)
 
-    if measured == 0:
+
+def ratio_or_none(numerator: int, denominator: int) -> float | None:
+    """None cuando no hay nada que medir: un 0 % sería engañoso."""
+    if denominator == 0:
         return None
-    return ok_count / measured
+    return numerator / denominator
 
 
 def mean_or_none(values: list[float]) -> float | None:

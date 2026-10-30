@@ -1,4 +1,4 @@
-"""Clasificación por ventanas: preguntas, retroalimentación y regulación, ya validadas."""
+"""Clasificación por ventanas: eventos y preguntas, ya validados contra la transcripción."""
 
 import logging
 from dataclasses import dataclass, field
@@ -6,7 +6,12 @@ from typing import Any
 
 from espejo.config import LlmConfig
 from espejo.llm.clients import LlmClient, LlmError, complete_json
-from espejo.llm.prompts import CLASSIFICATION_SCHEMA, build_classification_prompt
+from espejo.llm.prompts import (
+    EVENTS_SCHEMA,
+    QUESTIONS_SCHEMA,
+    build_events_prompt,
+    build_questions_prompt,
+)
 from espejo.llm.schemas import (
     CandidateQuestion,
     Evidence,
@@ -76,7 +81,7 @@ def parse_reply(content: dict[str, Any], window: TranscriptWindow) -> ParsedItem
     items = []
     rejected = []
     for kind, key in REPLY_KEYS.items():
-        for raw in content[key]:
+        for raw in content.get(key, []):
             timestamp_s = parse_mmss(raw["timestamp"])
             evidence = evidence_from_raw(raw, kind, timestamp_s or 0.0)
             if timestamp_s is None:
@@ -132,8 +137,18 @@ class LlmClassifier:
         return self.merge(accepted, rejected, usage, failed_windows)
 
     def ask(self, window: TranscriptWindow, topic: str | None) -> JsonReply:
-        prompt = build_classification_prompt(window, self.definitions, topic)
-        return complete_json(self.client, prompt, CLASSIFICATION_SCHEMA, self.config.max_attempts)
+        """Dos llamados por ventana (eventos y preguntas), juntados en un solo contenido."""
+        attempts = self.config.max_attempts
+        events_prompt = build_events_prompt(window, self.definitions, topic)
+        events = complete_json(self.client, events_prompt, EVENTS_SCHEMA, attempts)
+        if not window.candidates:
+            return events
+
+        questions_prompt = build_questions_prompt(window, self.definitions, topic)
+        questions = complete_json(self.client, questions_prompt, QUESTIONS_SCHEMA, attempts)
+        content = dict(events.content)
+        content.update(questions.content)
+        return JsonReply(content, events.usage.plus(questions.usage))
 
     def tolerance_s(self) -> float:
         return self.config.validation.timestamp_tolerance_s

@@ -29,13 +29,17 @@ def parse_mmss(text: str) -> float | None:
 
 
 def nearby_texts(lines: list[TranscriptLine], timestamp_s: float, tolerance_s: float) -> list[str]:
-    """Textos de las líneas a ±tolerancia, solos y unidos con la siguiente.
+    """Textos de las líneas cuyo tramo contiene el minuto (±tolerancia), solos y con la siguiente.
 
+    Se usa todo el tramo de la línea y no solo su inicio: una línea de Whisper puede durar
+    varios segundos y traer varias preguntas, y el LLM suele citar el minuto de cada una.
     Una cita puede cruzar dos líneas cuando Whisper partió la oración en dos segmentos.
     """
     texts = []
     for index, line in enumerate(lines):
-        if abs(line.start_s - timestamp_s) > tolerance_s:
+        starts_after = timestamp_s < line.start_s - tolerance_s
+        ends_before = timestamp_s > line.end_s + tolerance_s
+        if starts_after or ends_before:
             continue
         texts.append(line.text)
         if index + 1 < len(lines):

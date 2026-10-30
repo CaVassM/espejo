@@ -65,6 +65,7 @@ class TranscriptLine:
     """Una línea "[mm:ss] DOCENTE: texto", lo único que ve el LLM de la clase."""
 
     start_s: float
+    end_s: float
     speaker_label: str
     text: str
 

@@ -20,7 +20,8 @@ class TranscriptWindow:
 def lines_from_segments(segments: list[TranscriptSegment]) -> list[TranscriptLine]:
     lines = []
     for segment in segments:
-        lines.append(TranscriptLine(segment.start_s, ROLE_LABELS[segment.role], segment.text))
+        label = ROLE_LABELS[segment.role]
+        lines.append(TranscriptLine(segment.start_s, segment.end_s, label, segment.text))
     return lines
 
 

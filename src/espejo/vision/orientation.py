@@ -2,7 +2,19 @@
 
 from espejo.config import PoseConfig
 from espejo.vision.geometry import BoundingBox, iou
-from espejo.vision.schemas import Orientation, PersonPose, PoseKeypoints
+from espejo.vision.schemas import Behavior, Orientation, PersonPose, PoseKeypoints
+
+
+def apply_behavior_prior(pose_orientation: Orientation, behavior: Behavior) -> Orientation:
+    """Escribir en la pizarra implica estar de espaldas a la clase, diga lo que diga la pose.
+
+    En una muestra al azar de 16 cajas board_writing del split val, el docente estaba de
+    espaldas (o de tres cuartos de espaldas) en las 16. El modelo de pose, en cambio, con el
+    docente pequeño y de espaldas suele "ver" la nariz con confianza alta y marcarlo "facing".
+    """
+    if behavior == Behavior.BOARD_WRITING:
+        return Orientation.BACK
+    return pose_orientation
 
 
 def estimate_teacher_orientation(

@@ -13,7 +13,7 @@ from espejo.vision.frame_sampler import FrameSampler
 from espejo.vision.geometry import BoundingBox
 from espejo.vision.heatmap import HeatmapRenderer, save_image
 from espejo.vision.metrics import MetricsCalculator
-from espejo.vision.orientation import estimate_teacher_orientation
+from espejo.vision.orientation import apply_behavior_prior, estimate_teacher_orientation
 from espejo.vision.report_writer import save_report_json
 from espejo.vision.schemas import (
     FrameDetections,
@@ -134,9 +134,10 @@ class VisionPipeline:
         behavior_result = self.behavior_detector.assign(
             frame_detections.behavior_detections, teacher_box
         )
-        orientation = estimate_teacher_orientation(
+        pose_orientation = estimate_teacher_orientation(
             teacher_box, frame_detections.poses, self.config.pose
         )
+        orientation = apply_behavior_prior(pose_orientation, behavior_result.behavior)
         return TeacherObservation(
             frame_index=frame_detections.frame_index,
             timestamp_s=frame_detections.timestamp_s,

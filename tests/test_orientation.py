@@ -1,7 +1,11 @@
 from espejo.config import PoseConfig
 from espejo.vision.geometry import BoundingBox
-from espejo.vision.orientation import classify_orientation, estimate_teacher_orientation
-from espejo.vision.schemas import Keypoint, Orientation, PersonPose, PoseKeypoints
+from espejo.vision.orientation import (
+    apply_behavior_prior,
+    classify_orientation,
+    estimate_teacher_orientation,
+)
+from espejo.vision.schemas import Behavior, Keypoint, Orientation, PersonPose, PoseKeypoints
 
 FACE_CONF = 0.5
 SHOULDER_CONF = 0.5
@@ -71,3 +75,13 @@ def test_pose_matching_teacher_is_used() -> None:
     teacher_pose = PersonPose(BoundingBox(5, 5, 100, 200), make_keypoints(HIDDEN, VISIBLE))
     orientation = estimate_teacher_orientation(teacher_box, [teacher_pose], POSE_CONFIG)
     assert orientation == Orientation.BACK
+
+
+def test_board_writing_forces_back() -> None:
+    # Aunque la pose diga "facing", escribir en la pizarra implica estar de espaldas
+    assert apply_behavior_prior(Orientation.FACING, Behavior.BOARD_WRITING) == Orientation.BACK
+
+
+def test_other_behaviors_keep_pose_orientation() -> None:
+    assert apply_behavior_prior(Orientation.FACING, Behavior.GUIDE) == Orientation.FACING
+    assert apply_behavior_prior(Orientation.UNKNOWN, Behavior.OTHER) == Orientation.UNKNOWN

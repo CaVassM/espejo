@@ -74,16 +74,39 @@ class TeacherDetector:
 
     def __init__(self, models_config: ModelsConfig, teacher_config: TeacherConfig) -> None:
         hint = "Entrena primero con scripts/train.py --dataset teacher"
-        self.model = load_model(models_config.teacher_weights, hint)
+        self.tracking_model = load_model(models_config.teacher_weights, hint)
+        # Instancia aparte: llamar predict() sobre el modelo que trackea reinicia el tracker
+        self.detection_model = load_model(models_config.teacher_weights, hint)
         self.models_config = models_config
         self.teacher_config = teacher_config
 
     def track(self, frame: Frame) -> list[Detection]:
+        """Detecciones con track_id; si el tracker no entrega nada, detecciones sin track_id.
+
+        ByteTrack no devuelve un objeto en el primer frame en que aparece como track nuevo
+        (aún no está confirmado). Tras un corte u oclusión eso deja al docente "invisible"
+        en un frame donde sí se ve; la detección simple lo recupera y luego TeacherTracker
+        decide si la acepta con teacher_fallback_conf.
+        """
         # persist=True mantiene el estado del tracker entre llamadas consecutivas
-        results = self.model.track(
+        results = self.tracking_model.track(
             frame.image,
             persist=True,
             tracker=self.models_config.tracker_config,
+            conf=self.teacher_config.detection_conf,
+            imgsz=self.models_config.image_size,
+            verbose=False,
+        )
+        tracked = filter_by_class(
+            detections_from_result(results[0]), self.teacher_config.class_name
+        )
+        if tracked:
+            return tracked
+        return self.detect_without_tracking(frame)
+
+    def detect_without_tracking(self, frame: Frame) -> list[Detection]:
+        results = self.detection_model.predict(
+            frame.image,
             conf=self.teacher_config.detection_conf,
             imgsz=self.models_config.image_size,
             verbose=False,

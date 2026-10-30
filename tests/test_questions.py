@@ -1,6 +1,6 @@
 import pytest
 
-from espejo.audio.questions import QuestionDetector, is_question
+from espejo.audio.questions import QuestionDetector, is_question, is_tag_question
 from espejo.audio.schemas import SpeakerRole, TranscriptSegment, Word
 from espejo.config import QuestionsConfig
 
@@ -16,7 +16,10 @@ INTERROGATIVES = [
     "quiénes",
     "cuánto",
 ]
-CONFIG = QuestionsConfig(interrogatives=INTERROGATIVES, join_segments_max_gap_s=1.0)
+TAG_WORDS = ["no", "ya", "cierto", "verdad", "sí", "ok", "ah", "no es cierto"]
+CONFIG = QuestionsConfig(
+    interrogatives=INTERROGATIVES, join_segments_max_gap_s=1.0, tag_words=TAG_WORDS
+)
 WORD_DURATION_S = 0.3
 
 
@@ -140,3 +143,48 @@ def test_segment_without_words_uses_segment_times() -> None:
     assert len(questions) == 1
     assert questions[0].text == "¿Dónde vive el pez?"
     assert questions[0].question_end_s == pytest.approx(6.0)
+
+
+def question_texts(segments: list[TranscriptSegment]) -> list[str]:
+    texts = []
+    for question in QuestionDetector(CONFIG).detect(segments, teacher_only=False):
+        texts.append(question.text)
+    return texts
+
+
+def test_question_mark_followed_by_comma_splits_questions() -> None:
+    segment = make_segment("¿qué está pasando?, ¿qué sucede?, están peleándose", start_s=0.0)
+    assert question_texts([segment]) == ["¿qué está pasando?,", "¿qué sucede?,"]
+
+
+def test_opening_mark_starts_a_new_question() -> None:
+    segment = make_segment("Dos hijos, ahí están ¿Qué más?", start_s=0.0)
+
+    questions = QuestionDetector(CONFIG).detect([segment], teacher_only=False)
+
+    assert [question.text for question in questions] == ["¿Qué más?"]
+    assert questions[0].start_s == pytest.approx(1.2)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["¿Ya?", "¿No?", "¿Sí?", "¿No es cierto?", "Analizar, ¿no?", "muy bien, ya?", "¿verdad?"],
+)
+def test_tag_questions(text: str) -> None:
+    assert is_tag_question(text, TAG_WORDS)
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["¿Por qué no?", "¿Qué pasará?", "¿Cuántos hijos habrá tenido?", "¿felices o tristes?"],
+)
+def test_real_questions_are_not_tags(text: str) -> None:
+    assert not is_tag_question(text, TAG_WORDS)
+
+
+def test_detector_marks_tag_questions() -> None:
+    segment = make_segment("Muy bien, felicitaciones hija ¿No? ¿Qué más sucederá?", start_s=0.0)
+
+    questions = QuestionDetector(CONFIG).detect([segment], teacher_only=False)
+
+    assert [question.is_tag for question in questions] == [True, False]

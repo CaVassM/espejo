@@ -6,6 +6,7 @@ from espejo.audio.quality import low_confidence_duration_s
 from espejo.audio.schemas import (
     AudioMetrics,
     Question,
+    QuestionCategory,
     SpeakerRole,
     SpeechInterval,
     TranscriptSegment,
@@ -27,8 +28,10 @@ class AudioMetricsCalculator:
         duration_s: float,
         diarization_used: bool,
     ) -> AudioMetrics:
-        wait_times_s = reliable_wait_times_s(questions)
-        response_count = count_responses(questions)
+        """Las muletillas o preguntas retóricas no cuentan como preguntas en ninguna métrica."""
+        real = real_questions(questions)
+        wait_times_s = reliable_wait_times_s(real)
+        response_count = count_responses(real)
 
         teacher_talk_ratio = None
         teacher_talk_ratio_reason = NO_DIARIZATION_REASON
@@ -41,16 +44,39 @@ class AudioMetricsCalculator:
             speech_ratio=safe_ratio(total_speech_s(speech_intervals), duration_s),
             teacher_talk_ratio=teacher_talk_ratio,
             teacher_talk_ratio_reason=teacher_talk_ratio_reason,
-            teacher_question_count=len(questions),
-            reliable_question_count=count_reliable(questions),
-            questions_per_minute=safe_ratio(len(questions), duration_s / SECONDS_PER_MINUTE),
+            teacher_question_count=len(real),
+            rhetorical_question_count=len(questions) - len(real),
+            reliable_question_count=count_reliable(real),
+            questions_per_minute=safe_ratio(len(real), duration_s / SECONDS_PER_MINUTE),
+            open_question_ratio=open_question_ratio(real),
             mean_wait_time_s=mean_or_none(wait_times_s),
             median_wait_time_s=median_or_none(wait_times_s),
-            wait_time_ok_ratio=wait_time_ok_ratio(questions),
+            wait_time_ok_ratio=wait_time_ok_ratio(real),
             student_response_count=response_count,
-            response_rate=ratio_or_none(response_count, len(questions)),
+            response_rate=ratio_or_none(response_count, len(real)),
             low_confidence_ratio=safe_ratio(low_confidence_duration_s(segments), duration_s),
         )
+
+
+def real_questions(questions: list[Question]) -> list[Question]:
+    """Preguntas que buscan respuesta: sin muletillas ni preguntas retóricas."""
+    real = []
+    for question in questions:
+        if not question.is_rhetorical():
+            real.append(question)
+    return real
+
+
+def open_question_ratio(questions: list[Question]) -> float | None:
+    """abiertas / (abiertas + cerradas). None si el LLM no clasificó ninguna."""
+    open_count = 0
+    closed_count = 0
+    for question in questions:
+        if question.llm_category == QuestionCategory.OPEN:
+            open_count += 1
+        elif question.llm_category == QuestionCategory.CLOSED:
+            closed_count += 1
+    return ratio_or_none(open_count, open_count + closed_count)
 
 
 def total_speech_s(intervals: list[SpeechInterval]) -> float:

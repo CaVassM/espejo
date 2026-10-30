@@ -104,3 +104,28 @@ def test_no_questions_gives_null_rates() -> None:
     assert metrics.mean_wait_time_s is None
     assert metrics.wait_time_ok_ratio is None
     assert metrics.response_rate is None
+
+
+def test_tag_questions_do_not_count_as_questions() -> None:
+    tag = Question(
+        text="¿Ya?",
+        start_s=0.0,
+        question_end_s=1.0,
+        speaker="unknown",
+        role=SpeakerRole.UNKNOWN,
+        reliable=True,
+        is_tag=True,
+        wait_time_s=0.5,
+        wait_time_ok=False,
+        response=RESPONSE,
+    )
+    questions = [tag, make_question(4.0, answered=True)]
+
+    metrics = AudioMetricsCalculator().calculate(
+        [], questions, [], DURATION_S, diarization_used=False
+    )
+
+    assert metrics.teacher_question_count == 1
+    assert metrics.rhetorical_question_count == 1
+    assert metrics.mean_wait_time_s == pytest.approx(4.0)
+    assert metrics.response_rate == pytest.approx(1.0)

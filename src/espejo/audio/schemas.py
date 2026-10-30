@@ -12,6 +12,14 @@ class SpeakerRole(StrEnum):
     UNKNOWN = "unknown"
 
 
+class QuestionCategory(StrEnum):
+    """Clasificación del LLM para una pregunta candidata."""
+
+    OPEN = "question_open"
+    CLOSED = "question_closed"
+    RHETORICAL = "question_rhetorical"
+
+
 class ResponseCertainty(StrEnum):
     """Con diarización sabemos que respondió otra persona; sin ella, solo que hubo voz."""
 
@@ -96,6 +104,7 @@ class AudioCapture:
     segments: list[TranscriptSegment]
     speech_intervals: list[SpeechInterval]
     diarization: DiarizationOutcome
+    topic: str | None = None
 
 
 @dataclass(frozen=True)
@@ -115,9 +124,17 @@ class Question:
     role: SpeakerRole
     reliable: bool
     speaker_known: bool = False
+    is_tag: bool = False
+    llm_category: QuestionCategory | None = None
     wait_time_s: float | None = None
     wait_time_ok: bool | None = None
     response: StudentResponse | None = None
+
+    def is_rhetorical(self) -> bool:
+        """Si el LLM la clasificó, manda el LLM; si no, la regla de muletillas."""
+        if self.llm_category is not None:
+            return self.llm_category == QuestionCategory.RHETORICAL
+        return self.is_tag
 
 
 @dataclass(frozen=True)
@@ -127,8 +144,10 @@ class AudioMetrics:
     teacher_talk_ratio: float | None
     teacher_talk_ratio_reason: str | None
     teacher_question_count: int
+    rhetorical_question_count: int
     reliable_question_count: int
     questions_per_minute: float
+    open_question_ratio: float | None
     mean_wait_time_s: float | None
     median_wait_time_s: float | None
     wait_time_ok_ratio: float | None
@@ -145,3 +164,4 @@ class AudioInterpretation:
     diarization_used: bool
     diarization_note: str
     teacher_speaker: str | None = None
+    discarded_segments: int = 0

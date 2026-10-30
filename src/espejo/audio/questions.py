@@ -4,14 +4,19 @@ import re
 from dataclasses import dataclass
 
 from espejo.audio.schemas import Question, SpeakerRole, TranscriptSegment, Word
+from espejo.common.text import normalize_text
 from espejo.config import QuestionsConfig
 
-QUESTION_MARKS = ("?", "¿")
+OPENING_MARK = "¿"
+CLOSING_MARK = "?"
+QUESTION_MARKS = (CLOSING_MARK, OPENING_MARK)
 SENTENCE_ENDINGS = (".", "?", "!", "…")
+# Signos que pueden venir pegados después del cierre: "¿qué sucede?," también cierra la pregunta
+TRAILING_PUNCTUATION = ",;:"
 # Signos que se quitan de los bordes de una palabra antes de compararla con un interrogativo
 EDGE_PUNCTUATION = "¿?¡!.,;:\"'«»()…-—"
-# Corta el texto después de un signo de cierre seguido de espacio
-SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.?!…])\s+")
+# Corta el texto después de un signo de cierre (aunque le siga una coma) y antes de cada "¿"
+SENTENCE_SPLIT_PATTERN = re.compile(r"(?<=[.?!…])[,;:]*\s+|\s+(?=¿)")
 UNKNOWN_WORD_PROBABILITY = 0.0
 
 
@@ -61,7 +66,44 @@ def leading_words(text: str, count: int) -> list[str]:
 
 
 def ends_sentence(word_text: str) -> bool:
-    return word_text.strip().endswith(SENTENCE_ENDINGS)
+    """Una palabra con "?" siempre cierra la oración, aunque Whisper le pegue una coma."""
+    if CLOSING_MARK in word_text:
+        return True
+    cleaned = word_text.strip().rstrip(TRAILING_PUNCTUATION)
+    return cleaned.endswith(SENTENCE_ENDINGS)
+
+
+def starts_question(word_text: str) -> bool:
+    """Un "¿" a mitad de frase abre una pregunta nueva: "Dos hijos, ¿no?" son dos oraciones."""
+    return word_text.strip().startswith(OPENING_MARK)
+
+
+def question_span(text: str) -> str:
+    """Lo que se pregunta: desde el último "¿" hasta el "?". Sin "¿", el texto completo."""
+    span = text
+    opening_index = text.rfind(OPENING_MARK)
+    if opening_index >= 0:
+        span = text[opening_index + 1 :]
+    return span.split(CLOSING_MARK)[0]
+
+
+def is_tag_question(text: str, tag_words: list[str]) -> bool:
+    """Muletilla: la pregunta es solo "¿no?", "¿ya?"... o termina en una tras una afirmación.
+
+    Ejemplos: "¿Ya?", "Analizar, ¿no?", "muy bien, ya?". En cambio "¿Por qué no?" sí pregunta.
+    """
+    tags = set()
+    for tag_word in tag_words:
+        tags.add(normalize_text(tag_word))
+
+    if normalize_text(question_span(text)) in tags:
+        return True
+
+    # Sin "¿": "muy bien, no?" termina en muletilla después de una coma
+    if OPENING_MARK not in text and "," in text:
+        tail = text.rsplit(",", 1)[1]
+        return normalize_text(tail) in tags
+    return False
 
 
 def words_for_segment(segment: TranscriptSegment) -> list[Word]:
@@ -113,7 +155,8 @@ class QuestionDetector:
                 continue
             if not is_question(sentence.text, self.config.interrogatives):
                 continue
-            questions.append(to_question(sentence, speaker_known=teacher_only))
+            is_tag = is_tag_question(sentence.text, self.config.tag_words)
+            questions.append(to_question(sentence, speaker_known=teacher_only, is_tag=is_tag))
         return questions
 
     def build_sentences(self, segments: list[TranscriptSegment]) -> list[Sentence]:
@@ -127,6 +170,9 @@ class QuestionDetector:
                 pending = []
 
             for word in words_for_segment(segment):
+                if pending and starts_question(word.text):
+                    sentences.append(sentence_from(pending))
+                    pending = []
                 pending.append(SpokenWord(word, segment))
                 if ends_sentence(word.text):
                     sentences.append(sentence_from(pending))
@@ -143,7 +189,7 @@ class QuestionDetector:
         return speaker_changed or gap_s > self.config.join_segments_max_gap_s
 
 
-def to_question(sentence: Sentence, speaker_known: bool) -> Question:
+def to_question(sentence: Sentence, speaker_known: bool, is_tag: bool) -> Question:
     return Question(
         text=sentence.text,
         start_s=sentence.start_s,
@@ -152,4 +198,5 @@ def to_question(sentence: Sentence, speaker_known: bool) -> Question:
         role=sentence.role,
         reliable=sentence.reliable,
         speaker_known=speaker_known,
+        is_tag=is_tag,
     )

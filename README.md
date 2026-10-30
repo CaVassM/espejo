@@ -104,6 +104,18 @@ Cada corrida se guarda en `runs/<dataset>/`, deja el mAP@0.5 por clase en
 `runs/<dataset>/per_class_map50.json` y copia el mejor modelo a `weights/<dataset>.pt`.
 Si la GPU se queda sin memoria, usa `--batch 8`.
 
+### Resultados
+
+YOLOv8s preentrenado, 30 épocas, imgsz 640, split val del autor, RTX 4070 Laptop (8 GB):
+
+| Modelo | Clase | mAP@0.5 | Paper (YOLOv7) |
+|---|---|---|---|
+| teacher | teacher | 96.3 % | 97.7 % |
+| behavior | guide | 82.3 % | 87.0 % |
+| behavior | board_writing | 98.5 % | 97.7 % |
+| behavior | answer | 91.1 % | — |
+| behavior | stage_interaction | 90.3 % | — |
+
 ## Analizar un video
 
 ```bash

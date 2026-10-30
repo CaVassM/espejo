@@ -1,6 +1,16 @@
-"""Geometría básica de cajas delimitadoras."""
+"""Geometría básica de puntos y cajas delimitadoras."""
 
+import math
 from dataclasses import dataclass
+
+
+@dataclass(frozen=True)
+class Point:
+    x: float
+    y: float
+
+    def distance_to(self, other: "Point") -> float:
+        return math.hypot(self.x - other.x, self.y - other.y)
 
 
 @dataclass(frozen=True)

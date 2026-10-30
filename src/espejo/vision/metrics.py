@@ -1,50 +1,42 @@
-"""Métricas de la clase a partir de las líneas de tiempo y del recorrido del docente."""
+"""Métricas de video a partir de la línea de tiempo y del recorrido del docente."""
 
-import math
+import statistics
 
 from espejo.common.ratios import safe_ratio
-from espejo.vision.geometry import FloorGrid, GridCell
+from espejo.config import PathConfig
+from espejo.vision.geometry import Point
 from espejo.vision.schemas import (
     Behavior,
-    Orientation,
+    PathSummary,
     Segment,
     TeacherObservation,
     VisionMetrics,
 )
 
 
-class MetricsCalculator:
-    """Los ratios se calculan sobre las líneas de tiempo suavizadas, no sobre frames sueltos."""
+class VisionMetricsCalculator:
+    """Los ratios se calculan sobre la línea de tiempo suavizada, no sobre frames sueltos."""
 
-    def __init__(self, monitoring_threshold: float, grid_columns: int, grid_rows: int) -> None:
-        self.monitoring_threshold = monitoring_threshold
-        self.grid_columns = grid_columns
-        self.grid_rows = grid_rows
+    def __init__(self, path_config: PathConfig) -> None:
+        self.path_config = path_config
 
     def calculate(
         self,
         observations: list[TeacherObservation],
-        behavior_timeline: list[Segment],
-        orientation_timeline: list[Segment],
+        timeline: list[Segment],
+        stage_interaction_events: list[Segment],
         frame_width: int,
-        frame_height: int,
     ) -> VisionMetrics:
-        analyzed_duration_s = timeline_duration_s(behavior_timeline)
-        not_visible_s = label_duration_s(behavior_timeline, Behavior.NOT_VISIBLE)
-        visible_s = analyzed_duration_s - not_visible_s
-        monitoring_ratio = label_ratio(behavior_timeline, Behavior.GUIDE)
-        grid = FloorGrid(self.grid_columns, self.grid_rows, frame_width, frame_height)
+        analyzed_duration_s = timeline_duration_s(timeline)
+        visible_s = analyzed_duration_s - label_duration_s(timeline, Behavior.NOT_VISIBLE)
 
         return VisionMetrics(
             analyzed_duration_s=analyzed_duration_s,
             teacher_visible_ratio=safe_ratio(visible_s, analyzed_duration_s),
-            monitoring_ratio=monitoring_ratio,
-            meets_monitoring_threshold=monitoring_ratio >= self.monitoring_threshold,
-            board_writing_ratio=label_ratio(behavior_timeline, Behavior.BOARD_WRITING),
-            back_to_class_ratio=label_ratio(orientation_timeline, Orientation.BACK),
-            path_length_normalized=path_length_normalized(observations, frame_width),
-            room_coverage_ratio=room_coverage_ratio(observations, grid),
-            student_participation_events=count_participation_events(observations),
+            board_writing_ratio=label_ratio(timeline, Behavior.BOARD_WRITING),
+            guide_ratio=label_ratio(timeline, Behavior.GUIDE),
+            stage_interaction_count=len(stage_interaction_events),
+            path=robust_path(observations, frame_width, self.path_config),
         )
 
 
@@ -68,38 +60,45 @@ def label_ratio(timeline: list[Segment], label: str) -> float:
     return safe_ratio(label_duration_s(timeline, label), timeline_duration_s(timeline))
 
 
-def path_length_normalized(observations: list[TeacherObservation], frame_width: int) -> float:
-    """Distancia recorrida por el foot_point, medida en anchos de frame."""
-    total_px = 0.0
-    previous_point = None
-
-    for observation in observations:
-        if observation.teacher_box is None:
-            continue
-        current_point = observation.teacher_box.foot_point()
-        if previous_point is not None:
-            total_px += math.dist(previous_point, current_point)
-        previous_point = current_point
-
-    return safe_ratio(total_px, frame_width)
-
-
-def visited_cells(observations: list[TeacherObservation], grid: FloorGrid) -> set[GridCell]:
-    cells = set()
+def visible_foot_points(observations: list[TeacherObservation]) -> list[Point]:
+    points = []
     for observation in observations:
         if observation.teacher_box is None:
             continue
         foot_x, foot_y = observation.teacher_box.foot_point()
-        cells.add(grid.cell_at(foot_x, foot_y))
-    return cells
+        points.append(Point(foot_x, foot_y))
+    return points
 
 
-def room_coverage_ratio(observations: list[TeacherObservation], grid: FloorGrid) -> float:
-    return safe_ratio(len(visited_cells(observations, grid)), grid.cell_count())
+def rolling_median(points: list[Point], window: int) -> list[Point]:
+    """Mediana en una ventana centrada: quita el temblor de la caja sin borrar la caminata."""
+    half_window = window // 2
+    smoothed = []
+    for index in range(len(points)):
+        neighbors = points[max(0, index - half_window) : index + half_window + 1]
+        x_values = []
+        y_values = []
+        for neighbor in neighbors:
+            x_values.append(neighbor.x)
+            y_values.append(neighbor.y)
+        smoothed.append(Point(statistics.median(x_values), statistics.median(y_values)))
+    return smoothed
 
 
-def count_participation_events(observations: list[TeacherObservation]) -> int:
-    total_events = 0
-    for observation in observations:
-        total_events += observation.participation_events
-    return total_events
+def robust_path(
+    observations: list[TeacherObservation], frame_width: int, config: PathConfig
+) -> PathSummary:
+    """Recorrido en anchos de frame; los saltos imposibles se descartan y se cuentan."""
+    points = rolling_median(visible_foot_points(observations), config.median_window_frames)
+    max_step_px = config.max_step_ratio * frame_width
+
+    total_px = 0.0
+    discarded_jumps = 0
+    for previous, current in zip(points, points[1:], strict=False):
+        step_px = previous.distance_to(current)
+        if step_px > max_step_px:
+            discarded_jumps += 1
+            continue
+        total_px += step_px
+
+    return PathSummary(safe_ratio(total_px, frame_width), discarded_jumps)

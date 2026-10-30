@@ -17,6 +17,7 @@ TEXT_COLOR = (255, 255, 255)
 TEXT_ORIGIN = (20, 40)
 TEXT_MARGIN_PX = 8
 VIDEO_CODEC = "mp4v"
+STAGE_INTERACTION_CAPTION = " | alumno al frente"
 
 
 class DebugVideoWriter:
@@ -52,7 +53,9 @@ class DebugVideoWriter:
     def draw_observation(self, image: np.ndarray, observation: TeacherObservation) -> None:
         font = cv2.FONT_HERSHEY_SIMPLEX
         thickness = self.config.box_thickness
-        caption = f"{observation.behavior} | {observation.orientation}"
+        caption = str(observation.state)
+        if observation.stage_interaction_present:
+            caption += STAGE_INTERACTION_CAPTION
         header = f"t={observation.timestamp_s:.1f}s  {caption}"
         cv2.putText(image, header, TEXT_ORIGIN, font, self.config.font_scale, TEXT_COLOR, thickness)
 

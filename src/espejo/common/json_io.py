@@ -1,4 +1,4 @@
-"""Escritura de reportes JSON."""
+"""Lectura y escritura de archivos JSON."""
 
 import json
 from pathlib import Path
@@ -12,3 +12,9 @@ def write_json(content: dict[str, Any], output_path: Path) -> None:
     output_path.parent.mkdir(parents=True, exist_ok=True)
     text = json.dumps(content, indent=JSON_INDENT, ensure_ascii=False)
     output_path.write_text(text, encoding="utf-8")
+
+
+def read_json(input_path: Path, missing_hint: str) -> dict[str, Any]:
+    if not input_path.exists():
+        raise FileNotFoundError(f"No se encontró {input_path}. {missing_hint}")
+    return json.loads(input_path.read_text(encoding="utf-8"))

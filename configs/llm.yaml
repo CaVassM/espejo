@@ -13,7 +13,9 @@ ollama:
   small_model: qwen2.5:7b
   min_vram_gb_for_large: 12
   temperature: 0
-  context_tokens: 8192           # ventana de contexto de Ollama; una ventana de 3 min cabe con holgura
+  # Ventana de contexto de Ollama: una ventana de 3 min son ~5.700 tokens de prompt (incluidas
+  # las definiciones) más ~2.500 de respuesta. Con 8192 Ollama recortaba el inicio sin avisar.
+  context_tokens: 12288
   request_timeout_s: 600
 
 anthropic:

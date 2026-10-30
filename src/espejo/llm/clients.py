@@ -38,6 +38,10 @@ class LlmClient(Protocol):
 
     def send(self, prompt: str, schema: dict[str, Any]) -> RawReply: ...
 
+    def release(self) -> None:
+        """Libera los recursos locales al terminar (p. ej. la GPU). Puede no hacer nada."""
+        ...
+
 
 @dataclass(frozen=True)
 class ClientChoice:
@@ -74,6 +78,14 @@ class OllamaClient:
     def __init__(self, config: OllamaConfig, model: str) -> None:
         self.config = config
         self.model = model
+
+    def release(self) -> None:
+        """Descarga el modelo de la GPU para que el próximo análisis encuentre libre a Whisper.
+
+        Ollama deja el modelo cargado unos minutos por defecto; keep_alive = 0 lo descarga ya.
+        """
+        body = {"model": self.model, "keep_alive": 0}
+        post_json(f"{self.config.host}/api/generate", body, self.config.request_timeout_s)
 
     def send(self, prompt: str, schema: dict[str, Any]) -> RawReply:
         body = {
@@ -128,6 +140,9 @@ class AnthropicClient:
             if block.type == "text":
                 text += block.text
         return RawReply(text, self.usage_from(response.usage, time.perf_counter() - started))
+
+    def release(self) -> None:
+        """Claude corre en la nube: no hay nada local que liberar."""
 
     def usage_from(self, sdk_usage: Any, seconds: float) -> LlmUsage:
         cost_usd = (

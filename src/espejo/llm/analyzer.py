@@ -82,6 +82,11 @@ class LlmAnalyzer:
             usage=result.usage,
         )
 
+    def release(self) -> None:
+        """Al terminar, libera el modelo local (la GPU queda libre para el próximo video)."""
+        if self.choice.client is not None:
+            self.choice.client.release()
+
     def add_suggestion(
         self,
         analysis: LlmAnalysis,

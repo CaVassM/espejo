@@ -17,7 +17,7 @@ from espejo.audio.schemas import (
 from espejo.config import load_llm_config
 from espejo.llm.analyzer import LlmAnalyzer, apply_question_labels
 from espejo.llm.clients import ClientChoice, LlmError, complete_json
-from espejo.llm.prompts import CLASSIFICATION_SCHEMA
+from espejo.llm.prompts import EVENTS_SCHEMA
 from espejo.llm.schemas import (
     CandidateQuestion,
     Evidence,
@@ -31,14 +31,18 @@ from espejo.llm.validation import deduplicate, parse_mmss, quote_exists, validat
 
 TOLERANCE_S = 2.0
 LINES = [
-    TranscriptLine(10.0, "DOCENTE", "¿Cuántos hijos habrá tenido el labrador?"),
-    TranscriptLine(14.0, "ALUMNO", "Más de uno"),
-    TranscriptLine(16.0, "DOCENTE", "Muy bien, felicitaciones hija"),
+    TranscriptLine(10.0, 13.0, "DOCENTE", "¿Cuántos hijos habrá tenido el labrador?"),
+    TranscriptLine(14.0, 15.0, "ALUMNO", "Más de uno"),
+    TranscriptLine(16.0, 18.0, "DOCENTE", "Muy bien, felicitaciones hija"),
 ]
 
 
 class FakeClient:
-    """Cliente simulado: devuelve las respuestas preparadas, en orden. Nunca llama a un LLM."""
+    """Cliente simulado: nunca llama a un LLM.
+
+    Devuelve las respuestas preparadas en orden; la última se repite. Si la respuesta es un
+    JSON con todas las listas, entrega solo las que pide el esquema de cada llamado.
+    """
 
     provider = "fake"
     model = "fake-model"
@@ -49,7 +53,27 @@ class FakeClient:
 
     def send(self, prompt: str, schema: dict[str, Any]) -> RawReply:
         self.prompts.append(prompt)
-        return RawReply(self.replies.pop(0), LlmUsage(input_tokens=10, output_tokens=5, calls=1))
+        text = self.replies[0]
+        if len(self.replies) > 1:
+            text = self.replies.pop(0)
+        return RawReply(keep_schema_keys(text, schema), LlmUsage(10, 5, calls=1))
+
+
+def keep_schema_keys(text: str, schema: dict[str, Any]) -> str:
+    try:
+        content = json.loads(text)
+    except json.JSONDecodeError:
+        return text
+    if not isinstance(content, dict):
+        return text
+    kept = {}
+    for key, value in content.items():
+        if key in schema["properties"]:
+            kept[key] = value
+    return json.dumps(kept)
+
+    def release(self) -> None:
+        self.released = True
 
 
 def evidence(kind: EvidenceKind, label: str, timestamp_s: float, quote: str) -> Evidence:
@@ -112,8 +136,8 @@ def test_invalid_class_is_rejected() -> None:
 
 def test_windows_overlap_and_skip_empty_ranges() -> None:
     config = replace(load_llm_config().windows, window_s=180, overlap_s=20)
-    lines = [TranscriptLine(0.0, "DOCENTE", "a"), TranscriptLine(170.0, "DOCENTE", "b")]
-    lines.append(TranscriptLine(400.0, "DOCENTE", "c"))
+    lines = [TranscriptLine(0.0, 1.0, "DOCENTE", "a"), TranscriptLine(170.0, 171.0, "DOCENTE", "b")]
+    lines.append(TranscriptLine(400.0, 401.0, "DOCENTE", "c"))
 
     windows = build_windows(lines, [], config)
 
@@ -136,16 +160,16 @@ def test_overlapping_windows_do_not_duplicate_evidence() -> None:
 def test_invalid_json_is_retried_once() -> None:
     client = FakeClient(["esto no es json", classification_reply()])
 
-    reply = complete_json(client, "prompt", CLASSIFICATION_SCHEMA, max_attempts=2)
+    reply = complete_json(client, "prompt", EVENTS_SCHEMA, max_attempts=2)
 
-    assert reply.content["questions"] == []
+    assert reply.content["feedback"] == []
     assert reply.usage.calls == 2
 
 
 def test_two_invalid_replies_raise() -> None:
-    client = FakeClient(["no", '{"questions": "mal"}'])
+    client = FakeClient(["no", '{"feedback": "mal"}'])
     with pytest.raises(LlmError):
-        complete_json(client, "prompt", CLASSIFICATION_SCHEMA, max_attempts=2)
+        complete_json(client, "prompt", EVENTS_SCHEMA, max_attempts=2)
 
 
 # --- Analizador completo con el cliente simulado ---------------------------------------------
@@ -276,7 +300,9 @@ def test_candidate_questions_reach_the_prompt(tmp_path: Path) -> None:
 
     analyzer.classify(segments, [make_question(10.0, "¿Qué pasará?")], topic="Cuento")
 
-    assert "0 | [00:10] | ¿Qué pasará?" in client.prompts[0]
+    # Dos llamados: primero eventos, luego preguntas (con la lista de candidatas)
+    assert len(client.prompts) == 2
+    assert "0 | [00:10] | ¿Qué pasará?" in client.prompts[1]
     assert "Definiciones de prueba" in client.prompts[0]
 
 
@@ -320,3 +346,14 @@ def test_participation_and_respect_are_validated_like_the_rest(tmp_path: Path) -
     assert len(analysis.participation) == 1
     assert len(analysis.respect) == 1
     assert len(analysis.rejected) == 1
+
+
+def test_quote_inside_a_long_line_uses_the_whole_line_span() -> None:
+    # Una línea de 12 s con varias preguntas: el LLM cita el minuto de la tercera (01:45)
+    lines = [
+        TranscriptLine(
+            100.0, 112.0, "DOCENTE", "¿qué pasará? ¿Dónde habrá sucedido? ¿Dónde habrá pasado?"
+        )
+    ]
+    assert quote_exists("¿Dónde habrá pasado?", 108.0, lines, TOLERANCE_S)
+    assert not quote_exists("¿Dónde habrá pasado?", 130.0, lines, TOLERANCE_S)

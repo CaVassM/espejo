@@ -169,6 +169,7 @@ def interpret_run(
     report = build_class_report(video, audio, report_configs, llm_analysis)
     if analyzer is not None and audio is not None:
         report = add_suggestion(analyzer, report, audio.capture.topic)
+        analyzer.release()
     save_class_report(report, run_dir / REPORT_FILENAME)
 
     if audio is not None:

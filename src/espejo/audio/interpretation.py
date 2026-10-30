@@ -1,6 +1,7 @@
 """INTERPRETAR (audio): convierte audio_raw.json en preguntas, esperas, respuestas y métricas."""
 
 from espejo.audio.diarization import assign_speakers
+from espejo.audio.hallucinations import HallucinationFilter
 from espejo.audio.metrics import AudioMetricsCalculator
 from espejo.audio.quality import AudioQualityChecker
 from espejo.audio.questions import QuestionDetector
@@ -13,6 +14,7 @@ from espejo.config import AudioConfig
 
 class AudioInterpreter:
     def __init__(self, config: AudioConfig) -> None:
+        self.hallucination_filter = HallucinationFilter(config.hallucinations)
         self.quality_checker = AudioQualityChecker(config.quality)
         self.question_detector = QuestionDetector(config.questions)
         self.wait_time_calculator = WaitTimeCalculator(config.wait_time)
@@ -23,11 +25,12 @@ class AudioInterpreter:
         diarization = capture.diarization
         speaker_known = diarization.succeeded()
 
-        segments = self.quality_checker.mark(capture.segments)
+        intervals = capture.speech_intervals
+        filtered = self.hallucination_filter.filter(capture.segments, intervals)
+        segments = self.quality_checker.mark(filtered.kept)
         segments = assign_roles(assign_speakers(segments, diarization))
         teacher_speaker = find_teacher_speaker(segments)
 
-        intervals = capture.speech_intervals
         questions = self.question_detector.detect(segments, teacher_only=speaker_known)
         questions = self.wait_time_calculator.annotate(questions, intervals)
         questions = self.response_finder.annotate(
@@ -44,4 +47,5 @@ class AudioInterpreter:
             diarization_used=speaker_known,
             diarization_note=diarization.note,
             teacher_speaker=teacher_speaker,
+            discarded_segments=len(filtered.discarded),
         )

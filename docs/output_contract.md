@@ -144,18 +144,28 @@ por ventana, un llamado de eventos y otro de preguntas; la unión elimina duplic
 | `question_open` / `question_closed` / `question_rhetorical` | R2 | Clasificación de cada pregunta candidata. Las retóricas no cuentan como preguntas, ni para la espera, ni para el monitoreo. |
 | `feedback_discovery` / `feedback_descriptive` / `feedback_elemental` / `feedback_incorrect` | R3 | Retroalimentación del docente después de una respuesta. |
 | `regulation_formative` / `regulation_external_control` / `regulation_mistreatment` | R5 (maltrato también R4) | Mecanismos de regulación del comportamiento. |
-| `participation_invitation` | R1 | Invita a participar o dirige una pregunta a quien no ha participado. |
+| `participation_invitation` | R1 | Se dirige a UN estudiante para que participe (nombre, "a ver tú", "hija"). Las preguntas a toda la clase no cuentan. |
 | `respect_issue` | R4 | Apodos, burlas o insultos. |
 
 Cada elemento lleva `timestamp`, clase, cita textual, razón breve y confianza (alta/media/baja).
+Las preguntas solo llevan `question_id`, clase, razón y confianza: la cita y el minuto los pone
+el código desde la pregunta candidata. Las invitaciones llevan además `addressee`, la palabra
+con que el docente se dirige al estudiante.
 **Validación anti-invento:** la cita debe existir textualmente (sin importar mayúsculas, tildes
 ni signos) en una línea cuyo tramo contiene el minuto indicado (± `timestamp_tolerance_s`); si
-no, se rechaza. Clases fuera de la lista: rechazadas. JSON inválido: un reintento.
+no, se rechaza. Un `question_id` que no es candidato de esa ventana: rechazado. Una invitación
+cuyo `addressee` no está en la cita o es de toda la clase (`whole_class_words`): rechazada.
+Clases fuera de la lista: rechazadas. JSON inválido: un reintento.
 
 - `open_question_ratio` (R2) = abiertas / (abiertas + cerradas), con la clasificación del LLM.
 - `rubric_evidence`: por rúbrica R1 a R5, métricas con valor y citas; si no hay ninguna,
   "evidencia insuficiente".
-- `one_suggestion`: un consejo basado solo en la ficha; su minuto debe ser el de una evidencia.
+- `one_suggestion`: un consejo sobre UNA debilidad, elegida por reglas en este orden: espera
+  promedio < `wait_time.ok_threshold_s`, retroalimentación solo elemental, monitoreo <
+  `monitoring.threshold` y abiertas < `suggestion.min_open_question_ratio`. Campos: `weakness`,
+  `timestamp`, `quote`, `what_we_saw` (escrito por el código con el minuto y la cita reales;
+  el monitoreo va sin minuto), `why_it_matters`, `try_this`, `example_phrase` (estos tres, del
+  LLM) y `text` (las tres partes juntas). Si no hay ninguna debilidad, no hay consejo.
 - Sin LLM: reglas de respaldo y "sin análisis LLM" en el reporte.
 - `llm_analysis.usage`: proveedor, modelo, tokens, tiempo y costo (0 con Ollama).
 

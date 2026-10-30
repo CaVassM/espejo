@@ -100,7 +100,7 @@ diarización.
 **LLM.** Clasifica cada pregunta como abierta, cerrada o retórica, y marca retroalimentación
 (R3), regulación del comportamiento (R5), invitaciones a participar (R1) y faltas de respeto
 (R4). Con eso arma `rubric_evidence` (R1 a R5: métricas y citas, o "evidencia insuficiente") y
-`one_suggestion` (un consejo que cita el minuto que lo motiva).
+`one_suggestion` (un consejo en tres partes: "Lo que vimos", "Por qué importa" y "Prueba esto").
 
 ## Instalación
 
@@ -196,7 +196,14 @@ el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles 
 - **Validación anti-invento:** toda cita debe existir textualmente en la transcripción, en la
   línea de su minuto (±2 s); si no, se descarta y se cuenta como evidencia rechazada. Las clases
   fuera de la lista también se rechazan. Si la respuesta no es un JSON válido, se reintenta una
-  vez.
+  vez. Las preguntas se clasifican por su id: la cita y el minuto los pone el código.
+- **Invitación a participar** solo cuando el docente se dirige a un estudiante en particular. El
+  LLM copia la palabra con que lo hace ("hija", un nombre); si no está en la cita o es de toda la
+  clase ("ustedes", "niños"), se rechaza.
+- **Consejo:** las reglas eligen la debilidad más importante (espera < 3 s, retroalimentación
+  solo elemental, monitoreo < 25 %, preguntas mayormente cerradas). "Lo que vimos" lo escribe el
+  código con el minuto y la cita reales; el LLM escribe "Por qué importa" y "Prueba esto" (una
+  acción y una frase de ejemplo), en tono de colega a colega.
 - **Sin LLM** (proveedor caído o `--no-llm`), el pipeline sigue con las reglas de respaldo y el
   reporte dice "sin análisis LLM".
 - El LLM corre al final, cuando YOLO y Whisper ya liberaron la GPU, y al terminar libera la suya.
@@ -238,10 +245,10 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
    sentado. Las respuestas se miden con el audio.
 4. **Monitoreo sin diarización es menos preciso.** Sin saber quién habla se cuentan las preguntas
    de cualquier persona y cualquier voz posterior cuenta como posible respuesta.
-5. **El LLM local de 7B se equivoca.** En una prueba con una clase real marcó como abiertas
-   preguntas como "¿Quieren saber?" y como retóricas algunas que sí buscaban respuesta. Sirve para
-   validar el flujo; para el análisis final conviene un modelo más grande (14B con 12 GB de VRAM o
-   Anthropic).
+5. **El LLM local de 7B se equivoca y es sensible al prompt.** En una prueba con una clase real
+   acertó 39 de 44 preguntas contra una referencia hecha a mano, pero marcó como retóricas
+   preguntas que la alumna respondió. Cambios pequeños en el prompt movían varias
+   clasificaciones. El 14B no entra en una GPU de 8 GB; con 12 GB o más se usa solo.
 6. **Silero no oye bien voces lejanas.** Por eso la regla de "texto inventado sin voz" solo se
    aplica a segmentos de 3 palabras o menos; aun así puede borrar frases reales muy cortas.
 

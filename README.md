@@ -1,112 +1,56 @@
 # Espejo
 
 Espejo le devuelve al docente una mirada objetiva de su propia clase. El docente graba la sesión
-con su celular y recibe un reporte con evidencias (cuánto tiempo monitoreó a sus alumnos, cuánto
-escribió en la pizarra, por dónde se movió en el aula) alineadas a las rúbricas de observación de
-aula del Minedu (Perú).
+con un solo celular y recibe un reporte con evidencias (cuánto tiempo monitoreó, cuántas preguntas
+hizo y cuánto esperó la respuesta, cuánto escribió en la pizarra, por dónde se movió) alineadas a
+las rúbricas de observación de aula del Minedu (Perú).
 
-Este repositorio contiene el **módulo de visión** y el **módulo de audio**. El módulo de reporte con
-LLM (`src/espejo/report/`) se agregará en la siguiente fase.
+Este repositorio contiene los módulos de **visión** y **audio** y su **unión**. El reporte en
+lenguaje natural con un LLM (`src/espejo/report/`) llegará en la siguiente fase.
 
-## Pipeline de visión
+La definición exacta de clases, eventos y métricas está en
+[`docs/output_contract.md`](docs/output_contract.md), que es la fuente de verdad del código.
+
+## Arquitectura: VER → INTERPRETAR
 
 ```mermaid
 flowchart LR
-    A[Video de la clase] --> B[FrameSampler<br/>2 fps]
-    B --> C[TeacherDetector + ByteTrack<br/>modelo teacher]
-    B --> D[BehaviorDetector<br/>modelo behavior]
-    B --> E[PoseEstimator<br/>yolov8n-pose]
-    C --> F[TeacherTracker<br/>track dominante = docente]
-    F --> G[Conducta del docente<br/>IoU con guide / board_writing]
-    D --> G
-    F --> H[Orientación<br/>facing / back / unknown]
-    E --> H
-    G --> I[TimelineBuilder<br/>voto mayoritario + unión de segmentos]
-    H --> I
-    I --> J[MetricsCalculator]
-    F --> K[HeatmapRenderer<br/>fondo desenfocado]
-    J --> L[vision_report.json]
-    K --> M[heatmap.png]
+    V[Video de la clase] --> VER1
+    V --> VER2
+    subgraph VER [VER: una sola pasada por los modelos]
+        VER1[YOLOv8s teacher + ByteTrack<br/>YOLOv8s behavior] --> D[detections.json<br/>background_blurred.png]
+        VER2[ffmpeg → Whisper + Silero VAD<br/>+ pyannote opcional] --> A[audio_raw.json]
+    end
+    subgraph INTERPRETAR [INTERPRETAR: solo lee los JSON]
+        D --> T[Estado del docente<br/>board_writing > guide > other]
+        D --> S[Eventos stage_interaction]
+        D --> P[Recorrido robusto + heatmap]
+        A --> Q[Preguntas, espera,<br/>respuestas, calidad]
+        T --> M[Monitoreo R3:<br/>unión video + audio]
+        Q --> M
+    end
+    M --> R[class_report.json]
+    T --> R
+    S --> R
+    P --> H[heatmap.png]
+    Q --> X[transcript.txt]
 ```
 
-Cada etapa es una clase en su propio módulo dentro de `src/espejo/vision/`. Todos los umbrales
-viven en [`configs/vision.yaml`](configs/vision.yaml).
+VER es lo costoso (GPU) y se hace una vez. INTERPRETAR es instantáneo y se puede repetir al
+cambiar umbrales: `python scripts/interpret.py --run outputs/<video>/`.
 
-| Etapa | Qué hace |
-|---|---|
-| `FrameSampler` | Lee el video con OpenCV y entrega frames a `sample_fps`. |
-| `TeacherTracker` | Sigue a las cajas "teacher" con ByteTrack y elige el track que aparece en más frames. Si en un frame falta, acepta otra caja "teacher" solo con confianza alta. |
-| `BehaviorDetector` | Detecta conductas en el frame completo. Asigna `guide` o `board_writing` al docente si el IoU con su caja es ≥ 0.3. `answer` y `stage_interaction` se cuentan como señal de participación. |
-| `orientation.py` | Con los keypoints del docente: cara visible → `facing`; solo hombros → `back`; si no, `unknown`. |
-| `TimelineBuilder` | Suaviza con voto mayoritario (ventana de 3 s) y une segmentos menores a 1.5 s. |
-| `MetricsCalculator` | Ratios de monitoreo, pizarra y espalda; recorrido; cobertura del aula; participación. |
-| `HeatmapRenderer` | Mapa de calor del recorrido sobre el primer frame con un desenfoque gaussiano fuerte. |
+## Modelos
 
-### Métricas
-
-- `analyzed_duration_s` y `teacher_visible_ratio`.
-- `monitoring_ratio`: tiempo en `guide` / duración analizada.
-- `meets_monitoring_threshold`: `monitoring_ratio >= 0.25`. La rúbrica "Evalúa el progreso de los
-  aprendizajes" pide monitorear activamente al menos el 25 % de la sesión.
-- `board_writing_ratio` y `back_to_class_ratio`.
-- `path_length_normalized`: recorrido del docente medido en anchos de frame.
-- `room_coverage_ratio`: fracción de celdas de una grilla de 8x6 que el docente visitó.
-- `student_participation_events`: detecciones de `answer` y `stage_interaction` (sin identificar alumnos).
-
-### Privacidad
-
-No se guardan frames ni recortes de personas. La única imagen que se genera es el heatmap, con el
-fondo desenfocado al punto de que no se reconoce a nadie. El video de depuración es opcional y se
-guarda en `outputs/`, que no se sube al repositorio. No hay reconocimiento facial ni de emociones.
-
-## Instalación
-
-Requiere Python 3.11 o superior y, de preferencia, una GPU NVIDIA con CUDA.
-
-```bash
-conda activate ml_env            # o el entorno que uses
-pip install -r requirements.txt
-pip install -e .                 # instala el paquete espejo en modo editable
-```
-
-## Dataset
-
-```bash
-python scripts/inspect_dataset.py --download   # lista el repo, descarga y resume el subconjunto
-python scripts/prepare_dataset.py              # genera data/processed/teacher y data/processed/behavior
-python scripts/preview_dataset.py              # dibuja cajas en outputs/dataset_preview/
-```
-
-En el repositorio publicado de SCB-Dataset, los subconjuntos SCB5-F (docente) y SCB5-D (conductas)
-vienen fusionados en `SCB5_Teacher_Behavior_Stand_BlackBoard_Sreen_20250406`: 8 clases, formato
-YOLO, con splits train/val del autor. A partir de él derivamos dos datasets independientes:
-
-| Dataset | Clases | Imágenes que se conservan |
+| Modelo | Entrenado por nosotros | Uso |
 |---|---|---|
-| `teacher` | 0 = teacher | solo las que tienen al menos una caja `teacher` |
-| `behavior` | 0 = guide, 1 = board_writing, 2 = answer, 3 = stage_interaction | solo las que tienen al menos una caja de conducta |
+| YOLOv8s teacher | Sí | Encontrar al docente |
+| YOLOv8s behavior | Sí | guide, board_writing, answer, stage_interaction |
+| ByteTrack | Algoritmo, no modelo | Seguir al docente entre frames |
+| Whisper large-v3-turbo | No (preentrenado) | Transcribir: qué se dijo |
+| Silero VAD | No (preentrenado) | Cuándo hay voz |
+| pyannote speaker-diarization-3.1 | No (preentrenado) | Quién habla |
 
-Filtrar así evita que una imagen sin anotar le enseñe al modelo que el docente o la conducta son
-fondo. Las clases `stand`, `screen` y `blackBoard` se descartan.
-
-## Entrenamiento
-
-```bash
-# Prueba de humo: 1 época con el 5 % de los datos
-python scripts/train.py --dataset teacher --epochs 1 --fraction 0.05 --name smoke_teacher --no-export
-
-# Entrenamiento completo (yolov8s preentrenado, 30 épocas, batch automático)
-python scripts/train.py --dataset teacher
-python scripts/train.py --dataset behavior
-```
-
-Cada corrida se guarda en `runs/<dataset>/`, deja el mAP@0.5 por clase en
-`runs/<dataset>/per_class_map50.json` y copia el mejor modelo a `weights/<dataset>.pt`.
-Si la GPU se queda sin memoria, usa `--batch 8`.
-
-### Resultados
-
-YOLOv8s preentrenado, 30 épocas, imgsz 640, split val del autor, RTX 4070 Laptop (8 GB):
+Resultados de los modelos entrenados (YOLOv8s, 30 épocas, imgsz 640, split val del autor):
 
 | Modelo | Clase | mAP@0.5 | Paper (YOLOv7) |
 |---|---|---|---|
@@ -116,154 +60,144 @@ YOLOv8s preentrenado, 30 épocas, imgsz 640, split val del autor, RTX 4070 Lapto
 | behavior | answer | 91.1 % | — |
 | behavior | stage_interaction | 90.3 % | — |
 
-## Analizar un video
+## Clases y métricas
+
+**Video.** Estado del docente por frame, con prioridad `board_writing > guide > other`. Una
+conducta se asigna al docente solo si su caja se superpone con la del docente (IoU ≥ 0.3).
+`other` no es una clase aprendida: es el relleno. Al docente nunca se le asignan `answer` ni
+`stage_interaction`. `stage_interaction` (un alumno pasa al frente) se cuenta como evento.
+`answer` se detecta pero no se usa: en el dataset es un alumno de pie, como en las aulas chinas.
+
+`board_writing` implica estar de espaldas a la clase: revisamos 16 recortes al azar de
+board_writing del split val y en los 16 el docente estaba de espaldas.
+
+**Audio.** Preguntas del docente (`¿?` o interrogativo al inicio), tiempo de espera hasta la
+siguiente voz, respuesta de un alumno dentro de una ventana y tramos de audio dudoso.
+
+| Métrica | Rúbrica | Qué mide |
+|---|---|---|
+| `board_writing_ratio` | R1 | Tiempo escribiendo en la pizarra, de espaldas a la clase |
+| `stage_interaction_count` | R1 | Veces que un alumno pasó al frente |
+| `student_response_count`, `response_rate` | R1 | Preguntas respondidas y respuestas / preguntas |
+| `teacher_talk_ratio` | R1 | Fracción de la clase en que habla el docente (requiere diarización) |
+| `teacher_question_count`, `questions_per_minute` | R2, R3 | Preguntas del docente |
+| `mean_wait_time_s`, `median_wait_time_s`, `wait_time_ok_ratio` | R2 | Espera tras preguntar (≥ 3 s, umbral de Rowe) |
+| `monitoring_ratio` (+ `_video_` y `_audio_`) | R3 | Unión sin doble conteo de guiar en carpetas (video) y preguntar a la clase hasta la respuesta (audio) |
+| `meets_monitoring_threshold` | R3 | Monitorea al menos el 25 % de la sesión, como pide el manual |
+| `path_length_normalized` + `heatmap.png` | R4 | Recorrido del docente (evidencia visual) |
+
+`data_quality` informa `teacher_visible_ratio`, saltos descartados del recorrido, proporción de
+audio dudoso y si hubo diarización. R5 (comportamiento) depende del lenguaje y la cubrirá el LLM.
+
+## Instalación
+
+Requiere Python 3.11+, ffmpeg y, de preferencia, una GPU NVIDIA.
 
 ```bash
-python scripts/analyze_video.py --video samples/clase.mp4
-python scripts/analyze_video.py --video samples/clase.mp4 --output outputs/ --debug-video
+conda activate ml_env
+pip install -r requirements.txt
+pip install -e .
 ```
 
-Genera `outputs/<nombre_video>/vision_report.json` y `outputs/<nombre_video>/heatmap.png`, e
-imprime un resumen en consola. Para probar el flujo sin pesos entrenados:
+`pyannote.audio` 3.x puede intentar actualizar torch. Para conservar tu versión con CUDA,
+instálalo fijando torch, por ejemplo con un archivo de restricciones (`torch==2.5.1`,
+`torchaudio==2.5.1`) y `pip install -c restricciones.txt "pyannote.audio>=3.3,<4"`.
+
+## Dataset y entrenamiento
 
 ```bash
-python scripts/analyze_video.py --video samples/clase.mp4 \
-    --teacher-weights yolov8s.pt --teacher-class person --behavior-weights yolov8s.pt
+python scripts/inspect_dataset.py --download   # lista el repo, descarga y resume el subconjunto
+python scripts/prepare_dataset.py              # data/processed/teacher y data/processed/behavior
+python scripts/preview_dataset.py              # cajas dibujadas en outputs/dataset_preview/
+python scripts/train.py --dataset teacher
+python scripts/train.py --dataset behavior
 ```
 
-### Ejemplo de salida
+En el repositorio publicado de SCB-Dataset, SCB5-F (docente) y SCB5-D (conductas) vienen
+fusionados en un solo subconjunto de 8 clases. Derivamos dos datasets: `teacher` (solo imágenes
+con al menos una caja teacher) y `behavior` (solo imágenes con al menos una caja de conducta, 4
+clases). Así una imagen sin anotar no le enseña al modelo que el docente o la conducta son fondo.
 
-Estructura de `vision_report.json` (valores ilustrativos):
+## Analizar una clase
+
+```bash
+python scripts/analyze_class.py --video samples/clase.mp4
+python scripts/analyze_class.py --video samples/clase.mp4 --output outputs/ --debug-video
+python scripts/analyze_class.py --video samples/clase.mp4 --no-audio
+python scripts/interpret.py --run outputs/clase/        # re-interpreta sin correr modelos
+```
+
+También funcionan por separado `scripts/analyze_video.py` y `scripts/analyze_audio.py`.
+Resultados en `outputs/<video>/`: `detections.json`, `audio_raw.json`, `class_report.json`,
+`transcript.txt` y `heatmap.png`. Al terminar se imprime un resumen con las métricas y las
+primeras preguntas (minuto, espera y si hubo respuesta).
+
+Recomendación para grabar: celular en horizontal, a unos 2 m de altura, en una esquina del aula y
+mirando en diagonal hacia abajo. Es el punto de vista de las cámaras del dataset y reduce las
+oclusiones.
+
+Ejemplo (recortado) de `class_report.json`:
 
 ```json
 {
-  "metadata": {
-    "video": "clase.mp4",
-    "duration_s": 149.8,
-    "duration": "02:30",
-    "native_fps": 30.0,
-    "resolution": {"width": 1920, "height": 1080},
-    "sample_fps": 2.0,
-    "models": {
-      "teacher": "teacher.pt",
-      "teacher_class": "teacher",
-      "behavior": "behavior.pt",
-      "pose": "yolov8n-pose.pt",
-      "tracker": "bytetrack.yaml"
-    }
-  },
-  "behavior_timeline": [
-    {"label": "board_writing", "start_s": 0.0, "end_s": 41.5, "start": "00:00", "end": "00:42", "duration_s": 41.5},
-    {"label": "guide", "start_s": 41.5, "end_s": 88.0, "start": "00:42", "end": "01:28", "duration_s": 46.5}
-  ],
-  "orientation_timeline": [
-    {"label": "back", "start_s": 0.0, "end_s": 39.0, "start": "00:00", "end": "00:39", "duration_s": 39.0},
-    {"label": "facing", "start_s": 39.0, "end_s": 149.8, "start": "00:39", "end": "02:30", "duration_s": 110.8}
-  ],
   "metrics": {
-    "analyzed_duration_s": 149.8,
-    "teacher_visible_ratio": 0.953,
-    "monitoring_ratio": 0.31,
-    "meets_monitoring_threshold": true,
-    "board_writing_ratio": 0.277,
-    "back_to_class_ratio": 0.26,
-    "path_length_normalized": 3.42,
-    "room_coverage_ratio": 0.271,
-    "student_participation_events": 18,
-    "analyzed_duration": "02:30"
-  }
+    "monitoring_ratio": {"value": 0.318, "rubric": ["R3"], "description": "Tiempo monitoreando: ...", "note": null},
+    "teacher_question_count": {"value": 4, "rubric": ["R2", "R3"], "description": "Preguntas", "note": null},
+    "teacher_talk_ratio": {"value": null, "rubric": ["R1"], "description": "...", "note": "sin diarización ..."}
+  },
+  "audio_events": [
+    {"text": "¿Qué creen que pasará con el agua si la calentamos?", "start": "00:04",
+     "wait_time_s": 5.0, "wait_time_ok": true, "speaker_known": false, "reliable": true,
+     "response": {"start": "00:12", "certainty": "low", "speaker": "unknown"}}
+  ]
 }
 ```
 
-## Módulo de audio
-
-El audio cubre lo que la visión no ve: lo que dice el docente. Funciona con **un solo celular**,
-sin micrófonos adicionales.
-
-```mermaid
-flowchart LR
-    A[Video de la clase] --> B[ffmpeg<br/>wav 16 kHz mono]
-    B -->|audio crudo| C[faster-whisper<br/>timestamps por palabra]
-    B -->|copia con paso alto 100 Hz| D[Silero VAD<br/>intervalos de voz]
-    B -.->|opcional| E[pyannote<br/>diarización]
-    C --> F[Calidad<br/>segmentos dudosos]
-    F --> G[Rol del docente]
-    E -.-> G
-    G --> H[Preguntas]
-    H --> I[Wait time]
-    D --> I
-    I --> J[AudioMetrics]
-    J --> K[audio_report.json<br/>transcript.txt]
-```
-
-| Etapa | Qué hace |
-|---|---|
-| `extraction.py` | Con ffmpeg genera `audio_raw.wav` (16 kHz, mono, sin filtros) y `audio_vad.wav` (lo mismo con un paso alto suave). Son temporales: se borran al terminar salvo con `--keep-audio`. |
-| `transcriber.py` | faster-whisper en español con timestamps por palabra. Con `device: auto` usa `large-v3-turbo` en GPU si está libre y `small` en CPU si está ocupada o no hay GPU. |
-| `voice_activity.py` | Silero VAD (la versión ONNX incluida en faster-whisper) sobre la copia filtrada: tramos con voz, sin importar quién habla. |
-| `diarization.py` | Opcional. Separa hablantes con pyannote y asigna uno a cada segmento por solapamiento temporal. |
-| `speaker_roles.py` | El hablante con más tiempo total de voz es el docente; los demás son alumnos. |
-| `questions.py` | Una oración es pregunta si tiene `¿` o `?`, o si empieza con un interrogativo (`qué`, `cómo`, `por qué`, ...). |
-| `wait_time.py` | Segundos desde el fin de la pregunta hasta que vuelve a haber voz. |
-| `quality.py` | Marca segmentos de baja confianza según `avg_logprob` y `no_speech_prob` de Whisper. |
-
-### Decisiones técnicas
-
-- **Whisper recibe el audio crudo.** El denoising previo empeora la transcripción de Whisper
-  (arXiv 2603.04710; en un estudio con audio médico, el audio ruidoso ganó en 40 de 40
-  configuraciones). Solo la copia que usa el VAD lleva un filtro paso alto de 100 Hz.
-- **El wait time no necesita saber quién habla**, solo cuándo hay voz. Para cada pregunta se toma el
-  siguiente intervalo de voz del VAD que empieza después de la pregunta. Los huecos menores a
-  `min_gap_s` se ignoran (respiración, cola de la propia pregunta) y el resultado se limita a
-  `max_wait_s`. Si la voz que contiene el fin de la pregunta continúa más de `min_gap_s`, el docente
-  siguió hablando sin pausa y el wait time es 0. `wait_time_ok` exige al menos 3 s (Rowe, 1974).
-- **Rol del docente (heurística).** El hablante con más tiempo de voz es el docente. Suele acertar en
-  clases expositivas, pero puede fallar en debates o exposiciones de alumnos.
-- **Calidad.** Las preguntas que caen en segmentos de baja confianza se marcan `reliable: false` y
-  no entran en las métricas de wait time.
-
-### Métricas
-
-- `analyzed_duration_s` y `speech_ratio` (tiempo con voz / duración).
-- `teacher_talk_ratio`: requiere diarización; si no la hay, es `null` y se informa el motivo.
-- `question_count` y `questions_per_minute`.
-- `mean_wait_time_s`, `median_wait_time_s` y `wait_time_ok_ratio`, solo con preguntas confiables.
-- `low_confidence_ratio`: proporción del tiempo con audio dudoso.
-
-### Uso
-
-```bash
-python scripts/analyze_audio.py --video samples/clase.mp4
-python scripts/analyze_audio.py --video samples/clase.mp4 --output outputs/ --keep-audio --model small
-```
-
-Requiere ffmpeg en el PATH (o en el entorno: `conda install -n ml_env -c conda-forge ffmpeg`).
-Genera en `outputs/<nombre_video>/`:
-
-- `audio_report.json`: metadata (modelo de Whisper, dispositivo, diarización), segmentos con sus
-  palabras, preguntas con su wait time y métricas. Tiempos en segundos y en `mm:ss`.
-- `transcript.txt`: una línea por segmento, pensado para el LLM de la siguiente fase:
+`transcript.txt`, listo para el LLM de la siguiente fase:
 
 ```
-[00:05] HABLANTE: ¿Qué creen que pasará con el agua si la calentamos?
-[00:12] HABLANTE: Se evapora.
-[00:15] HABLANTE: Muy bien. ¿Cómo se llama ese proceso?
+[00:04] DOCENTE: ¿Qué creen que pasará con el agua si la calentamos?
+[00:12] ALUMNO: Se evapora.
 ```
 
-Con diarización las etiquetas son `DOCENTE` y `ESTUDIANTE`. Los segmentos de baja confianza llevan
-la marca `[AUDIO DUDOSO]`.
+Sin diarización, todas las líneas dicen `HABLANTE`. Los segmentos de baja confianza llevan
+`[AUDIO DUDOSO]`.
 
-### Activar la diarización (opcional)
+## Activar pyannote (quién habla)
 
-1. Acepta las condiciones de uso de
+1. Con tu cuenta de Hugging Face, acepta las condiciones de
    [pyannote/speaker-diarization-3.1](https://huggingface.co/pyannote/speaker-diarization-3.1) y
-   [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0) en Hugging Face.
-2. Instala `pyannote.audio` (versión 3.x) y exporta tu token: `export HF_TOKEN=hf_...`
-   (en PowerShell: `$env:HF_TOKEN = "hf_..."`).
-3. Pon `diarization.enabled: true` en [`configs/audio.yaml`](configs/audio.yaml).
+   [pyannote/segmentation-3.0](https://huggingface.co/pyannote/segmentation-3.0).
+2. Crea un token de lectura y guárdalo en un archivo `.env` en la raíz del repo:
+   `HF_TOKEN=hf_...` (`.env` está en `.gitignore`; nunca lo subas).
+3. Deja `diarization.enabled: true` en [`configs/audio.yaml`](configs/audio.yaml).
 
-Si la diarización está desactivada o falla, el pipeline sigue igual: los segmentos quedan con
-`speaker: "unknown"`, se cuentan todas las preguntas y `teacher_talk_ratio` sale `null`.
+Si falta algo, el análisis sigue sin diarización y el reporte indica el motivo.
+
+## Privacidad
+
+No se guardan frames ni recortes de personas: solo coordenadas, el heatmap sobre un fondo
+desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de depuración (en
+`outputs/`, ignorado por git). No hay reconocimiento facial ni de emociones.
+
+## Limitaciones
+
+1. **El mAP es optimista.** El autor dividió train/val por imágenes, no del todo por video: según
+   el prefijo de los nombres, el 26 % de las imágenes de val viene de un video que también está
+   en train. En videos nuevos el rendimiento será menor.
+2. **Dominio distinto.** SCB-Dataset son aulas chinas (uniformes, distribución, cámaras fijas en
+   alto). En aulas peruanas y con celular, el rendimiento puede bajar.
+3. **`answer` descartado.** En el dataset un alumno responde de pie; en el Perú se responde
+   sentado. Las respuestas se miden con el audio.
+4. **Monitoreo sin diarización es menos preciso.** Sin saber quién habla se cuentan las preguntas
+   de cualquier persona y cualquier voz posterior cuenta como posible respuesta.
+
+## Mejoras futuras
+
+- Marcar una vez la zona de carpetas en el primer frame, para distinguir mejor guiar en carpetas
+  de estar al frente.
+- Entrenar la orientación del docente (de frente o de espaldas) con supervisión débil, usando
+  `board_writing` como señal de "de espaldas".
 
 ## Tests y calidad
 
@@ -273,22 +207,24 @@ ruff format .
 ruff check .
 ```
 
-Los tests cubren la lógica pura (geometría, orientación, timeline, métricas, selección del
-docente, preguntas, wait time, roles de hablante y calidad del audio) y no necesitan modelos, GPU
-ni audio real.
+Los tests cubren la lógica pura (asignación del estado del docente, prioridades, unión del
+monitoreo, respuestas con y sin diarización, wait time, recorrido robusto, preguntas, calidad y
+métricas) y no necesitan modelos, GPU ni audio real.
 
 ## Estructura
 
 ```
-configs/            umbrales del pipeline y YAML de los datasets
-scripts/            puntos de entrada delgados (CLI)
+configs/            vision.yaml, audio.yaml, analysis.yaml y YAML de los datasets
+docs/               output_contract.md (fuente de verdad) y manual de rúbricas
+scripts/            analyze_class, interpret, analyze_video, analyze_audio, dataset y train
 src/espejo/
   config.py         configuración en dataclasses tipadas
-  common/           utilidades compartidas (rutas, YAML, mm:ss, JSON)
-  training.py       entrenamiento y evaluación de los detectores
+  common/           rutas, JSON, mm:ss, secretos (.env) y convivencia de librerías CUDA
   dataset/          descarga, inspección, preparación y preview de SCB-Dataset
-  vision/           etapas del pipeline de visión
-  audio/            etapas del pipeline de audio
+  training.py       entrenamiento y evaluación de los detectores
+  vision/           VER (detection_run) e INTERPRETAR (interpretation) del video
+  audio/            VER (capture) e INTERPRETAR (interpretation) del audio
+  analysis/         unión: monitoreo, métricas por rúbrica, class_report y transcript
 tests/              tests de la lógica pura
 ```
 
@@ -299,7 +235,6 @@ Los modelos se entrenan con **SCB-Dataset**:
 > Fan Yang. *SCB-Dataset: A Dataset for Detecting Student and Teacher Classroom Behavior*.
 > arXiv:2304.02488, 2023. https://arxiv.org/abs/2304.02488
 
-SCB-Dataset es **solo para uso académico** y no se redistribuye. Por eso este repositorio no
-incluye imágenes, etiquetas ni pesos entrenados: cada persona debe descargarlo desde
-[Hugging Face](https://huggingface.co/datasets/wintonYF/SCB-Dataset) con `scripts/inspect_dataset.py`
-y aceptar sus condiciones de uso.
+SCB-Dataset es **solo para uso académico** y no se redistribuye. Este repositorio no incluye
+imágenes, etiquetas ni pesos entrenados: cada persona debe descargarlo desde
+[Hugging Face](https://huggingface.co/datasets/wintonYF/SCB-Dataset) y aceptar sus condiciones.

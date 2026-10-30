@@ -76,6 +76,8 @@ class LlmAnalyzer:
             question_labels=result.question_labels,
             feedback=result.feedback,
             regulation=result.regulation,
+            participation=result.participation,
+            respect=result.respect,
             rejected=result.rejected,
             usage=result.usage,
         )

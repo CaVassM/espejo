@@ -5,8 +5,10 @@ from typing import Any
 from espejo.llm.schemas import (
     CONFIDENCE_LABELS,
     FEEDBACK_LABELS,
+    PARTICIPATION_LABELS,
     QUESTION_LABELS,
     REGULATION_LABELS,
+    RESPECT_LABELS,
 )
 from espejo.llm.transcript_view import TranscriptWindow, format_candidate, format_line
 
@@ -44,8 +46,12 @@ CLASSIFICATION_SCHEMA: dict[str, Any] = {
         "questions": array_of(evidence_item_schema(QUESTION_LABELS, with_question_id=True)),
         "feedback": array_of(evidence_item_schema(FEEDBACK_LABELS, with_question_id=False)),
         "regulation": array_of(evidence_item_schema(REGULATION_LABELS, with_question_id=False)),
+        "participation": array_of(
+            evidence_item_schema(PARTICIPATION_LABELS, with_question_id=False)
+        ),
+        "respect": array_of(evidence_item_schema(RESPECT_LABELS, with_question_id=False)),
     },
-    "required": ["questions", "feedback", "regulation"],
+    "required": ["questions", "feedback", "regulation", "participation", "respect"],
     "additionalProperties": False,
 }
 
@@ -73,6 +79,10 @@ b) Retroalimentación del docente justo DESPUÉS de una respuesta de un alumno:
    feedback_incorrect, feedback_elemental, feedback_descriptive, feedback_discovery.
 c) Regulación del comportamiento: regulation_formative, regulation_external_control,
    regulation_mistreatment.
+d) participation_invitation: el docente invita a participar o dirige una pregunta a quien
+   no ha participado (por ejemplo, llama a un alumno por su nombre para que responda).
+e) respect_issue: apodos, burlas o insultos (del docente, o entre alumnos). Solo si la frase
+   lo muestra claramente.
 Usa las definiciones del manual que están abajo para decidir.
 
 Reglas obligatorias:

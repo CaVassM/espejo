@@ -124,6 +124,8 @@ def llm_to_dict(analysis: LlmAnalysis) -> dict[str, Any]:
         "question_labels": list_of_dicts(question_labels, evidence_to_dict),
         "feedback": list_of_dicts(analysis.feedback, evidence_to_dict),
         "regulation": list_of_dicts(analysis.regulation, evidence_to_dict),
+        "participation": list_of_dicts(analysis.participation, evidence_to_dict),
+        "respect": list_of_dicts(analysis.respect, evidence_to_dict),
         "rejected_evidence": list_of_dicts(analysis.rejected, rejected_to_dict),
         "one_suggestion": suggestion,
     }

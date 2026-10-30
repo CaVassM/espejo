@@ -24,6 +24,13 @@ class RegulationType(StrEnum):
     MISTREATMENT = "regulation_mistreatment"
 
 
+class LanguageSignal(StrEnum):
+    """Señales del lenguaje para R1 (invitar a participar) y R4 (faltas de respeto)."""
+
+    PARTICIPATION_INVITATION = "participation_invitation"
+    RESPECT_ISSUE = "respect_issue"
+
+
 class Confidence(StrEnum):
     HIGH = "alta"
     MEDIUM = "media"
@@ -34,16 +41,22 @@ class EvidenceKind(StrEnum):
     QUESTION = "question"
     FEEDBACK = "feedback"
     REGULATION = "regulation"
+    PARTICIPATION = "participation"
+    RESPECT = "respect"
 
 
 QUESTION_LABELS = [category.value for category in QuestionCategory]
 FEEDBACK_LABELS = [feedback.value for feedback in FeedbackType]
 REGULATION_LABELS = [regulation.value for regulation in RegulationType]
+PARTICIPATION_LABELS = [LanguageSignal.PARTICIPATION_INVITATION.value]
+RESPECT_LABELS = [LanguageSignal.RESPECT_ISSUE.value]
 CONFIDENCE_LABELS = [confidence.value for confidence in Confidence]
 LABELS_BY_KIND = {
     EvidenceKind.QUESTION: QUESTION_LABELS,
     EvidenceKind.FEEDBACK: FEEDBACK_LABELS,
     EvidenceKind.REGULATION: REGULATION_LABELS,
+    EvidenceKind.PARTICIPATION: PARTICIPATION_LABELS,
+    EvidenceKind.RESPECT: RESPECT_LABELS,
 }
 
 
@@ -134,6 +147,8 @@ class LlmAnalysis:
     question_labels: dict[int, Evidence] = field(default_factory=dict)
     feedback: list[Evidence] = field(default_factory=list)
     regulation: list[Evidence] = field(default_factory=list)
+    participation: list[Evidence] = field(default_factory=list)
+    respect: list[Evidence] = field(default_factory=list)
     rejected: list[RejectedEvidence] = field(default_factory=list)
     suggestion: Suggestion | None = None
     usage: LlmUsage = field(default_factory=LlmUsage)

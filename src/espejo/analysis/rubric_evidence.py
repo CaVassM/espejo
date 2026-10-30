@@ -3,7 +3,13 @@
 from espejo.analysis.schemas import Citation, MetricEvidence, RubricEvidence, RubricMetric
 from espejo.audio.schemas import QuestionCategory
 from espejo.common.time_format import format_mmss
-from espejo.llm.schemas import Evidence, FeedbackType, LlmAnalysis, RegulationType
+from espejo.llm.schemas import (
+    Evidence,
+    FeedbackType,
+    LanguageSignal,
+    LlmAnalysis,
+    RegulationType,
+)
 
 RUBRIC_TITLES = {
     "R1": "Involucra activamente a los estudiantes en el proceso de aprendizaje",
@@ -25,6 +31,8 @@ RUBRICS_BY_LABEL = {
     RegulationType.FORMATIVE: ["R5"],
     RegulationType.EXTERNAL_CONTROL: ["R5"],
     RegulationType.MISTREATMENT: ["R4", "R5"],
+    LanguageSignal.PARTICIPATION_INVITATION: ["R1"],
+    LanguageSignal.RESPECT_ISSUE: ["R4"],
 }
 
 
@@ -32,6 +40,8 @@ def llm_evidence(analysis: LlmAnalysis) -> list[Evidence]:
     items = list(analysis.question_labels.values())
     items += analysis.feedback
     items += analysis.regulation
+    items += analysis.participation
+    items += analysis.respect
     return items
 
 

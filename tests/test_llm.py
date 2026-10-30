@@ -59,7 +59,14 @@ def evidence(kind: EvidenceKind, label: str, timestamp_s: float, quote: str) -> 
 def classification_reply(
     questions: list[dict[str, Any]] | None = None, feedback: list[dict[str, Any]] | None = None
 ) -> str:
-    return json.dumps({"questions": questions or [], "feedback": feedback or [], "regulation": []})
+    content = {
+        "questions": questions or [],
+        "feedback": feedback or [],
+        "regulation": [],
+        "participation": [],
+        "respect": [],
+    }
+    return json.dumps(content)
 
 
 # --- Validación anti-invento -----------------------------------------------------------------
@@ -276,3 +283,40 @@ def test_candidate_questions_reach_the_prompt(tmp_path: Path) -> None:
 def test_candidate_dataclass_keeps_rule_flag() -> None:
     candidate = CandidateQuestion(0, 1.0, "¿ya?", rule_is_tag=True)
     assert candidate.rule_is_tag
+
+
+def test_participation_and_respect_are_validated_like_the_rest(tmp_path: Path) -> None:
+    teacher_line = "A ver, Juanito, tú no has hablado, ¿qué opinas?"
+    segments = [
+        make_segment(20.0, teacher_line, SpeakerRole.TEACHER),
+        make_segment(25.0, "Oye cabezón, cállate", SpeakerRole.STUDENT),
+    ]
+    invitation = {
+        "label": "participation_invitation",
+        "quote": "Juanito, tú no has hablado",
+        "timestamp": "00:20",
+        "reason": "invita a quien no participó",
+        "confidence": "alta",
+    }
+    nickname = {
+        "label": "respect_issue",
+        "quote": "Oye cabezón",
+        "timestamp": "00:25",
+        "reason": "apodo",
+        "confidence": "alta",
+    }
+    invented = dict(nickname, quote="eres un tonto")
+    content = {
+        "questions": [],
+        "feedback": [],
+        "regulation": [],
+        "participation": [invitation],
+        "respect": [nickname, invented],
+    }
+    analyzer = analyzer_with(FakeClient([json.dumps(content)]), tmp_path)
+
+    analysis = analyzer.classify(segments, [], topic=None)
+
+    assert len(analysis.participation) == 1
+    assert len(analysis.respect) == 1
+    assert len(analysis.rejected) == 1

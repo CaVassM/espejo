@@ -32,6 +32,8 @@ REPLY_KEYS = {
     EvidenceKind.QUESTION: "questions",
     EvidenceKind.FEEDBACK: "feedback",
     EvidenceKind.REGULATION: "regulation",
+    EvidenceKind.PARTICIPATION: "participation",
+    EvidenceKind.RESPECT: "respect",
 }
 
 
@@ -46,6 +48,8 @@ class ClassificationResult:
     question_labels: dict[int, Evidence]
     feedback: list[Evidence]
     regulation: list[Evidence]
+    participation: list[Evidence]
+    respect: list[Evidence]
     rejected: list[RejectedEvidence]
     usage: LlmUsage
     failed_windows: int
@@ -146,10 +150,16 @@ class LlmClassifier:
         questions = items_of_kind(accepted, EvidenceKind.QUESTION)
         feedback = deduplicate(items_of_kind(accepted, EvidenceKind.FEEDBACK), tolerance_s)
         regulation = deduplicate(items_of_kind(accepted, EvidenceKind.REGULATION), tolerance_s)
+        participation = deduplicate(
+            items_of_kind(accepted, EvidenceKind.PARTICIPATION), tolerance_s
+        )
+        respect = deduplicate(items_of_kind(accepted, EvidenceKind.RESPECT), tolerance_s)
         return ClassificationResult(
             question_labels=first_label_per_question(questions),
             feedback=feedback,
             regulation=regulation,
+            participation=participation,
+            respect=respect,
             rejected=rejected,
             usage=usage,
             failed_windows=failed_windows,

@@ -14,7 +14,7 @@ transcription:
   gpu_compute_type: float16
   cpu_model: small
   cpu_compute_type: int8
-  min_free_gpu_memory_gb: 5.0    # con menos memoria libre se considera que la GPU está ocupada
+  min_free_gpu_memory_gb: 3.0    # Whisper turbo usa ~2 GB; con menos libre, la GPU está ocupada
   beam_size: 5
   # Sin condicionar en el texto previo, Whisper repite menos frases en bucle en tramos de ruido
   condition_on_previous_text: false
@@ -26,7 +26,9 @@ voice_activity:
   speech_pad_ms: 30              # margen pequeño: un margen grande acortaría el wait time medido
 
 diarization:
-  enabled: false                 # requiere pyannote.audio y la variable de entorno HF_TOKEN
+  # Se activa solo si además existe HF_TOKEN (en .env) y se aceptaron las condiciones de los
+  # modelos de pyannote en Hugging Face. Si algo falta o falla, se sigue sin diarización.
+  enabled: true
   model: pyannote/speaker-diarization-3.1
   token_env_var: HF_TOKEN
 
@@ -52,6 +54,11 @@ wait_time:
   # Rowe (1974, 1986): con 3 s o más de espera tras una pregunta, las respuestas de los alumnos
   # son más largas, más frecuentes y de mayor nivel cognitivo.
   ok_threshold_s: 3.0
+
+responses:
+  # Después de una pregunta del docente, la primera voz de otro hablante dentro de esta ventana
+  # cuenta como respuesta de un alumno. Sin diarización, cualquier voz cuenta (certeza baja).
+  response_window_s: 10.0
 
 quality:
   # Whisper entrega por segmento la log-probabilidad media y la probabilidad de "no hay voz".

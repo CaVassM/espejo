@@ -1,0 +1,8 @@
+# Parámetros de la unión de visión y audio (INTERPRETAR).
+# Definición de métricas: docs/output_contract.md
+
+monitoring:
+  # Manual de rúbricas del Minedu, R3 "Evalúa el progreso de los aprendizajes": el docente
+  # monitorea activamente si destina al menos el 25 % de la sesión a recoger evidencia
+  # (preguntas o diálogos con la clase, o recorriendo los grupos y revisando su trabajo).
+  threshold: 0.25

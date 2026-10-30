@@ -1,4 +1,5 @@
-# Parámetros del pipeline de visión. Todos los umbrales viven aquí, no en el código.
+# Parámetros del módulo de visión. Todos los umbrales viven aquí, no en el código.
+# Definición de clases y métricas: docs/output_contract.md
 
 sampling:
   sample_fps: 2.0                # frames analizados por segundo de video
@@ -6,7 +7,7 @@ sampling:
 models:
   teacher_weights: weights/teacher.pt
   behavior_weights: weights/behavior.pt
-  pose_weights: yolov8n-pose.pt  # ultralytics lo descarga solo la primera vez
+  pose_weights: yolov8n-pose.pt  # solo se usa si pose.enabled es true
   tracker_config: bytetrack.yaml
   image_size: 640
 
@@ -22,14 +23,16 @@ behavior:
   behavior_iou_threshold: 0.3    # solape mínimo entre la caja de conducta y la del docente
   guide_class: guide
   board_writing_class: board_writing
-  # Conductas de alumnos: no se asignan al docente, se cuentan como señal de participación
-  participation_classes:
-    - answer
-    - stage_interaction
+  # Evento de alumnos: nunca se asigna al docente, se cuenta como evento (R1).
+  # "answer" también se detecta y queda en detections.json, pero no se usa en el reporte.
+  stage_interaction_class: stage_interaction
 
 pose:
+  # Desactivado: con el docente pequeño y de espaldas, la pose "ve" la cara y se equivoca.
+  # El código se conserva para trabajos futuros; no forma parte del flujo actual.
+  enabled: false
   detection_conf: 0.25
-  match_iou_threshold: 0.3       # solape mínimo entre la caja de la pose y la del docente
+  match_iou_threshold: 0.3
   face_kp_conf: 0.5
   shoulder_kp_conf: 0.5
 
@@ -37,10 +40,11 @@ timeline:
   smoothing_window_s: 3.0        # ventana del voto mayoritario
   min_segment_s: 1.5             # segmentos más cortos se unen con su vecino
 
-metrics:
-  # Rúbrica del Minedu "Evalúa el progreso de los aprendizajes": el docente debe monitorear
-  # activamente (recorrer y guiar en las carpetas) al menos el 25 % de la sesión.
-  monitoring_threshold: 0.25
+path:
+  median_window_frames: 5        # mediana móvil sobre el punto de los pies (quita temblor de la caja)
+  # Un paso mayor a esta fracción del ancho del frame entre dos frames muestreados no es una
+  # caminata real (cambio de identidad o error del detector): se descarta y se cuenta.
+  max_step_ratio: 0.25
 
 heatmap:
   grid_columns: 8

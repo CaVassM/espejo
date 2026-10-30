@@ -8,6 +8,9 @@ outputs/
 *.mp4
 *.mov
 
+# Secretos (token de Hugging Face)
+.env
+
 # Python y herramientas
 __pycache__/
 *.egg-info/

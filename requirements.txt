@@ -6,6 +6,9 @@ numpy>=1.26
 huggingface_hub>=0.24
 faster-whisper>=1.1
 nvidia-ml-py>=12.0
+python-dotenv>=1.0
+# Diarización opcional. Instálala fijando tu versión de torch (ver README) para no perder CUDA.
+pyannote.audio>=3.3,<4
 pyyaml>=6.0
 pytest>=8.0
 ruff>=0.6

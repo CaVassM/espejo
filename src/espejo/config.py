@@ -6,7 +6,12 @@ from pathlib import Path
 from espejo.common.config_io import CONFIGS_DIR, read_yaml, resolve_project_path
 
 DEFAULT_VISION_CONFIG = CONFIGS_DIR / "vision.yaml"
+DEFAULT_AUDIO_CONFIG = CONFIGS_DIR / "audio.yaml"
+DEFAULT_ANALYSIS_CONFIG = CONFIGS_DIR / "analysis.yaml"
 DEFAULT_DATASET_CONFIG = CONFIGS_DIR / "dataset.yaml"
+
+
+# --- Visión ---------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -36,11 +41,12 @@ class BehaviorConfig:
     behavior_iou_threshold: float
     guide_class: str
     board_writing_class: str
-    participation_classes: list[str]
+    stage_interaction_class: str
 
 
 @dataclass(frozen=True)
 class PoseConfig:
+    enabled: bool
     detection_conf: float
     match_iou_threshold: float
     face_kp_conf: float
@@ -54,8 +60,9 @@ class TimelineConfig:
 
 
 @dataclass(frozen=True)
-class MetricsConfig:
-    monitoring_threshold: float
+class PathConfig:
+    median_window_frames: int
+    max_step_ratio: float
 
 
 @dataclass(frozen=True)
@@ -81,40 +88,9 @@ class VisionConfig:
     behavior: BehaviorConfig
     pose: PoseConfig
     timeline: TimelineConfig
-    metrics: MetricsConfig
+    path: PathConfig
     heatmap: HeatmapConfig
     debug_video: DebugVideoConfig
-
-
-@dataclass(frozen=True)
-class DatasetConfig:
-    repo_id: str
-    subset_folder: str
-    raw_dir: Path
-    processed_dir: Path
-    reference_class: str
-    preview_image_count: int
-    preview_seed: int
-    derived_datasets: dict[str, dict[str, str]]
-
-    def subset_dir(self) -> Path:
-        return self.raw_dir / self.subset_folder
-
-    def source_yaml(self) -> Path:
-        return self.subset_dir() / f"{self.subset_folder}.yaml"
-
-    def processed_dataset_dir(self, dataset_name: str) -> Path:
-        return self.processed_dir / dataset_name
-
-    def data_yaml_path(self, dataset_name: str) -> Path:
-        return CONFIGS_DIR / f"data_{dataset_name}.yaml"
-
-
-def load_dataset_config(path: Path = DEFAULT_DATASET_CONFIG) -> DatasetConfig:
-    raw = read_yaml(path)
-    raw["raw_dir"] = resolve_project_path(raw["raw_dir"])
-    raw["processed_dir"] = resolve_project_path(raw["processed_dir"])
-    return DatasetConfig(**raw)
 
 
 def load_vision_config(path: Path = DEFAULT_VISION_CONFIG) -> VisionConfig:
@@ -131,7 +107,7 @@ def load_vision_config(path: Path = DEFAULT_VISION_CONFIG) -> VisionConfig:
         behavior=BehaviorConfig(**raw["behavior"]),
         pose=PoseConfig(**raw["pose"]),
         timeline=TimelineConfig(**raw["timeline"]),
-        metrics=MetricsConfig(**raw["metrics"]),
+        path=PathConfig(**raw["path"]),
         heatmap=HeatmapConfig(**raw["heatmap"]),
         debug_video=DebugVideoConfig(**raw["debug_video"]),
     )
@@ -155,7 +131,7 @@ def with_model_overrides(
     return replace(config, models=models, teacher=teacher)
 
 
-DEFAULT_AUDIO_CONFIG = CONFIGS_DIR / "audio.yaml"
+# --- Audio ----------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -207,6 +183,11 @@ class WaitTimeConfig:
 
 
 @dataclass(frozen=True)
+class ResponsesConfig:
+    response_window_s: float
+
+
+@dataclass(frozen=True)
 class QualityConfig:
     min_avg_logprob: float
     max_no_speech_prob: float
@@ -220,6 +201,7 @@ class AudioConfig:
     diarization: DiarizationConfig
     questions: QuestionsConfig
     wait_time: WaitTimeConfig
+    responses: ResponsesConfig
     quality: QualityConfig
 
 
@@ -232,5 +214,58 @@ def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
         diarization=DiarizationConfig(**raw["diarization"]),
         questions=QuestionsConfig(**raw["questions"]),
         wait_time=WaitTimeConfig(**raw["wait_time"]),
+        responses=ResponsesConfig(**raw["responses"]),
         quality=QualityConfig(**raw["quality"]),
     )
+
+
+# --- Unión de visión y audio ----------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class MonitoringConfig:
+    threshold: float
+
+
+@dataclass(frozen=True)
+class AnalysisConfig:
+    monitoring: MonitoringConfig
+
+
+def load_analysis_config(path: Path = DEFAULT_ANALYSIS_CONFIG) -> AnalysisConfig:
+    raw = read_yaml(path)
+    return AnalysisConfig(monitoring=MonitoringConfig(**raw["monitoring"]))
+
+
+# --- Dataset --------------------------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class DatasetConfig:
+    repo_id: str
+    subset_folder: str
+    raw_dir: Path
+    processed_dir: Path
+    reference_class: str
+    preview_image_count: int
+    preview_seed: int
+    derived_datasets: dict[str, dict[str, str]]
+
+    def subset_dir(self) -> Path:
+        return self.raw_dir / self.subset_folder
+
+    def source_yaml(self) -> Path:
+        return self.subset_dir() / f"{self.subset_folder}.yaml"
+
+    def processed_dataset_dir(self, dataset_name: str) -> Path:
+        return self.processed_dir / dataset_name
+
+    def data_yaml_path(self, dataset_name: str) -> Path:
+        return CONFIGS_DIR / f"data_{dataset_name}.yaml"
+
+
+def load_dataset_config(path: Path = DEFAULT_DATASET_CONFIG) -> DatasetConfig:
+    raw = read_yaml(path)
+    raw["raw_dir"] = resolve_project_path(raw["raw_dir"])
+    raw["processed_dir"] = resolve_project_path(raw["processed_dir"])
+    return DatasetConfig(**raw)

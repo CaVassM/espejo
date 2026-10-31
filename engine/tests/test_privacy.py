@@ -129,6 +129,13 @@ def test_topic_words_are_kept() -> None:
     assert topic_words(None) == set()
 
 
+def test_a_multiword_name_from_the_topic_is_kept() -> None:
+    keep = topic_words("Canto coral a Túpac Amaru (parte 1)")
+    assert not is_name(Entity("Túpac Amaru", "PER", 0, 11, True), PRIVACY, keep)
+    # Un nombre que comparte solo una palabra con el tema sí se tapa
+    assert is_name(Entity("Juan Amaru", "PER", 0, 10, True), PRIVACY, keep)
+
+
 def found_names(finder: object, text: str) -> list[str]:
     names = []
     for span in finder.find(text, {"hija", "hijos"}):

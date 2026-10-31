@@ -64,8 +64,13 @@ class NameFinder(Protocol):
 
 
 def is_name(entity: Entity, config: PrivacyConfig, keep_words: set[str]) -> bool:
-    """PER, MISC o LOC hechos solo de nombres propios. Nunca las palabras a conservar."""
-    if normalize_text(entity.text) in keep_words:
+    """PER, MISC o LOC hechos solo de nombres propios. Nunca las palabras a conservar.
+
+    Un nombre de varias palabras se conserva si todas son del tema o de la lista: con el
+    tema "Canto coral a Túpac Amaru", "Túpac Amaru" no es un alumno.
+    """
+    normalized = normalize_text(entity.text)
+    if normalized in keep_words or set(normalized.split()) <= keep_words:
         return False
     labels = config.person_labels + config.proper_noun_labels
     return entity.label in labels and entity.all_proper_nouns

@@ -186,6 +186,18 @@ async function renderEncuadres() {
   DETS = await cargarDetecciones(DETECTION_SOURCES);
   if (!DETS) { host.remove(); return; }
 
+  /* Red de seguridad: las cajas deben ser de ESTA clase. Si la duración no
+     coincide con la del reporte, vienen de otra sesión y no se dibuja nada.
+     Un cuadro sobre la persona equivocada es peor que no mostrar cuadro. */
+  const duracionReporte = REPORT?.metadata?.duration_s;
+  if (duracionReporte && DETS.duration_s &&
+      Math.abs(DETS.duration_s - duracionReporte) > 2) {
+    console.warn("Encuadres descartados: son de otra clase",
+      { deteccion: DETS.duration_s, reporte: duracionReporte });
+    host.remove();
+    return;
+  }
+
   const video = document.querySelector("#vid");
   const card = chartCard({
     title: "Lo que vieron los modelos", rubric: "visión", wide: true,

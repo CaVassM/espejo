@@ -777,10 +777,18 @@ let   HEATMAP_URL = HEATMAP_SOURCES[0];
 
 /* Las cajas que detectaron los modelos. La API todavía no las sirve, así que
    fuera de desarrollo se usan las que viajan con la web. */
-const DETECTION_SOURCES = IS_DEV && !ANALYSIS_ID
-  ? ["../../outputs/clase/detections.json", "./demo/detections.json"]
-  : ["./demo/detections.json"];
-const BACKGROUND_URL = "./demo/background.png";
+/* Las cajas tienen que ser LAS DE ESTA CLASE. Una clase recién analizada solo
+   puede tomarlas de la API; si esa ruta todavía no existe, no se dibujan cajas.
+   Caer al ejemplo dibujaría las detecciones de otra aula sobre este video, que
+   es justo lo que un producto sobre evidencias no puede hacer. */
+const DETECTION_SOURCES = ANALYSIS_ID
+  ? [`${API_BASE}/api/analyses/${encodeURIComponent(ANALYSIS_ID)}/detections`]
+  : IS_DEV
+    ? ["../../outputs/clase/detections.json", "./demo/detections.json"]
+    : ["./demo/detections.json"];
+const BACKGROUND_URL = ANALYSIS_ID
+  ? `${API_BASE}/api/analyses/${encodeURIComponent(ANALYSIS_ID)}/background.png`
+  : "./demo/background.png";
 
 /* Umbrales citados en el reporte; se muestran como REFERENCIA, nunca como nota. */
 const REF_MONITORING = 0.25;  // manual Minedu, R3: al menos 25 % de la sesión

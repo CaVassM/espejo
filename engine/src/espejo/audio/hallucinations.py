@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass
 
-from espejo.audio.schemas import SpeechInterval, TranscriptSegment
+from espejo.audio.schemas import STUDENT_PLACEHOLDER, SpeechInterval, TranscriptSegment
 from espejo.common.ratios import safe_ratio
 from espejo.common.text import normalize_text
 from espejo.config import HallucinationConfig
@@ -42,6 +42,9 @@ class HallucinationFilter:
         La regla de la voz solo se aplica a segmentos cortos: Silero no oye bien a quien habla
         lejos o bajo, y en segmentos largos borraba habla real (p. ej. respuestas de alumnos).
         """
+        if segment.text == STUDENT_PLACEHOLDER:
+            # Ya se revisó al anonimizar, cuando todavía tenía el texto del alumno
+            return False
         if is_typical_hallucination(segment, self.config.phrases):
             return True
         if len(segment.text.split()) > self.config.max_words_for_vad_check:

@@ -34,6 +34,7 @@ class VideoDetectionRunner:
 
     def run(self, video_path: Path, output_dir: Path) -> DetectionRun:
         sampler = FrameSampler(video_path, self.config.sampling.sample_fps)
+        self.teacher_detector.reset_tracking()
         frames = []
 
         for frame in sampler.frames():

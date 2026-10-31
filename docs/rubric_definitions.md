@@ -169,7 +169,8 @@ intimidarlos, humillarlos, insultarlos, agredirlos o castigarlos físicamente".
   ya brindada (R2, nivel I).
 - `question_rhetorical`: se hace "sin esperar una respuesta del estudiante" (R2, nivel I),
   incluidas las muletillas como "¿no?", "¿ya?", "¿cierto?".
-- `feedback_discovery`, `feedback_descriptive`, `feedback_elemental`, `feedback_incorrect`:
+- `feedback_discovery`, `feedback_descriptive`, `feedback_elemental` (la incorrecta no se
+  marca: el LLM no ve lo que respondió el alumno, que se anonimiza):
   los cuatro tipos de R3. Un "muy bien" motivacional no es retroalimentación incorrecta.
 - `regulation_formative`, `regulation_external_control`, `regulation_mistreatment`: los tres
   tipos de mecanismos de R5. Felicitar por una tarea bien hecha no es regulación.

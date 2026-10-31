@@ -1,7 +1,7 @@
 # Módulo LLM: entiende el significado de lo que dice el docente. Solo recibe TEXTO
 # (transcripción y métricas), nunca audio ni video. No pone notas: marca evidencias con su cita.
 
-provider: ollama                 # ollama | anthropic | none
+provider: cohere                 # cohere | ollama | anthropic | none
 definitions_path: docs/rubric_definitions.md   # parte fija del prompt, fiel al manual del Minedu
 max_attempts: 2                  # si la respuesta no es un JSON válido, se reintenta una vez
 
@@ -27,6 +27,30 @@ anthropic:
   fallback_beta: server-side-fallback-2026-07-01
   input_usd_per_million_tokens: 2.0
   output_usd_per_million_tokens: 10.0
+
+cohere:
+  # Command A (03-2025): JSON con esquema, 256k de contexto, hasta 8k de respuesta y multilingüe
+  # (español incluido). Command A+ es más nuevo, pero Cohere pide contactar a ventas para usarlo
+  # en producción; Command R y R+ antiguos quedaron obsoletos (sept. 2025).
+  model: command-a-03-2025
+  api_key_env_var: COHERE_API_KEY  # se lee de .env; si no está, el proveedor no está disponible
+  temperature: 0
+  max_tokens: 8000
+  # Con 10 min de clase, la lista de preguntas es larga, y los primeros llamados con un esquema
+  # nuevo tardan más (Cohere lo compila y luego lo guarda): 120 s no alcanzaron.
+  request_timeout_s: 300
+  # Key de prueba (gratis): 20 llamados por minuto y 1.000 al mes. Se espera lo necesario
+  # entre llamados y, si igual llega un "demasiadas peticiones", se reintenta.
+  max_calls_per_minute: 20
+  rate_limit_retries: 2
+  rate_limit_wait_s: 30
+  # La key de prueba no cobra. Con una key de producción, pon aquí los precios de cohere.com/pricing
+  input_usd_per_million_tokens: 0.0
+  output_usd_per_million_tokens: 0.0
+  # Con 256k de contexto alcanzan ventanas de 10 min: ~11 a 16 llamados por clase de 45 min
+  windows:
+    window_s: 600
+    overlap_s: 20
 
 windows:
   window_s: 180                  # ventanas de ~3 min...

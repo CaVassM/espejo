@@ -1,0 +1,35 @@
+# Worker en Modal (services/worker): corre VER sobre el video de una clase.
+# El contrato con el backend está en docs/worker_contract.md.
+
+app_name: espejo-worker
+
+# --- Procesamiento (GPU) ---
+gpu: T4                        # 16 GB: YOLO, Whisper turbo, pyannote y spaCy caben juntos
+timeout_s: 3600                # una clase de 45 min tarda bastante menos; margen amplio
+scaledown_window_s: 120        # el contenedor se apaga a los 2 min sin trabajo (nada siempre encendido)
+max_containers: 1              # una GPU a la vez: los videos esperan en cola y el gasto queda acotado
+
+# --- Endpoints web (CPU) ---
+web_timeout_s: 900             # la subida de un video grande puede tardar varios minutos
+web_scaledown_window_s: 60
+web_max_inputs: 20             # peticiones a la vez por contenedor web
+max_upload_mb: 1024
+upload_chunk_mb: 8
+allowed_extensions: [.mp4, .mov, .m4v, .mkv, .webm, .avi]
+# CORS: páginas que pueden subir videos desde el navegador (además de FRONTEND_ORIGINS en el
+# Secret). Las subidas igual necesitan el permiso firmado por la API o el código de acceso.
+cors_origin_regex: "https://.*\\.vercel\\.app|http://localhost(:\\d+)?|http://127\\.0\\.0\\.1(:\\d+)?"
+
+# --- Estado y resultados ---
+job_ttl_days: 7                # los resultados se borran a los 7 días (el estado también expira solo)
+
+# --- Callback opcional al backend (si API_BASE_URL está en el Secret) ---
+callback_timeout_s: 90           # Render gratis tarda ~1 min en despertar
+callback_attempts: 3
+callback_backoff_s: 5
+
+# --- Nombres en Modal ---
+models_volume: espejo-models   # teacher.pt, behavior.pt y la caché de Whisper y pyannote
+jobs_volume: espejo-jobs       # videos (temporales) y resultados
+jobs_dict: espejo-jobs         # estado de cada trabajo
+secret_name: espejo-secrets    # HF_TOKEN, WORKER_TOKEN, UPLOAD_ACCESS_CODE y API_BASE_URL (opcional)

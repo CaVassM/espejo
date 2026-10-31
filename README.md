@@ -51,7 +51,7 @@ cambiar umbrales: `python scripts/interpret.py --run outputs/<video>/`.
 | Whisper large-v3-turbo | No (preentrenado) | Transcribir: qué se dijo |
 | Silero VAD | No (preentrenado) | Cuándo hay voz |
 | pyannote speaker-diarization-3.1 | No (preentrenado) | Quién habla |
-| LLM: Qwen 2.5 en Ollama (local) o Anthropic `claude-sonnet-5-5` | No (preentrenado) | Entender el significado de lo que dice el docente |
+| LLM: Cohere `command-a-03-2025`, Qwen 2.5 en Ollama (local) o Anthropic `claude-sonnet-5-5` | No (preentrenado) | Entender el significado de lo que dice el docente |
 
 Resultados de los modelos entrenados (YOLOv8s, 30 épocas, imgsz 640, split val del autor):
 
@@ -196,13 +196,21 @@ Sin diarización, todas las líneas dicen `HABLANTE`. Los segmentos de baja conf
 El LLM **solo recibe texto**: la transcripción (`[mm:ss] DOCENTE: ...`), las preguntas que marcó
 el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles I-IV.
 
-- **Proveedor** en [`configs/llm.yaml`](configs/llm.yaml): `ollama` (por defecto, local y sin
-  costo) o `anthropic`. Con Ollama se usa `qwen2.5:14b` si la GPU tiene 12 GB o más; si no,
-  `qwen2.5:7b`. Instalación: `winget install Ollama.Ollama` y `ollama pull qwen2.5:7b`. Con
-  Anthropic, la clave va en `.env` como `ANTHROPIC_API_KEY`; si no está, no falla.
+- **Proveedor** en [`configs/llm.yaml`](configs/llm.yaml): `cohere` (por defecto), `ollama`
+  (local y sin costo) o `anthropic`. La clave de cada uno va en `.env` (ver `.env.example`); si
+  falta, no falla: el reporte sale con las reglas de respaldo y dice "sin análisis LLM".
+  - **Cohere:** `command-a-03-2025` (JSON con esquema, 256k de contexto, multilingüe), con su
+    SDK oficial y `COHERE_API_KEY` (https://dashboard.cohere.com/api-keys). La key de prueba es
+    gratis, con 20 llamados por minuto y 1.000 al mes: el cliente espacia los llamados (3 s) y
+    usa ventanas de 10 min, unos 11 a 16 llamados por clase de 45 min.
+  - **Ollama:** `qwen2.5:14b` si la GPU tiene 12 GB o más; si no, `qwen2.5:7b`. Instalación:
+    `winget install Ollama.Ollama` y `ollama pull qwen2.5:7b`.
+  - **Anthropic:** `ANTHROPIC_API_KEY`.
+  - No se usa LangChain: cada proveedor es un cliente pequeño con la misma interfaz (prompt y
+    esquema → JSON validado).
 - **Parte fija del prompt:** [`docs/rubric_definitions.md`](docs/rubric_definitions.md), con las
   definiciones del manual del Minedu citadas textualmente y con su página.
-- **Ventanas** de ~3 min con 20 s de solapamiento. Por ventana hay dos llamados (eventos y
+- **Ventanas** de ~3 min (10 min con Cohere) con 20 s de solapamiento. Por ventana hay dos llamados (eventos y
   preguntas) y la unión elimina los duplicados.
 - **Validación anti-invento:** toda cita debe existir textualmente en la transcripción, en la
   línea de su minuto (±2 s); si no, se descarta y se cuenta como evidencia rechazada. Las clases
@@ -222,6 +230,36 @@ el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles 
   reporte dice "sin análisis LLM".
 - El LLM corre al final, cuando YOLO y Whisper ya liberaron la GPU, y al terminar libera la suya.
 - El reporte guarda proveedor, modelo, tokens, tiempo y costo (0 con Ollama).
+
+## Worker en Modal (VER en la nube)
+
+El worker ([`services/worker/`](services/worker/)) corre VER en una GPU T4 de Modal y entrega
+`detections.json`, `audio_raw.json` (anonimizado) y el heatmap. El contrato con el backend está
+en [`docs/worker_contract.md`](docs/worker_contract.md).
+
+```bash
+python scripts/upload_weights.py         # sube teacher.pt y behavior.pt al Volume espejo-models
+python scripts/sync_modal_secrets.py     # crea o actualiza el Secret espejo-secrets desde .env
+modal deploy services/worker/modal_app.py
+python scripts/check_modal_worker.py     # /health y pesos en el Volume
+python scripts/test_modal_worker.py --video samples/clip.mp4 --delete-after
+```
+
+En GitHub, `deploy-modal.yml` despliega solo cuando cambia el motor, el worker o los configs en
+`main`, y solo si la CI pasa.
+
+## API en Render (lógica y reporte)
+
+La API ([`services/api/`](services/api/)) crea los análisis, entrega al frontend un permiso
+firmado para subir el video directo al worker de Modal, sigue al worker (o recibe su aviso),
+corre INTERPRETAR con `engine/` y Cohere, y guarda el reporte en Postgres. Contrato con el
+frontend: [`docs/api_contract.md`](docs/api_contract.md).
+
+- Despliegue: [`render.yaml`](render.yaml) (Blueprint: la API y la base de datos, plan gratis).
+  Variables: `WORKER_TOKEN` (el mismo del worker), `UPLOAD_ACCESS_CODE`, `COHERE_API_KEY` y,
+  opcional, `FRONTEND_ORIGINS`.
+- En tu PC: `cd services/api && uvicorn app.main:create_app --factory --reload` (usa SQLite si
+  no hay `DATABASE_URL`).
 
 ## Manual de rúbricas del Minedu
 
@@ -266,6 +304,12 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 6. **Silero no oye bien voces lejanas.** Por eso la regla de "texto inventado sin voz" solo se
    aplica a segmentos de 3 palabras o menos; aun así puede borrar frases reales muy cortas.
 
+7. **Sin retroalimentación incorrecta.** Por privacidad, lo que dicen los alumnos llega al LLM
+   como "[ALUMNO responde]". Sin la respuesta no se puede juzgar si el docente dio por buena una
+   respuesta equivocada, así que esa categoría del manual (R3) no se marca.
+8. **Nombres tapados con un modelo.** spaCy `es_core_news_md` más una lista de nombres comunes en el Perú (`configs/names_pe.yaml`) a veces tapa una palabra
+   de más (p. ej. "Analizar" al inicio de una frase) o deja pasar un nombre poco común.
+
 ## Mejoras futuras
 
 - Marcar una vez la zona de carpetas en el primer frame, para distinguir mejor guiar en carpetas
@@ -303,7 +347,7 @@ espejo/
 │   │   └── training.py     entrenamiento y evaluación de los detectores
 │   └── tests/              tests de la lógica pura
 ├── services/
-│   ├── api/                API para Render (por capas: routers, services, repositories, schemas)
+│   ├── api/                API en Render: análisis, permiso de subida, reporte (Postgres)
 │   └── worker/             worker para Modal: corre VER con el motor completo
 ├── web/                    frontend (landing page y app)
 ├── configs/                vision.yaml, audio.yaml, analysis.yaml, llm.yaml y YAML de los datasets

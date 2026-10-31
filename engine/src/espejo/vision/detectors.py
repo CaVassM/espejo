@@ -78,6 +78,14 @@ class TeacherDetector:
         self.models_config = models_config
         self.teacher_config = teacher_config
 
+    def reset_tracking(self) -> None:
+        """Cada video empieza con el seguimiento en cero: el modelo se reutiliza entre videos."""
+        predictor = self.tracking_model.predictor
+        if predictor is None:
+            return
+        for tracker in getattr(predictor, "trackers", []):
+            tracker.reset()
+
     def track(self, frame: Frame) -> list[Detection]:
         """Detecciones con track_id; si el tracker no entrega nada, detecciones sin track_id.
 

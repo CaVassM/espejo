@@ -6,6 +6,7 @@ from pathlib import Path
 from espejo.audio.capture_io import AUDIO_RAW_FILENAME, save_audio_capture
 from espejo.audio.diarization import SpeakerDiarizer
 from espejo.audio.extraction import AudioExtractor
+from espejo.audio.privacy import Anonymizer
 from espejo.audio.schemas import AudioCapture
 from espejo.audio.transcriber import Transcriber
 from espejo.audio.voice_activity import VoiceActivityDetector
@@ -22,6 +23,9 @@ class AudioCaptureRunner:
         self.transcriber = Transcriber(config.transcription, model_override)
         self.voice_detector = VoiceActivityDetector(config.voice_activity, sample_rate_hz)
         self.diarizer = SpeakerDiarizer(config.diarization, sample_rate_hz)
+        self.anonymizer = None
+        if config.privacy.enabled:
+            self.anonymizer = Anonymizer(config.privacy, config.hallucinations)
 
     def run(
         self, video_path: Path, output_dir: Path, keep_audio: bool, topic: str | None = None
@@ -44,5 +48,8 @@ class AudioCaptureRunner:
             if not keep_audio:
                 audio.remove()
 
+        # El texto original de los alumnos nunca llega a disco
+        if self.anonymizer is not None:
+            capture = self.anonymizer.anonymize(capture)
         save_audio_capture(capture, output_dir / AUDIO_RAW_FILENAME)
         return capture

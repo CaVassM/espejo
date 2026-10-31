@@ -132,17 +132,30 @@ Prioridad: **board_writing > guide > other**.
 `low_confidence_audio_ratio`, `discarded_hallucinated_segments`, `speech_ratio`,
 `diarization_used`, `diarization_note` y una lista de avisos (`notes`).
 
+## Privacidad (al final de VER)
+
+Antes de guardar `audio_raw.json`:
+
+- Todo segmento que no es del docente pasa a `"[ALUMNO responde]"`, con su minuto y su duración;
+  su texto y sus palabras se descartan. Antes se le aplica el filtro de texto inventado.
+- En las líneas del docente, los nombres pasan a `"[NOMBRE]"` (spaCy `es_core_news_md` y la lista de respaldo `configs/names_pe.yaml`): una
+  entidad PER, MISC o LOC hecha solo de nombres propios, salvo `privacy.keep_words` y las
+  palabras del tema.
+- Docente y alumnos se distinguen con la misma regla de INTERPRETAR (el que más habla es el
+  docente). Sin diarización, todo pasa a `"[ALUMNO responde]"`.
+
 ## LLM (solo texto)
 
 El LLM recibe la transcripción, las preguntas candidatas y las métricas; nunca audio ni video.
-Proveedor en `configs/llm.yaml` (`ollama` por defecto, `anthropic` opcional). Parte fija del
-prompt: `docs/rubric_definitions.md`. Ventanas de `window_s` con `overlap_s` de solapamiento;
+Proveedor en `configs/llm.yaml` (`cohere` por defecto; `ollama` y `anthropic` opcionales). Parte
+fija del prompt: `docs/rubric_definitions.md`. Ventanas de `window_s` con `overlap_s` de
+solapamiento (Cohere usa las suyas, `cohere.windows`, más largas);
 por ventana, un llamado de eventos y otro de preguntas; la unión elimina duplicados.
 
 | Clase | Rúbrica | Qué marca |
 |---|---|---|
 | `question_open` / `question_closed` / `question_rhetorical` | R2 | Clasificación de cada pregunta candidata. Las retóricas no cuentan como preguntas, ni para la espera, ni para el monitoreo. Una pregunta con respuesta de un alumno nunca es retórica: si el LLM la marca así, se le vuelve a pedir solo entre abierta y cerrada; si insiste, se rechaza. |
-| `feedback_discovery` / `feedback_descriptive` / `feedback_elemental` / `feedback_incorrect` | R3 | Retroalimentación del docente después de una respuesta. |
+| `feedback_discovery` / `feedback_descriptive` / `feedback_elemental` | R3 | Retroalimentación del docente después de una respuesta. La incorrecta no se marca: el LLM no ve lo que respondió el alumno. |
 | `regulation_formative` / `regulation_external_control` / `regulation_mistreatment` | R5 (maltrato también R4) | Mecanismos de regulación del comportamiento. |
 | `participation_invitation` | R1 | Se dirige a UN estudiante para que participe (nombre, "a ver tú", "hija"). Las preguntas a toda la clase no cuentan. |
 | `respect_issue` | R4 | Apodos, burlas o insultos. |

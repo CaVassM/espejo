@@ -1,6 +1,6 @@
 line-length = 100
 target-version = "py311"
-src = ["engine/src", "services/api"]
+src = ["engine/src", "services/api", "services/worker"]
 extend-exclude = ["data", "runs", "outputs", "weights", "samples", "web"]
 
 [lint]

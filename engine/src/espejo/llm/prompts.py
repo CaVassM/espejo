@@ -121,10 +121,9 @@ Reglas obligatorias:
 EVENTS_TASK = """\
 Tarea: revisa TODA la transcripción y marca:
 - feedback: lo que dice el docente justo DESPUÉS de una respuesta de un alumno, según los
-  cuatro tipos del manual: feedback_incorrect, feedback_elemental, feedback_descriptive,
-  feedback_discovery. Por ejemplo, "Muy bien" tras una respuesta es feedback_elemental.
-  feedback_incorrect es SOLO cuando el docente da información errónea o da por correcta una
-  respuesta equivocada (o al revés). Un "muy bien" para animar NO es feedback_incorrect.
+  tipos del manual: feedback_elemental, feedback_descriptive, feedback_discovery. Por ejemplo,
+  "Muy bien" tras una respuesta es feedback_elemental. Lo que dicen los alumnos aparece como
+  "[ALUMNO responde]": no juzgues si su respuesta era correcta.
 - regulation: mecanismos para regular el comportamiento: regulation_formative,
   regulation_external_control, regulation_mistreatment.
 - participation: participation_invitation SOLO cuando el docente se dirige a UN estudiante en

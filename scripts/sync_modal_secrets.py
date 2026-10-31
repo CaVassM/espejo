@@ -10,7 +10,7 @@ from espejo.common.config_io import CONFIGS_DIR, read_yaml
 from espejo.common.env import read_secret
 
 REQUIRED_KEYS = ["HF_TOKEN", "WORKER_TOKEN", "UPLOAD_ACCESS_CODE"]
-OPTIONAL_KEYS = ["API_BASE_URL"]
+OPTIONAL_KEYS = ["API_BASE_URL", "FRONTEND_ORIGINS"]
 
 
 def collect_values() -> dict[str, str]:

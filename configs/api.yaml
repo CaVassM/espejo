@@ -1,0 +1,17 @@
+# API en Render (services/api): crea los análisis, conecta con el worker de Modal y arma el
+# reporte (INTERPRETAR: métricas, ficha por rúbrica y LLM). Los secretos van como variables de
+# entorno en Render (ver render.yaml), nunca aquí.
+
+worker_url: https://cavassm--espejo-worker-web.us-east.modal.run
+
+# Permiso de subida: Render lo firma y el frontend lo usa para subir el video directo a Modal
+upload_ticket_ttl_s: 3600        # una hora para empezar la subida
+
+# CORS: qué páginas pueden llamar a la API desde el navegador. Además se aceptan las de la
+# variable de entorno FRONTEND_ORIGINS (separadas por comas), p. ej. el dominio propio en Vercel.
+cors_origin_regex: "https://.*\\.vercel\\.app|http://localhost(:\\d+)?|http://127\\.0\\.0\\.1(:\\d+)?"
+
+# Sin DATABASE_URL (en tu PC), se usa este SQLite local; en Render, el Postgres del Blueprint
+local_database_url: sqlite:///./espejo_api.db
+
+worker_timeout_s: 120            # llamados al worker (estado y resultado)

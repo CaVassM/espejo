@@ -1,0 +1,50 @@
+# Blueprint de Render: la API de Espejo (services/api) y su base de datos Postgres.
+# En Render: New -> Blueprint -> este repositorio. Pide los valores marcados con sync: false.
+#
+# Sin rootDir a propósito: la API necesita engine/, configs/ y docs/ (fuera de services/api), y
+# Render no deja ver archivos fuera del rootDir. Por eso los comandos entran a services/api.
+
+services:
+  - type: web
+    name: espejo-api
+    runtime: python
+    plan: free
+    region: virginia              # cerca del worker de Modal (us-east)
+    buildCommand: cd services/api && pip install -r requirements.txt
+    startCommand: cd services/api && uvicorn app.main:create_app --factory --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    autoDeploy: true
+    buildFilter:
+      paths:
+        - services/api/**
+        - engine/src/**
+        - engine/pyproject.toml
+        - configs/**
+        - docs/rubric_definitions.md
+        - render.yaml
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.11
+      - key: DATABASE_URL
+        fromDatabase:
+          name: espejo-db
+          property: connectionString
+      # El mismo valor que en el Secret de Modal (lo comparten la API y el worker)
+      - key: WORKER_TOKEN
+        sync: false
+      # El código que escribe el profesor en el frontend para crear un análisis
+      - key: UPLOAD_ACCESS_CODE
+        sync: false
+      # LLM de INTERPRETAR (configs/llm.yaml: provider cohere)
+      - key: COHERE_API_KEY
+        sync: false
+      # Dominio propio del frontend, si no es *.vercel.app (separados por comas). Puede ir vacío.
+      - key: FRONTEND_ORIGINS
+        sync: false
+
+databases:
+  - name: espejo-db
+    plan: free
+    region: virginia
+    databaseName: espejo
+    user: espejo

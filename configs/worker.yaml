@@ -16,12 +16,15 @@ web_max_inputs: 20             # peticiones a la vez por contenedor web
 max_upload_mb: 1024
 upload_chunk_mb: 8
 allowed_extensions: [.mp4, .mov, .m4v, .mkv, .webm, .avi]
+# CORS: páginas que pueden subir videos desde el navegador (además de FRONTEND_ORIGINS en el
+# Secret). Las subidas igual necesitan el permiso firmado por la API o el código de acceso.
+cors_origin_regex: "https://.*\\.vercel\\.app|http://localhost(:\\d+)?|http://127\\.0\\.0\\.1(:\\d+)?"
 
 # --- Estado y resultados ---
 job_ttl_days: 7                # los resultados se borran a los 7 días (el estado también expira solo)
 
 # --- Callback opcional al backend (si API_BASE_URL está en el Secret) ---
-callback_timeout_s: 30
+callback_timeout_s: 90           # Render gratis tarda ~1 min en despertar
 callback_attempts: 3
 callback_backoff_s: 5
 

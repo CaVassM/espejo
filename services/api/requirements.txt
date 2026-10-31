@@ -1,6 +1,9 @@
-# API (Render). El motor se instala sin extras: solo INTERPRETAR, sin torch.
+# API (Render). El motor se instala sin extras: solo INTERPRETAR (con Cohere), sin torch.
 # La ruta del motor es relativa a services/api, la carpeta desde donde se instala.
 # Editable (-e): el motor busca configs/ y docs/ en la raíz del repo, junto a engine/.
 fastapi>=0.115
 uvicorn[standard]>=0.30
+sqlalchemy>=2.0
+psycopg[binary]>=3.2
+httpx>=0.27
 -e ../../engine

@@ -10,12 +10,16 @@ from fastapi.testclient import TestClient
 from espejo_worker.jobs import Stage, with_stage
 from espejo_worker.processing import ContainerInfo, ProcessingDeps, process_job, read_local
 from espejo_worker.settings import WorkerSecrets, load_settings
+from espejo_worker.tickets import signature
 from espejo_worker.web import WebDeps, create_app
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 SETTINGS = load_settings(REPO_ROOT / "configs" / "worker.yaml")
 SECRETS = WorkerSecrets(
-    worker_token="token-de-prueba", upload_access_code="codigo", api_base_url=None
+    worker_token="token-de-prueba",
+    upload_access_code="codigo",
+    api_base_url=None,
+    frontend_origins=[],
 )
 AUTH = {"Authorization": "Bearer token-de-prueba"}
 
@@ -171,3 +175,53 @@ def test_stage_timings() -> None:
     job = with_stage(job, Stage.AUDIO, 65.0)
     job = with_stage(job, Stage.DONE, 95.0)
     assert job["timings"] == {"queued_s": 5.0, "video_s": 60.0, "audio_s": 30.0, "total_s": 95.0}
+
+
+def ticket_for(analysis_id: str, expires_at_s: int, secret: str = "token-de-prueba") -> str:
+    return f"{analysis_id}.{expires_at_s}.{signature(analysis_id, expires_at_s, secret)}"
+
+
+def upload_with_ticket(world: World, ticket: str, analysis_id: str = "abc123") -> object:
+    files = {"video": ("clase.mp4", b"video de prueba", "video/mp4")}
+    return world.client.post(
+        "/jobs",
+        files=files,
+        data={"analysis_id": analysis_id},
+        headers={"X-Upload-Ticket": ticket},
+    )
+
+
+def test_ticket_from_render_uses_the_analysis_id_as_job_id(world: World) -> None:
+    response = upload_with_ticket(world, ticket_for("abc123", 9_999_999_999))
+
+    assert response.status_code == 202
+    assert response.json()["job_id"] == "abc123"
+    assert response.json()["analysis_id"] == "abc123"
+    assert world.spawned == ["abc123"]
+
+
+def test_ticket_is_single_use(world: World) -> None:
+    ticket = ticket_for("abc123", 9_999_999_999)
+    upload_with_ticket(world, ticket)
+    assert upload_with_ticket(world, ticket).status_code == 409
+
+
+def test_expired_forged_or_foreign_tickets_are_rejected(world: World) -> None:
+    expired = ticket_for("abc123", 5)
+    forged = ticket_for("abc123", 9_999_999_999, secret="otro-secreto")
+    foreign = ticket_for("otro", 9_999_999_999)
+
+    assert upload_with_ticket(world, expired).status_code == 401
+    assert upload_with_ticket(world, forged).status_code == 401
+    assert upload_with_ticket(world, foreign, analysis_id="abc123").status_code == 401
+    assert world.spawned == []
+
+
+def test_cors_lets_vercel_upload(world: World) -> None:
+    headers = {
+        "Origin": "https://espejo.vercel.app",
+        "Access-Control-Request-Method": "POST",
+        "Access-Control-Request-Headers": "x-upload-ticket",
+    }
+    response = world.client.options("/jobs", headers=headers)
+    assert response.headers["access-control-allow-origin"] == "https://espejo.vercel.app"

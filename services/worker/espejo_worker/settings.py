@@ -22,6 +22,7 @@ class WorkerSettings:
     max_upload_mb: int
     upload_chunk_mb: int
     allowed_extensions: list[str]
+    cors_origin_regex: str
     job_ttl_days: int
     callback_timeout_s: float
     callback_attempts: int
@@ -45,6 +46,7 @@ class WorkerSecrets:
     worker_token: str
     upload_access_code: str
     api_base_url: str | None
+    frontend_origins: list[str]
 
 
 def load_settings(path: Path) -> WorkerSettings:
@@ -56,8 +58,13 @@ def load_secrets() -> WorkerSecrets:
     api_base_url = os.environ.get("API_BASE_URL") or None
     if api_base_url is not None:
         api_base_url = api_base_url.rstrip("/")
+    origins = []
+    for origin in os.environ.get("FRONTEND_ORIGINS", "").split(","):
+        if origin.strip():
+            origins.append(origin.strip().rstrip("/"))
     return WorkerSecrets(
         worker_token=os.environ["WORKER_TOKEN"],
         upload_access_code=os.environ["UPLOAD_ACCESS_CODE"],
         api_base_url=api_base_url,
+        frontend_origins=origins,
     )

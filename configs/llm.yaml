@@ -36,7 +36,9 @@ cohere:
   api_key_env_var: COHERE_API_KEY  # se lee de .env; si no está, el proveedor no está disponible
   temperature: 0
   max_tokens: 8000
-  request_timeout_s: 120
+  # Con 10 min de clase, la lista de preguntas es larga, y los primeros llamados con un esquema
+  # nuevo tardan más (Cohere lo compila y luego lo guarda): 120 s no alcanzaron.
+  request_timeout_s: 300
   # Key de prueba (gratis): 20 llamados por minuto y 1.000 al mes. Se espera lo necesario
   # entre llamados y, si igual llega un "demasiadas peticiones", se reintenta.
   max_calls_per_minute: 20

@@ -430,3 +430,20 @@ def test_answered_question_never_stays_rhetorical(tmp_path: Path) -> None:
 def test_answered_questions_schema_only_allows_open_or_closed() -> None:
     item_schema = ANSWERED_QUESTIONS_SCHEMA["properties"]["questions"]["items"]
     assert item_schema["properties"]["label"]["enum"] == ["question_open", "question_closed"]
+
+
+def test_quote_with_the_speaker_label_is_accepted(tmp_path: Path) -> None:
+    segments = [make_segment(16.0, "Muy bien, felicitaciones hija", SpeakerRole.TEACHER)]
+    feedback = {
+        "label": "feedback_elemental",
+        "quote": "DOCENTE: Muy bien, felicitaciones hija",
+        "timestamp": "00:16",
+        "reason": "solo confirma",
+        "confidence": "alta",
+    }
+    analyzer = analyzer_with(FakeClient([classification_reply(feedback=[feedback])]), tmp_path)
+
+    analysis = analyzer.classify(segments, [], topic=None)
+
+    assert len(analysis.feedback) == 1
+    assert analysis.feedback[0].quote == "Muy bien, felicitaciones hija"

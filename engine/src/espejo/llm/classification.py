@@ -4,6 +4,7 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
+from espejo.analysis.transcript import ROLE_LABELS
 from espejo.audio.schemas import QuestionCategory
 from espejo.config import LlmConfig
 from espejo.llm.clients import LlmClient, LlmError, complete_json
@@ -64,12 +65,26 @@ class ClassificationResult:
     failed_windows: int
 
 
+def without_speaker_label(quote: str) -> str:
+    """Algunos modelos copian la cita con la etiqueta de la línea ("DOCENTE: Muy bien").
+
+    La etiqueta es parte del formato de la transcripción, no lo que se dijo: se quita para que
+    la validación busque solo el texto.
+    """
+    stripped = quote.strip()
+    for label in ROLE_LABELS.values():
+        prefix = f"{label}:"
+        if stripped.startswith(prefix):
+            return stripped[len(prefix) :].strip()
+    return stripped
+
+
 def evidence_from_raw(raw: dict[str, Any], kind: EvidenceKind, timestamp_s: float) -> Evidence:
     return Evidence(
         kind=kind,
         label=raw["label"],
         timestamp_s=timestamp_s,
-        quote=raw["quote"],
+        quote=without_speaker_label(raw["quote"]),
         reason=raw["reason"],
         confidence=raw["confidence"],
         addressee=raw.get("addressee"),

@@ -119,3 +119,13 @@ def test_api_errors_become_llm_errors() -> None:
 def test_cohere_uses_longer_windows() -> None:
     assert replace(LLM_CONFIG, provider="cohere").active_windows().window_s == 600
     assert replace(LLM_CONFIG, provider="ollama").active_windows().window_s == 180
+
+
+def test_a_network_timeout_is_retried_then_reported_without_crashing() -> None:
+    httpx = pytest.importorskip("httpx")
+    timeouts = [httpx.ReadTimeout("lento")] * (COHERE.rate_limit_retries + 1)
+    client, sdk, _ = client_with(timeouts)
+
+    with pytest.raises(LlmError):
+        client.send("hola", SUGGESTION_SCHEMA)
+    assert len(sdk.calls) == COHERE.rate_limit_retries + 1

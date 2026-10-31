@@ -223,7 +223,12 @@ class CohereClient:
             # Import local: el SDK solo hace falta si se elige este proveedor
             import cohere
 
-            sdk_client = cohere.ClientV2(api_key=api_key, timeout=config.request_timeout_s)
+            # El SDK marca el esquema como "experimental": sin ese aviso en cada llamado
+            sdk_client = cohere.ClientV2(
+                api_key=api_key,
+                timeout=config.request_timeout_s,
+                log_warning_experimental_features=False,
+            )
         self.config = config
         self.model = config.model
         self.sdk_client = sdk_client
@@ -254,6 +259,8 @@ class CohereClient:
         self.last_call_s = self.clock()
 
     def chat_with_retries(self, prompt: str, schema: dict[str, Any]) -> Any:
+        """Reintenta si Cohere pide esperar o si tarda; si no, la ventana queda sin clasificar."""
+        import httpx
         from cohere.core.api_error import ApiError
         from cohere.errors import TooManyRequestsError
 
@@ -275,9 +282,15 @@ class CohereClient:
                     ) from error
                 logger.warning("Cohere pidió esperar (intento %d)", attempt)
                 self.sleep(self.config.rate_limit_wait_s)
+            except httpx.TimeoutException as error:
+                if attempt > self.config.rate_limit_retries:
+                    raise LlmError("Cohere no respondió a tiempo.") from error
+                logger.warning("Cohere tardó demasiado (intento %d); se reintenta", attempt)
             except ApiError as error:
                 # Key inválida, modelo inexistente, etc.: la ventana queda sin clasificar
                 raise LlmError(f"Cohere respondió con error {error.status_code}.") from error
+            except httpx.HTTPError as error:
+                raise LlmError(f"Sin conexión con Cohere ({type(error).__name__}).") from error
         raise LlmError("Cohere no respondió.")
 
     def release(self) -> None:

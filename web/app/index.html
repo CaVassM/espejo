@@ -349,6 +349,12 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
 .check-say b{color:var(--ink)}
 
 /* ---------- recomendaciones de IA ---------- */
+.tip-h{cursor:pointer;list-style:none;user-select:none}
+.tip-h::-webkit-details-marker{display:none}
+.tip-chev{margin-left:auto;color:var(--ink-3);font-size:19px;line-height:1;
+  transition:transform .16s;flex:none}
+.tip[open] .tip-chev{transform:rotate(90deg)}
+.tip:not([open]) .tip-for{margin-bottom:0}
 .tip{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
   padding:15px 17px;margin-bottom:11px;box-shadow:var(--shadow)}
 .tip-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
@@ -406,6 +412,26 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
 .c-reft{fill:var(--ink-2);font-size:10.5px;font-weight:650}
 .c-bar{transition:opacity .12s}
 .c-bar:hover{opacity:.78}
+
+/* encuadres de los modelos de visión */
+.enc-marco{position:relative;border-radius:var(--radius-s);overflow:hidden;
+  border:1px solid var(--line);background:var(--brand-ink);line-height:0}
+.enc-fondo{display:block;width:100%;height:auto}
+.vid-marco{position:relative;line-height:0}
+.vid-marco video{display:block}
+.enc-nota{font-size:12.5px;color:var(--ink-3);margin:0;line-height:1.5}
+.enc-lienzo{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.enc-transporte{display:flex;align-items:center;gap:11px;margin-top:11px}
+.enc-play{flex:none;cursor:pointer;font:inherit;font-size:12.5px;font-weight:600;
+  background:var(--brand-blue);color:#fff;border:0;border-radius:7px;padding:6px 14px}
+.enc-play:hover{background:#17407a}
+.enc-pista{flex:1;height:6px;border-radius:3px;background:var(--panel-2);
+  border:1px solid var(--line);overflow:hidden}
+.enc-barra{height:100%;width:0;background:var(--brand-teal)}
+.enc-reloj{flex:none;font-family:var(--mono);font-size:12px;color:var(--ink-3);
+  font-variant-numeric:tabular-nums}
+.enc-leyenda{display:flex;gap:13px;flex-wrap:wrap;margin-top:11px;font-size:11.5px;color:var(--ink-2)}
+.enc-leyenda i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
 
 /* mapa de calor del recorrido */
 .heat{position:relative;border-radius:var(--radius-s);overflow:hidden;border:1px solid var(--line)}
@@ -665,6 +691,7 @@ python services/serve_demo.py</pre>
 
       <section id="p-graf" role="tabpanel" aria-labelledby="tab-graf" class="hide">
         <div class="charts" id="charts"></div>
+        <div id="encuadres"></div>
       </section>
 
       <section id="p-ia" role="tabpanel" aria-labelledby="tab-ia" class="hide">
@@ -706,6 +733,7 @@ python services/serve_demo.py</pre>
 <script src="video-store.js"></script>
 <script src="../assets/espejo-mcp.js"></script>
 <script src="charts.js?v=2"></script>
+<script src="encuadres.js"></script>
 <script src="minedu.js?v=2"></script>
 
 <script>
@@ -746,6 +774,13 @@ const HEATMAP_SOURCES = ANALYSIS_ID
    repositorio es público. Fuera de desarrollo ni se pide, para no dejar un 404. */
 const VIDEO_BASE  = "../../samples/";
 let   HEATMAP_URL = HEATMAP_SOURCES[0];
+
+/* Las cajas que detectaron los modelos. La API todavía no las sirve, así que
+   fuera de desarrollo se usan las que viajan con la web. */
+const DETECTION_SOURCES = IS_DEV && !ANALYSIS_ID
+  ? ["../../outputs/clase/detections.json", "./demo/detections.json"]
+  : ["./demo/detections.json"];
+const BACKGROUND_URL = "./demo/background.png";
 
 /* Umbrales citados en el reporte; se muestran como REFERENCIA, nunca como nota. */
 const REF_MONITORING = 0.25;  // manual Minedu, R3: al menos 25 % de la sesión
@@ -896,6 +931,7 @@ function render(){
   renderAiTips();
   renderMcp();
   renderCharts();
+  renderEncuadres();
   renderMinedu();
   renderPlayer(meta);
   renderTimeline();
@@ -1172,13 +1208,18 @@ function renderAiTips(){
     return;
   }
 
+  // Acordeón: a la vista solo el título y para qué sirve. El paso a paso y el
+  // prompt aparecen al abrir. Tres recomendaciones completas eran un muro de
+  // texto que nadie leía.
   tips.forEach((t,i)=>{
-    const card = el("div","tip");
-    const head = el("div","tip-h");
-    head.append(el("div","tip-n",String(i+1)), el("div","t",t.title));
-    card.append(head,
-      el("div","tip-for",t.what_for),
-      el("div","tip-how",t.how));
+    const card = el("details","tip");
+    if (i === 0) card.open = true;
+
+    const head = document.createElement("summary");
+    head.className = "tip-h";
+    head.append(el("div","tip-n",String(i+1)), el("div","t",t.title),
+                el("span","tip-chev","›"));
+    card.append(head, el("div","tip-for",t.what_for), el("div","tip-how",t.how));
 
     const box = el("div","prompt");
     const label = el("div","pl");

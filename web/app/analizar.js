@@ -61,11 +61,14 @@ function problemaConElArchivo(file) {
   return null;
 }
 
-async function crearAnalisis(codigo, tema) {
+async function crearAnalisis(codigo, tema, claveDelDocente) {
+  const cuerpo = { access_code: codigo, topic: tema || null };
+  // Con la clave de una clase anterior, la nueva se suma al mismo asistente de IA
+  if (claveDelDocente) cuerpo.teacher_key = claveDelDocente;
   const respuesta = await fetch(`${API_BASE}/api/analyses`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ access_code: codigo, topic: tema || null }),
+    body: JSON.stringify(cuerpo),
   });
   if (respuesta.status === 401) throw new Error("CODIGO");
   if (!respuesta.ok) throw new Error(`La API respondió ${respuesta.status}`);
@@ -133,7 +136,8 @@ async function analizar(evento) {
 
   let analisis;
   try {
-    analisis = await crearAnalisis($("#codigo").value.trim(), $("#tema").value.trim());
+    const clave = $("#sumar").checked ? EspejoMcp.lastTeacherKey() : null;
+    analisis = await crearAnalisis($("#codigo").value.trim(), $("#tema").value.trim(), clave);
   } catch (error) {
     yaEnviado = false;
     if (error.message === "CODIGO") {
@@ -142,6 +146,17 @@ async function analizar(evento) {
     }
     return fallar("No se pudo crear el análisis", error.message);
   }
+
+  // El enlace del asistente (MCP) llega UNA sola vez: se guarda en este navegador y se muestra
+  EspejoMcp.saveLink({
+    id: analisis.analysis_id,
+    topic: $("#tema").value.trim() || null,
+    createdAt: analisis.created_at,
+    teacherKey: analisis.teacher_key,
+    assistantUrl: analisis.assistant_url,
+  });
+  $("#mcpHost").innerHTML = "";
+  EspejoMcp.renderMcpCard($("#mcpHost"), analisis.assistant_url);
 
   $("#etapa").textContent = "Subiendo el video";
   try {
@@ -189,6 +204,9 @@ function arrancar() {
   revisar();
 
   $("#reintentar").addEventListener("click", () => mostrar("paso-formulario"));
+
+  // Solo si este navegador ya tiene el enlace de una clase anterior
+  $("#sumarRow").classList.toggle("hide", !EspejoMcp.lastTeacherKey());
 
   // El plan gratuito de Render duerme tras 15 min: se despierta al abrir la página
   // para que el primer envío no tarde un minuto en responder.

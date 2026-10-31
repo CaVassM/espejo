@@ -110,6 +110,9 @@ button{font:inherit;color:inherit}
   border-radius:7px;padding:5px 11px;font-size:12px;font-weight:570;transition:background .13s;
 }
 .sug-copy:hover{background:rgba(255,255,255,.24)}
+/* Los dos botones del consejo (copiar y conversar con el asistente), uno al lado del otro */
+.sug-actions{position:absolute;top:18px;right:20px;z-index:2;display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}
+.sug-actions .sug-copy{position:static}
 .sug-copy.done{background:var(--brand-teal);border-color:var(--brand-teal)}
 .btn-pdf{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
   background:var(--brand-blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;
@@ -528,6 +531,7 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
   .kpi .k-val{font-size:27px}
 }
 </style>
+<link rel="stylesheet" href="../assets/espejo-mcp.css">
 </head>
 <body>
 
@@ -690,6 +694,7 @@ python services/serve_demo.py</pre>
 
 <!-- Antes del script principal: definen renderCharts y renderMinedu, que boot() llama. -->
 <script src="config.js"></script>
+<script src="../assets/espejo-mcp.js"></script>
 <script src="charts.js?v=2"></script>
 <script src="minedu.js?v=2"></script>
 
@@ -879,6 +884,7 @@ function render(){
   renderSuggestion();
   renderCompliance();
   renderAiTips();
+  renderMcp();
   renderCharts();
   renderMinedu();
   renderPlayer(meta);
@@ -1130,6 +1136,19 @@ function renderSuggestion(){
 }
 
 /* ========================= recomendaciones de IA ========================= */
+/* Conectar el asistente de IA por MCP: el enlace solo existe en el navegador de quien
+   subió la clase (la API lo entrega una vez). En el ejemplo se explica sin enlace. */
+function renderMcp(){
+  const saved = ANALYSIS_ID ? EspejoMcp.savedFor(ANALYSIS_ID) : null;
+  EspejoMcp.renderMcpCard($("#p-ia"), saved ? saved.assistantUrl : null);
+}
+
+function openMcp(){
+  $("#tab-ia").click();
+  const card = $("#p-ia .mcp-card");
+  if (card) card.scrollIntoView({behavior:"smooth", block:"start"});
+}
+
 function renderAiTips(){
   const tips = (REPORT.llm_analysis||{}).ai_tips || [];
   $("#nIa").textContent = tips.length || "";
@@ -1583,7 +1602,13 @@ function wireSuggestionCopy(box){
     const texto = s.text || [s.what_we_saw, s.why_it_matters, s.try_this].join("\n\n");
     copyText(texto, button, "Copiado");
   });
-  box.append(button);
+  // Llevar el consejo a una conversación con su asistente de IA (servidor MCP)
+  const mcp = el("button","sug-copy","Conversar con mi asistente de IA (MCP)");
+  mcp.type = "button";
+  mcp.addEventListener("click", openMcp);
+  const actions = el("div","sug-actions");
+  actions.append(mcp, button);
+  box.append(actions);
 }
 
 function wireTabs(){

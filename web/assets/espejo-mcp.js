@@ -114,5 +114,29 @@
     return card;
   }
 
-  window.EspejoMcp = { renderMcpCard };
+  /* ---- El enlace se guarda solo en este navegador (el del docente que subió la clase) ----
+     La API lo entrega una sola vez: si no se guarda aquí, no se puede volver a pedir. */
+  const STORAGE_KEY = "espejo.misClases";
+
+  function readSaved() {
+    try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; } catch { return []; }
+  }
+
+  function saveLink(entry) {
+    try {
+      const saved = readSaved().filter((item) => item.id !== entry.id);
+      saved.unshift(entry);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    } catch { /* sin almacenamiento: el enlace solo se ve en pantalla esta vez */ }
+  }
+
+  function savedFor(id) { return readSaved().find((item) => item.id === id) || null; }
+
+  /* La clave más reciente, para sumar la nueva clase al mismo asistente del docente. */
+  function lastTeacherKey() {
+    const withKey = readSaved().find((item) => item.teacherKey);
+    return withKey ? withKey.teacherKey : null;
+  }
+
+  window.EspejoMcp = { renderMcpCard, saveLink, savedFor, lastTeacherKey };
 })();

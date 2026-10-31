@@ -473,7 +473,7 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
   @page{ size:A4; margin:14mm 12mm; }
   body{background:#fff}
   .topbar{position:static;background:#fff;backdrop-filter:none;box-shadow:none}
-  .btn-pdf, .btn-ghost, .actions, .rub-tools, .sug-copy, .brand .back,
+  .btn-pdf, .btn-ghost, a.btn-ghost, .actions, .rub-tools, .sug-copy, .brand .back,
   .tabs, .filters, .player-card, .tl, video, .copy{display:none !important}
   .wrap{max-width:none;padding:0}
   .cols{display:block}
@@ -545,6 +545,7 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
     <div class="bar" aria-hidden="true"></div>
     <div class="ctx" id="ctx"></div>
     <div class="actions">
+    <a class="btn-ghost" href="./analizar.html">Analizar una clase</a>
     <button class="btn-ghost" id="btnJson" type="button">Descargar datos</button>
     <button class="btn-pdf" id="btnPdf" type="button">
       <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
@@ -688,6 +689,7 @@ python services/serve_demo.py</pre>
 </main>
 
 <!-- Antes del script principal: definen renderCharts y renderMinedu, que boot() llama. -->
+<script src="config.js"></script>
 <script src="charts.js?v=2"></script>
 <script src="minedu.js?v=2"></script>
 
@@ -710,12 +712,20 @@ const BRAND       = "Aula Evidente";
    de respaldo queda igual por si alguien monta la web de otra forma. */
 const IS_DEV = location.pathname.includes("/web/app/");
 
-const REPORT_SOURCES = IS_DEV
-  ? ["../../outputs/clase/class_report.json", "./demo/class_report.json"]
-  : ["./demo/class_report.json"];
-const HEATMAP_SOURCES = IS_DEV
-  ? ["../../outputs/clase/heatmap.png", "./demo/heatmap.png"]
-  : ["./demo/heatmap.png"];
+/* Una clase recién analizada llega como ?analysis=<id>: el reporte se pide a la
+   API en vez de usar el de ejemplo. Sin ese parámetro se muestra el ejemplo. */
+const ANALYSIS_ID = new URLSearchParams(location.search).get("analysis");
+
+const REPORT_SOURCES = ANALYSIS_ID
+  ? [`${API_BASE}/api/analyses/${encodeURIComponent(ANALYSIS_ID)}/report`]
+  : IS_DEV
+    ? ["../../outputs/clase/class_report.json", "./demo/class_report.json"]
+    : ["./demo/class_report.json"];
+const HEATMAP_SOURCES = ANALYSIS_ID
+  ? [`${API_BASE}/api/analyses/${encodeURIComponent(ANALYSIS_ID)}/heatmap.png`]
+  : IS_DEV
+    ? ["../../outputs/clase/heatmap.png", "./demo/heatmap.png"]
+    : ["./demo/heatmap.png"];
 
 /* El video NO se publica: la clase tiene estudiantes menores de edad y el
    repositorio es público. Fuera de desarrollo ni se pide, para no dejar un 404. */
@@ -1167,7 +1177,7 @@ function renderAiTips(){
 
 function renderPlayer(meta){
   const v = $("#vid");
-  if (!IS_DEV){ onVideoMissing(); return; }
+  if (!IS_DEV || ANALYSIS_ID){ onVideoMissing(); return; }
 
   v.src = VIDEO_BASE + (meta.video || "");
   v.addEventListener("timeupdate", onTime);

@@ -248,6 +248,19 @@ python scripts/test_modal_worker.py --video samples/clip.mp4 --delete-after
 En GitHub, `deploy-modal.yml` despliega solo cuando cambia el motor, el worker o los configs en
 `main`, y solo si la CI pasa.
 
+## API en Render (lógica y reporte)
+
+La API ([`services/api/`](services/api/)) crea los análisis, entrega al frontend un permiso
+firmado para subir el video directo al worker de Modal, sigue al worker (o recibe su aviso),
+corre INTERPRETAR con `engine/` y Cohere, y guarda el reporte en Postgres. Contrato con el
+frontend: [`docs/api_contract.md`](docs/api_contract.md).
+
+- Despliegue: [`render.yaml`](render.yaml) (Blueprint: la API y la base de datos, plan gratis).
+  Variables: `WORKER_TOKEN` (el mismo del worker), `UPLOAD_ACCESS_CODE`, `COHERE_API_KEY` y,
+  opcional, `FRONTEND_ORIGINS`.
+- En tu PC: `cd services/api && uvicorn app.main:create_app --factory --reload` (usa SQLite si
+  no hay `DATABASE_URL`).
+
 ## Manual de rúbricas del Minedu
 
 Las definiciones se tomaron del manual vigente (5 desempeños): *Rúbricas de observación de aula
@@ -334,7 +347,7 @@ espejo/
 │   │   └── training.py     entrenamiento y evaluación de los detectores
 │   └── tests/              tests de la lógica pura
 ├── services/
-│   ├── api/                API para Render (por capas: routers, services, repositories, schemas)
+│   ├── api/                API en Render: análisis, permiso de subida, reporte (Postgres)
 │   └── worker/             worker para Modal: corre VER con el motor completo
 ├── web/                    frontend (landing page y app)
 ├── configs/                vision.yaml, audio.yaml, analysis.yaml, llm.yaml y YAML de los datasets

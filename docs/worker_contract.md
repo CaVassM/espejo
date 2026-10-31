@@ -12,7 +12,8 @@ el heatmap. **No** calcula métricas ni llama al LLM: eso es **INTERPRETAR**, la
 
 | Quién | Cómo | Para |
 |---|---|---|
-| Quien sube el video (web o backend) | Cabecera `X-Access-Code: <UPLOAD_ACCESS_CODE>` | `POST /jobs` |
+| El navegador (frontend en Vercel) | Cabecera `X-Upload-Ticket: <permiso>` que entrega la API de Render (ver abajo) | `POST /jobs` |
+| Scripts o pruebas | Cabecera `X-Access-Code: <UPLOAD_ACCESS_CODE>` | `POST /jobs` |
 | El backend | Cabecera `Authorization: Bearer <WORKER_TOKEN>` | `GET /jobs/{id}/result` |
 | El worker, al avisar al backend | Cabecera `Authorization: Bearer <WORKER_TOKEN>` | Callback (ver abajo) |
 
@@ -39,7 +40,7 @@ Formulario `multipart/form-data`:
 |---|---|---|
 | `video` | Sí | El archivo. Formatos: `.mp4 .mov .m4v .mkv .webm .avi`. Máximo 1024 MB. |
 | `topic` | No | Tema de la clase (ayuda a Whisper con nombres del tema), p. ej. `Cuento: Los hijos del labrador`. |
-| `analysis_id` | No | El id del análisis en el backend. Si viene, el callback usa este id; si no, el `job_id`. |
+| `analysis_id` | No | El id del análisis en la API. Con permiso de subida es obligatorio que coincida con el del permiso, y el `job_id` es ese mismo id. Si viene, el callback usa este id; si no, el `job_id`. |
 
 ```bash
 curl -X POST $WORKER/jobs \
@@ -98,12 +99,25 @@ curl $WORKER/jobs/$JOB_ID/result -H "Authorization: Bearer $WORKER_TOKEN"
 
 | Código | Cuándo |
 |---|---|
-| `401` | Falta o es incorrecto `X-Access-Code` (subida) o el token (resultado). |
+| `401` | Falta o es incorrecto `X-Access-Code` o `X-Upload-Ticket` (subida), o el token (resultado). |
+| `409` | El permiso de subida ya se usó (ese análisis ya tiene video). |
 | `404` | No existe ese `job_id` (o ya venció: los resultados duran 7 días). |
 | `409` | Se pidió el resultado antes de `done`; el cuerpo trae el estado actual en `detail`. |
 | `413` | El video pasa de 1024 MB. |
 | `415` | Formato de video no admitido. |
 | `422` | Falta el campo `video`. |
+
+## Permiso de subida (X-Upload-Ticket)
+
+La API de Render lo entrega al crear un análisis, para que el navegador suba el video directo a
+Modal sin conocer ningún secreto. Formato: `<analysis_id>.<vence_en_epoch_s>.<firma>`, con
+firma = HMAC-SHA256 (en hex) de `<analysis_id>.<vence_en_epoch_s>` con la clave `WORKER_TOKEN`.
+Vale 1 hora y una sola vez: el trabajo usa el `analysis_id` como `job_id`, y un segundo intento
+responde `409`. El código está en `services/api/app/services/tickets.py` (firma) y
+`services/worker/espejo_worker/tickets.py` (verificación).
+
+CORS: el worker acepta peticiones del navegador desde `*.vercel.app`, `localhost` y los dominios
+de `FRONTEND_ORIGINS` (en el Secret de Modal).
 
 ## Callback opcional
 
@@ -169,14 +183,16 @@ sigue disponible en `GET /jobs/{id}/result`. Sin `API_BASE_URL` no hay callback.
 Quién es el docente **no** viene en el archivo: lo decide INTERPRETAR (el hablante con más tiempo
 de voz), igual que lo hizo el worker para anonimizar.
 
-## Qué hace el backend
+## Qué hace el backend (services/api, en Render)
 
-1. Crea el análisis y sube el video al worker (`POST /jobs` con su `analysis_id`), o deja que la
-   web lo suba directo.
-2. Recibe el callback, o consulta `GET /jobs/{id}` hasta `done` y pide `GET /jobs/{id}/result`.
-3. Guarda `detections.json`, `audio_raw.json` y `heatmap.png` en una carpeta del análisis.
+Ya está hecho: [`docs/api_contract.md`](api_contract.md) es su contrato con el frontend.
+
+1. Crea el análisis y entrega el permiso de subida; el navegador sube el video directo a Modal.
+2. Recibe el callback (`API_BASE_URL` en el Secret de Modal) o, si estaba dormido, consulta
+   `GET /jobs/{id}` cuando el frontend pregunta el estado, y pide `GET /jobs/{id}/result`.
+3. Guarda `detections.json`, `audio_raw.json` y `heatmap.png` en Postgres.
 4. Corre INTERPRETAR con `engine/` **sin extras** (sin torch): métricas, ficha por rúbrica, LLM
-   y consejo. El resultado es `class_report.json` (formato en
+   (Cohere) y consejo. El resultado es `class_report.json` (formato en
    [`output_contract.md`](output_contract.md)).
 
 ### Ejemplo mínimo de INTERPRETAR en el backend

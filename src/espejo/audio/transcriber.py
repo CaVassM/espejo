@@ -4,6 +4,10 @@ import logging
 from dataclasses import replace
 from pathlib import Path
 
+# Debe ir antes de faster-whisper: carga primero la cuDNN de torch (ver audio/cuda_setup.py)
+import espejo.audio.cuda_setup  # noqa: F401
+
+# isort: split
 from faster_whisper import WhisperModel
 from faster_whisper.transcribe import Segment as WhisperSegment
 

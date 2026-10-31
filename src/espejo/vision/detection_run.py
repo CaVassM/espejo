@@ -4,7 +4,11 @@ import logging
 from pathlib import Path
 
 from espejo.config import VisionConfig
-from espejo.vision.detections_io import DETECTIONS_FILENAME, save_detection_run
+from espejo.vision.detections_io import (
+    BACKGROUND_FILENAME,
+    DETECTIONS_FILENAME,
+    save_detection_run,
+)
 from espejo.vision.detectors import BehaviorDetector, PoseEstimator, TeacherDetector
 from espejo.vision.frame_sampler import FrameSampler
 from espejo.vision.heatmap import HeatmapRenderer, save_image
@@ -12,7 +16,6 @@ from espejo.vision.schemas import DetectionRun, Frame, FrameDetections
 
 logger = logging.getLogger(__name__)
 
-BACKGROUND_FILENAME = "background_blurred.png"
 PROGRESS_LOG_INTERVAL_FRAMES = 100
 
 

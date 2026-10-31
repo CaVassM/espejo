@@ -4,15 +4,9 @@ import argparse
 import logging
 from pathlib import Path
 
+from espejo.analysis.capture import capture_video, try_capture_audio, write_debug_video
 from espejo.analysis.report_io import format_summary
-from espejo.analysis.runner import (
-    capture_video,
-    interpret_run,
-    load_all_configs,
-    run_dir_for,
-    try_capture_audio,
-    write_debug_video,
-)
+from espejo.analysis.runner import interpret_run, load_all_configs, run_dir_for
 from espejo.common.config_io import OUTPUTS_DIR
 
 

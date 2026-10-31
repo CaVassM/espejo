@@ -5,14 +5,9 @@ import logging
 from dataclasses import replace
 from pathlib import Path
 
+from espejo.analysis.capture import capture_video, write_debug_video
 from espejo.analysis.report_io import format_summary
-from espejo.analysis.runner import (
-    capture_video,
-    interpret_run,
-    load_all_configs,
-    run_dir_for,
-    write_debug_video,
-)
+from espejo.analysis.runner import interpret_run, load_all_configs, run_dir_for
 from espejo.common.config_io import OUTPUTS_DIR
 from espejo.config import with_model_overrides
 

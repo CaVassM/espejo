@@ -1,11 +1,11 @@
-"""Orquesta VER (modelos, una sola vez) e INTERPRETAR (solo lee los JSON de VER)."""
+"""INTERPRETAR: lee los JSON de VER y arma el reporte. No carga torch, YOLO ni Whisper.
 
-import gc
+VER (los modelos) está en analysis/capture.py y necesita espejo[vision,audio].
+"""
+
 import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
-
-import cv2
 
 from espejo.analysis.focus import FocusThresholds, choose_focus
 from espejo.analysis.llm_stage import with_llm_labels
@@ -13,9 +13,7 @@ from espejo.analysis.report_builder import AudioSide, ReportConfigs, VideoSide, 
 from espejo.analysis.report_io import save_class_report
 from espejo.analysis.schemas import ClassReport
 from espejo.analysis.transcript import save_transcript
-from espejo.audio.capture import AudioCaptureRunner
 from espejo.audio.capture_io import AUDIO_RAW_FILENAME, load_audio_capture
-from espejo.audio.extraction import NoAudioTrackError
 from espejo.audio.interpretation import AudioInterpreter
 from espejo.config import (
     AnalysisConfig,
@@ -29,11 +27,11 @@ from espejo.config import (
 )
 from espejo.llm.analyzer import LlmAnalyzer, without_llm
 from espejo.llm.schemas import LlmAnalysis
-from espejo.vision.debug_video import DebugVideoWriter
-from espejo.vision.detection_run import BACKGROUND_FILENAME, VideoDetectionRunner
-from espejo.vision.detections_io import DETECTIONS_FILENAME, load_detection_run
-from espejo.vision.frame_sampler import FrameSampler
-from espejo.vision.heatmap import HeatmapRenderer, save_image
+from espejo.vision.detections_io import (
+    BACKGROUND_FILENAME,
+    DETECTIONS_FILENAME,
+    load_detection_run,
+)
 from espejo.vision.interpretation import VisionInterpreter
 
 logger = logging.getLogger(__name__)
@@ -41,7 +39,6 @@ logger = logging.getLogger(__name__)
 REPORT_FILENAME = "class_report.json"
 TRANSCRIPT_FILENAME = "transcript.txt"
 HEATMAP_FILENAME = "heatmap.png"
-DEBUG_VIDEO_FILENAME = "debug.mp4"
 
 
 @dataclass(frozen=True)
@@ -68,53 +65,6 @@ def load_all_configs() -> AllConfigs:
 
 def run_dir_for(video_path: Path, output_root: Path) -> Path:
     return output_root / video_path.stem
-
-
-def release_gpu_memory() -> None:
-    """Libera la memoria de los modelos de visión antes de cargar Whisper en la misma GPU."""
-    # Import local: torch solo hace falta si hay GPU que liberar
-    import torch
-
-    gc.collect()
-    if torch.cuda.is_available():
-        torch.cuda.empty_cache()
-
-
-def capture_video(video_path: Path, run_dir: Path, config: VisionConfig) -> None:
-    """VER (video): genera detections.json y el fondo desenfocado del heatmap."""
-    logger.info("VER video: %s", video_path.name)
-    runner = VideoDetectionRunner(config)
-    runner.run(video_path, run_dir)
-    del runner
-    release_gpu_memory()
-
-
-def capture_audio(
-    video_path: Path,
-    run_dir: Path,
-    config: AudioConfig,
-    keep_audio: bool,
-    model_override: str | None = None,
-    topic: str | None = None,
-) -> None:
-    """VER (audio): genera audio_raw.json."""
-    logger.info("VER audio: %s", video_path.name)
-    runner = AudioCaptureRunner(config, model_override)
-    runner.run(video_path, run_dir, keep_audio, topic)
-    del runner
-    release_gpu_memory()
-
-
-def try_capture_audio(
-    video_path: Path, run_dir: Path, config: AudioConfig, topic: str | None = None
-) -> bool:
-    """Como capture_audio, pero un video sin pista de audio no detiene el análisis."""
-    try:
-        capture_audio(video_path, run_dir, config, keep_audio=False, topic=topic)
-    except NoAudioTrackError as error:
-        logger.warning("%s Se analiza solo el video.", error)
-        return False
-    return True
 
 
 def load_video_side(run_dir: Path, config: VisionConfig) -> VideoSide | None:
@@ -206,6 +156,15 @@ def add_suggestion(
 
 
 def save_heatmap(video: VideoSide, run_dir: Path, config: VisionConfig) -> None:
+    try:
+        # Import local: OpenCV es parte de espejo[vision]; sin él se interpreta sin heatmap
+        import cv2
+
+        from espejo.vision.heatmap import HeatmapRenderer, save_image
+    except ImportError:
+        logger.warning("Sin OpenCV (espejo[vision]): no se genera el heatmap")
+        return
+
     background_path = run_dir / BACKGROUND_FILENAME
     background = cv2.imread(str(background_path))
     if background is None:
@@ -218,15 +177,3 @@ def save_heatmap(video: VideoSide, run_dir: Path, config: VisionConfig) -> None:
             teacher_boxes.append(observation.teacher_box)
     heatmap = HeatmapRenderer(config.heatmap).render(background, teacher_boxes)
     save_image(heatmap, run_dir / HEATMAP_FILENAME)
-
-
-def write_debug_video(video_path: Path, result: InterpretationResult, config: VisionConfig) -> Path:
-    """Opcional: vuelve a leer el video para dibujar al docente y su estado (no va a git)."""
-    if result.video is None:
-        raise ValueError("El video de depuración necesita detections.json.")
-
-    output_path = result.run_dir / DEBUG_VIDEO_FILENAME
-    sampler = FrameSampler(video_path, config.sampling.sample_fps)
-    observations = result.video.interpretation.observations
-    DebugVideoWriter(config.debug_video).write(sampler, observations, output_path)
-    return output_path

@@ -16,6 +16,7 @@ from espejo.vision.schemas import (
 )
 
 DETECTIONS_FILENAME = "detections.json"
+BACKGROUND_FILENAME = "background_blurred.png"
 KEYPOINT_NAMES = ("nose", "left_eye", "right_eye", "left_shoulder", "right_shoulder")
 MISSING_HINT = "Corre primero scripts/analyze_class.py o scripts/analyze_video.py"
 

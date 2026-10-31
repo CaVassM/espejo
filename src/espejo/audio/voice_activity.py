@@ -3,6 +3,10 @@
 import logging
 from pathlib import Path
 
+# Debe ir antes de faster-whisper: carga primero la cuDNN de torch (ver audio/cuda_setup.py)
+import espejo.audio.cuda_setup  # noqa: F401
+
+# isort: split
 from faster_whisper.audio import decode_audio
 from faster_whisper.vad import VadOptions, get_speech_timestamps
 

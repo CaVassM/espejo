@@ -786,9 +786,9 @@ const DETECTION_SOURCES = ANALYSIS_ID
   : IS_DEV
     ? ["../../outputs/clase/detections.json", "./demo/detections.json"]
     : ["./demo/detections.json"];
-const BACKGROUND_URL = ANALYSIS_ID
-  ? `${API_BASE}/api/analyses/${encodeURIComponent(ANALYSIS_ID)}/background.png`
-  : "./demo/background.png";
+/* La API guarda el heatmap pero no el fondo desenfocado. En una clase propia
+   el lienzo va sobre el video, así que el fondo solo hace falta en el ejemplo. */
+const BACKGROUND_URL = ANALYSIS_ID ? null : "./demo/background.png";
 
 /* Umbrales citados en el reporte; se muestran como REFERENCIA, nunca como nota. */
 const REF_MONITORING = 0.25;  // manual Minedu, R3: al menos 25 % de la sesión

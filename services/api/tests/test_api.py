@@ -166,6 +166,26 @@ def test_report_before_done_is_a_conflict(world: World) -> None:
     assert world.client.get(f"/api/analyses/{analysis_id}/report").status_code == 409
 
 
+def test_detections_are_served_once_the_worker_termina(world: World) -> None:
+    """Las cajas del video, para dibujarlas sobre el reproductor."""
+    analysis_id = world.create().json()["analysis_id"]
+
+    # Antes de que el worker entregue nada no hay cajas que servir.
+    assert world.client.get(f"/api/analyses/{analysis_id}/detections").status_code == 409
+
+    world.client.post(
+        f"/api/analyses/{analysis_id}/raw", json=raw_payload(analysis_id), headers=WORKER_AUTH
+    )
+
+    response = world.client.get(f"/api/analyses/{analysis_id}/detections")
+    assert response.status_code == 200
+    assert response.json() == raw_payload(analysis_id)["detections"]
+
+
+def test_detections_of_an_unknown_analysis_are_not_found(world: World) -> None:
+    assert world.client.get("/api/analyses/no-existe/detections").status_code == 404
+
+
 def test_unknown_analysis_is_not_found(world: World) -> None:
     assert world.client.get("/api/analyses/no-existe").status_code == 404
 

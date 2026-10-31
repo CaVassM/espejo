@@ -222,6 +222,10 @@ async function renderEncuadres() {
     marcoVideo.append(lienzo);
     card.append(el("p", "enc-nota",
       "Las cajas se dibujan sobre el reproductor, a la izquierda, y siguen la reproducción."));
+  } else if (!BACKGROUND_URL) {
+    // Ni video ni fondo donde dibujar (reporte abierto en otro navegador).
+    card.remove();
+    return;
   } else {
     const marco = el("div", "enc-marco");
     const fondo = document.createElement("img");

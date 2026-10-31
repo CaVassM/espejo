@@ -70,6 +70,23 @@ def get_report(analysis_id: str, request: Request) -> dict[str, Any]:
     return record.report
 
 
+@router.get("/{analysis_id}/detections")
+def get_detections(analysis_id: str, request: Request) -> dict[str, Any]:
+    """Las cajas que detectaron los modelos de visión, para dibujarlas sobre el video.
+
+    El worker ya las entrega en /raw y quedan guardadas: aquí solo se sirven. Se
+    responde en cuanto existen, sin esperar al reporte, porque VER termina antes
+    que INTERPRETAR.
+    """
+    try:
+        record = service_of(request).get_record(analysis_id)
+    except AnalysisNotFoundError as error:
+        raise not_found() from error
+    if record.detections is None:
+        raise HTTPException(status.HTTP_409_CONFLICT, "El análisis del video aún no está listo.")
+    return record.detections
+
+
 @router.get("/{analysis_id}/heatmap.png")
 def get_heatmap(analysis_id: str, request: Request) -> Response:
     try:

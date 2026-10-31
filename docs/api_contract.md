@@ -116,6 +116,7 @@ reporte (el LLM). Una clase de 45 min tarda más, sobre todo en "Preparando el r
 ```http
 GET $API/api/analyses/{analysis_id}/report        -> 200 JSON (409 si aún no está listo)
 GET $API/api/analyses/{analysis_id}/heatmap.png   -> 200 image/png (404 si no hay)
+GET $API/api/analyses/{analysis_id}/detections    -> 200 JSON (409 si VER aún no termina)
 ```
 
 El reporte es `class_report.json`, con el formato de [`output_contract.md`](output_contract.md).
@@ -128,6 +129,12 @@ Lo más útil para mostrar:
 | `metrics` | Cada métrica con `value`, `rubric` y `description` (p. ej. `mean_wait_time_s`, `open_question_ratio`, `monitoring_ratio`) |
 | `audio_events[]` | Las preguntas del docente, con minuto, espera y si hubo respuesta |
 | `llm_analysis` | Lo que marcó el LLM: `feedback`, `participation`, `question_labels`, etc. |
+
+`/detections` devuelve lo que entregó el worker: por cada frame muestreado, su
+`timestamp_s`, las cajas `teacher` (con `confidence` y `track_id`) y las del modelo de
+conductas (`guide`, `board_writing`, `answer`, `stage_interaction`). El frontend las dibuja
+sobre el video para mostrar lo que vieron los modelos. Responde en cuanto VER termina, sin
+esperar al reporte.
 
 Privacidad: lo que dicen los alumnos aparece como "[ALUMNO responde]" y los nombres como
 "[NOMBRE]". No hay video, audio ni imágenes de personas: solo el heatmap con el fondo desenfocado.

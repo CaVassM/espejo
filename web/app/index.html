@@ -141,6 +141,12 @@ button{font:inherit;color:inherit}
 .kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent,var(--data-blue))}
 .kpi .k-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
 .kpi .k-label{font-size:12.5px;color:var(--ink-2);font-weight:560;letter-spacing:.005em}
+.k-exp{
+  display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:620;
+  letter-spacing:.03em;color:#7a5406;background:rgba(244,183,64,.14);
+  border:1px solid rgba(244,183,64,.45);border-radius:5px;padding:1px 7px;
+}
+.k-exp::before{content:"";width:5px;height:5px;border-radius:50%;background:var(--brand-amber)}
 .kpi .k-rub{
   font-size:10.5px;font-weight:650;letter-spacing:.055em;color:var(--ink-3);
   background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;flex:none;
@@ -942,11 +948,12 @@ function renderKpis(){
   );
 }
 
-function kpiShell({label,rubric,accent,value,unit,sub}){
+function kpiShell({label,rubric,accent,value,unit,sub,experimental}){
   const card = el("div","kpi");
   card.style.setProperty("--accent", accent);
   const top = el("div","k-top");
-  top.append(el("span","k-label",label), el("span","k-rub",rubric));
+  top.append(el("span","k-label",label),
+             el("span", experimental ? "k-exp" : "k-rub", experimental ? "experimental" : rubric));
   const val = el("div","k-val", String(value));
   if (unit){ const u=el("span","u",unit); val.append(u); }
   card.append(top, val);
@@ -989,34 +996,34 @@ function checkDefs(){
   const v = n => m(n).value;
   return [
     {
-      q:"¿Diste tiempo para pensar?", rubric:"R2",
+      name:"mean_wait_time_s", q:"¿Diste tiempo para pensar?", rubric:"R2",
       value:v("mean_wait_time_s"), show:x=>x.toFixed(1).replace(".0","")+" s",
       ref:REF_WAIT_S, max:REF_WAIT_S*2, higher:true, ok:3, near:2,
       say:x=>`Esperaste <b>${x.toFixed(1).replace(".0","")} s</b> en promedio. Desde los `
            +`<b>3 s</b> responden más estudiantes y con más detalle.`
     },
     {
-      q:"¿Recogiste evidencia de lo que entendieron?", rubric:"R3",
+      name:"monitoring_ratio", q:"¿Recogiste evidencia de lo que entendieron?", rubric:"R3",
       value:v("monitoring_ratio"), show:pct,
       ref:REF_MONITORING, max:0.5, higher:true, ok:0.25, near:0.20,
       say:x=>`<b>${pct(x)}</b> de la clase preguntando o mirando su trabajo. El manual sugiere `
            +`<b>25 %</b>. Caminar por el aula no cuenta.`
     },
     {
-      q:"¿Tus preguntas los hicieron pensar?", rubric:"R2",
+      name:"open_question_ratio", q:"¿Tus preguntas los hicieron pensar?", rubric:"R2",
       value:v("open_question_ratio"), show:pct,
       ref:0.5, max:1, higher:true, ok:0.5, near:0.35,
       say:x=>`<b>${pct(x)}</b> pedían explicar o predecir, no un dato ni un sí/no.`
     },
     {
-      q:"¿Te respondieron?", rubric:"R1",
+      name:"response_rate", q:"¿Te respondieron?", rubric:"R1",
       value:v("response_rate"), show:pct,
       ref:0.6, max:1, higher:true, ok:0.6, near:0.4,
       say:x=>`<b>${v("student_response_count")}</b> de tus <b>${v("teacher_question_count")}</b> `
            +`preguntas recibieron respuesta.`
     },
     {
-      q:"¿Cuánto tiempo diste la espalda?", rubric:"R1",
+      name:"board_writing_ratio", q:"¿Cuánto tiempo diste la espalda?", rubric:"R1",
       value:v("board_writing_ratio"), show:pct,
       ref:0.2, max:0.5, higher:false, ok:0.2, near:0.35,
       say:x=>`<b>${pct(x)}</b> del tiempo escribiendo en la pizarra. Mientras escribes no ves `
@@ -1064,6 +1071,17 @@ function renderCompliance(){
     const say = el("div","check-say");
     say.innerHTML = c.say(c.value);       // solo plantillas propias, nunca texto del reporte
     card.append(say);
+
+    // El motor marca como experimentales las conductas que el modelo de video casi
+    // no reconoce en aulas peruanas. Mostrarlas como cifras firmes sería engañar.
+    if (c.name && m(c.name).experimental){
+      const aviso = el("div","check-say");
+      aviso.style.marginTop = "8px";
+      aviso.append(el("span","k-exp","Señal experimental"),
+        document.createTextNode(" El modelo de video todavía reconoce mal esta conducta "
+          + "en aulas peruanas; tómala como indicio, no como dato."));
+      card.append(aviso);
+    }
     host.append(card);
   }
 }

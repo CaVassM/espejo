@@ -104,6 +104,15 @@ button{font:inherit;color:inherit}
 .btn-ghost:hover{border-color:var(--brand-blue);color:var(--brand-blue)}
 .btn-ghost.done{border-color:var(--brand-teal);color:#0d7a6e;background:rgba(20,184,166,.10)}
 .rub-tools{display:flex;justify-content:flex-end;margin-bottom:10px}
+.sug-actions .sug-mcp{position:static}
+/* La cabecera pegajosa mide ~62 px: sin esto, el salto deja el titulo debajo. */
+.mcp-card{scroll-margin-top:76px}
+.sug-mcp{
+  cursor:pointer;font:inherit;font-size:12px;font-weight:650;
+  background:var(--brand-amber);color:#4a3303;border:0;border-radius:7px;padding:5px 12px;
+  transition:filter .13s;
+}
+.sug-mcp:hover{filter:brightness(1.07)}
 .sug-copy{
   position:absolute;top:18px;right:20px;z-index:2;cursor:pointer;
   background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;
@@ -476,7 +485,7 @@ video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);obj
   @page{ size:A4; margin:14mm 12mm; }
   body{background:#fff}
   .topbar{position:static;background:#fff;backdrop-filter:none;box-shadow:none}
-  .btn-pdf, .btn-ghost, a.btn-ghost, .actions, .rub-tools, .sug-copy, .brand .back,
+  .btn-pdf, .btn-ghost, a.btn-ghost, .actions, .sug-mcp, .rub-tools, .sug-copy, .brand .back,
   .tabs, .filters, .player-card, .tl, video, .copy{display:none !important}
   .wrap{max-width:none;padding:0}
   .cols{display:block}
@@ -1627,7 +1636,7 @@ function wireSuggestionCopy(box){
     copyText(texto, button, "Copiado");
   });
   // Llevar el consejo a una conversación con su asistente de IA (servidor MCP)
-  const mcp = el("button","sug-copy","Conversar con mi asistente de IA (MCP)");
+  const mcp = el("button","sug-mcp","Llevar esto a mi asistente de IA");
   mcp.type = "button";
   mcp.addEventListener("click", openMcp);
   const actions = el("div","sug-actions");

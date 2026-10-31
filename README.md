@@ -310,8 +310,28 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 8. **Nombres tapados con un modelo.** spaCy `es_core_news_md` más una lista de nombres comunes en el Perú (`configs/names_pe.yaml`) a veces tapa una palabra
    de más (p. ej. "Analizar" al inicio de una frase) o deja pasar un nombre poco común.
 
+9. **Las conductas del video (pizarra, guiar) son experimentales.** Probado en dos aulas
+   peruanas (oct. 2026), el modelo de conductas casi no las reconoce, con poca o buena calidad
+   de video. Encontrar al docente sí funciona:
+
+   | Video | Resolución | Docente visible | En la pizarra | Guiando | Cajas "answer" falsas |
+   |---|---|---|---|---|---|
+   | Primaria (YouTube, 10 min) | 640×288 | 91 % | 4 % | 2 % | 70 % |
+   | Secundaria, fragmento 1 (5 min) | 1280×720 | 33 %* | 0 % | 0 % | 69 % |
+   | Secundaria, fragmento 2 (5 min) | 1280×720 | 32 %* | 1 % | 1 % | 58 % |
+
+   \* El video de secundaria está editado (proyección y acercamientos a los alumnos); cuando la
+   docente está en cuadro, la encuentra en 8 de 10 momentos revisados. Por eso: el monitoreo
+   principal sale del audio, las conductas se marcan "experimental" (o "no disponible") y la
+   clase "answer" se ignora (cae sobre el docente explicando, incluso con 0.93 de confianza).
+
 ## Mejoras futuras
 
+- **Dataset de aulas peruanas etiquetado** (200 a 300 cuadros para empezar: pizarra, guiar,
+  alumno al frente) para reentrenar el modelo de conductas en el contexto real.
+- **Probar un modelo de visión y lenguaje sin entrenamiento** sobre el recorte del docente
+  ("¿está escribiendo en la pizarra o revisando el trabajo de un alumno?"), como alternativa o
+  segunda opinión del detector de conductas.
 - Marcar una vez la zona de carpetas en el primer frame, para distinguir mejor guiar en carpetas
   de estar al frente.
 - Entrenar la orientación del docente (de frente o de espaldas) con supervisión débil, usando

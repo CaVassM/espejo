@@ -18,12 +18,15 @@ class RubricMetric:
     rubrics: list[str]
     description: str
     note: str | None = None
+    # Experimental: se muestra, pero no basta para que una rúbrica tenga "con evidencia"
+    experimental: bool = False
 
 
 @dataclass(frozen=True)
 class MetricEvidence:
     name: str
     value: MetricValue
+    experimental: bool = False
 
 
 @dataclass(frozen=True)

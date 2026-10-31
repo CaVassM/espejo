@@ -1,9 +1,9 @@
 """Métricas finales, cada una con la rúbrica del Minedu a la que aporta evidencia."""
 
 from espejo.analysis.monitoring import MonitoringResult
-from espejo.analysis.schemas import RubricMetric
+from espejo.analysis.schemas import MetricValue, RubricMetric
 from espejo.audio.schemas import AudioInterpretation
-from espejo.vision.schemas import VisionInterpretation
+from espejo.vision.schemas import Behavior, VisionInterpretation
 
 R1 = "R1"  # Involucra activamente a los estudiantes en el proceso de aprendizaje
 R2 = "R2"  # Promueve el razonamiento, la creatividad y/o el pensamiento crítico
@@ -12,6 +12,27 @@ R4 = "R4"  # Propicia un ambiente de respeto y proximidad
 NO_VIDEO_NOTE = "sin video"
 NO_AUDIO_NOTE = "sin audio"
 NO_LLM_NOTE = "sin análisis LLM"
+EXPERIMENTAL_NOTE = "experimental"
+NOT_AVAILABLE_NOTE = "no disponible: el modelo no tuvo detecciones confiables de {what}"
+
+
+def frames_in_state(vision: VisionInterpretation, state: Behavior) -> int:
+    count = 0
+    for observation in vision.observations:
+        if observation.state == state:
+            count += 1
+    return count
+
+
+def experimental_value(
+    vision: VisionInterpretation | None, state: Behavior, value: MetricValue, what: str
+) -> tuple[MetricValue, str]:
+    """Una conducta experimental sin ninguna detección confiable no es 0 %: es "no disponible"."""
+    if vision is None:
+        return None, NO_VIDEO_NOTE
+    if frames_in_state(vision, state) == 0:
+        return None, NOT_AVAILABLE_NOTE.format(what=what)
+    return value, EXPERIMENTAL_NOTE
 
 
 def video_metrics(vision: VisionInterpretation | None) -> list[RubricMetric]:
@@ -24,6 +45,9 @@ def video_metrics(vision: VisionInterpretation | None) -> list[RubricMetric]:
         stage_count = vision.metrics.stage_interaction_count
         path_length = vision.metrics.path.length_normalized
         note = None
+    board_writing, board_note = experimental_value(
+        vision, Behavior.BOARD_WRITING, board_writing, "escribir en la pizarra"
+    )
 
     return [
         RubricMetric(
@@ -31,7 +55,8 @@ def video_metrics(vision: VisionInterpretation | None) -> list[RubricMetric]:
             board_writing,
             [R1],
             "Tiempo escribiendo en la pizarra, de espaldas a la clase",
-            note,
+            board_note,
+            experimental=True,
         ),
         RubricMetric(
             "stage_interaction_count",
@@ -50,19 +75,27 @@ def video_metrics(vision: VisionInterpretation | None) -> list[RubricMetric]:
     ]
 
 
-def monitoring_metrics(monitoring: MonitoringResult, threshold: float) -> list[RubricMetric]:
+def monitoring_metrics(
+    monitoring: MonitoringResult, threshold: float, vision: VisionInterpretation | None
+) -> list[RubricMetric]:
+    video_ratio, video_note = experimental_value(
+        vision, Behavior.GUIDE, monitoring.video_ratio, "guiar en las carpetas"
+    )
     return [
         RubricMetric(
             "monitoring_ratio",
             monitoring.ratio,
             [R3],
-            "Tiempo monitoreando: guiando en carpetas o preguntando a la clase (sin doble conteo)",
+            "Tiempo monitoreando: desde cada pregunta hasta la respuesta de un alumno (audio)",
+            None if monitoring.ratio is not None else NO_AUDIO_NOTE,
         ),
         RubricMetric(
             "monitoring_video_ratio",
-            monitoring.video_ratio,
+            video_ratio,
             [R3],
-            "Parte del monitoreo que ve el video: guiando en las carpetas",
+            "Complemento experimental: tiempo guiando en las carpetas (video)",
+            video_note,
+            experimental=True,
         ),
         RubricMetric(
             "monitoring_audio_ratio",
@@ -174,6 +207,6 @@ def build_rubric_metrics(
     wait_ok_threshold_s: float,
 ) -> list[RubricMetric]:
     metrics = video_metrics(vision)
-    metrics += monitoring_metrics(monitoring, monitoring_threshold)
+    metrics += monitoring_metrics(monitoring, monitoring_threshold, vision)
     metrics += audio_metrics(audio, wait_ok_threshold_s)
     return metrics

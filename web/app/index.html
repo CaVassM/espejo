@@ -694,6 +694,7 @@ python services/serve_demo.py</pre>
 
 <!-- Antes del script principal: definen renderCharts y renderMinedu, que boot() llama. -->
 <script src="config.js"></script>
+<script src="video-store.js"></script>
 <script src="../assets/espejo-mcp.js"></script>
 <script src="charts.js?v=2"></script>
 <script src="minedu.js?v=2"></script>
@@ -1196,7 +1197,11 @@ function renderAiTips(){
 
 function renderPlayer(meta){
   const v = $("#vid");
-  if (!IS_DEV || ANALYSIS_ID){ onVideoMissing(); return; }
+
+  // Una clase analizada desde la web: el video está en este navegador, donde lo
+  // dejó la pantalla de subida. No viene de la red.
+  if (ANALYSIS_ID){ usarVideoGuardado(meta); return; }
+  if (!IS_DEV){ onVideoMissing(); return; }
 
   v.src = VIDEO_BASE + (meta.video || "");
   v.addEventListener("timeupdate", onTime);
@@ -1226,15 +1231,34 @@ function renderPlayer(meta){
 
 let VIDEO_OK = true;
 
-function onVideoMissing(){
+/* Busca el video de este análisis en el navegador. Si no está (otro equipo u
+   otro navegador), la ficha sigue completa, solo sin reproductor. */
+async function usarVideoGuardado(meta){
+  const v = $("#vid");
+  let blob = null;
+  try{ blob = await recuperarVideo(ANALYSIS_ID); }catch{ /* sin almacenamiento */ }
+
+  if (!blob){
+    onVideoMissing("Este reporte se abrió en un navegador distinto al que subió la clase, "
+      + "así que el video no está aquí. Cada evidencia conserva su minuto y su cita textual.");
+    return;
+  }
+  v.src = URL.createObjectURL(blob);
+  v.addEventListener("timeupdate", onTime);
+  v.addEventListener("error", ()=>onVideoMissing(), {once:true});
+  // El objeto se libera al salir para no dejar el blob retenido en memoria.
+  addEventListener("pagehide", ()=>URL.revokeObjectURL(v.src), {once:true});
+}
+
+function onVideoMissing(motivo){
   VIDEO_OK = false;
-  $("#vid").remove();
+  $("#vid")?.remove();
   const aviso = el("div","no-video");
   aviso.append(
     el("b",null,"Reporte sin video. "),
-    document.createTextNode(
-      "La grabación no se publica porque la clase tiene estudiantes menores de edad. "
-      + "Cada evidencia conserva su minuto y su cita textual."));
+    document.createTextNode(motivo
+      || "La grabación no se publica porque la clase tiene estudiantes menores de edad. "
+         + "Cada evidencia conserva su minuto y su cita textual."));
   $(".player-card").prepend(aviso);
   const q = $("#nowQuote");
   if (q && q.classList.contains("empty")) q.textContent = "Elige una evidencia para leerla aquí.";

@@ -170,6 +170,10 @@ async function analizar(evento) {
     return fallar("No se pudo subir el video", error.message);
   }
 
+  // El video queda en este navegador para que la ficha pueda reproducirlo: la
+  // API no lo devuelve, y así la grabación no necesita volver de la red.
+  await guardarVideo(analisis.analysis_id, file);
+
   // Subido: a partir de aquí el avance lo marca el servidor, no la barra.
   $("#barra").style.width = "100%";
   $("#pct").textContent = "";

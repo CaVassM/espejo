@@ -196,7 +196,10 @@ el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles 
 - **Validación anti-invento:** toda cita debe existir textualmente en la transcripción, en la
   línea de su minuto (±2 s); si no, se descarta y se cuenta como evidencia rechazada. Las clases
   fuera de la lista también se rechazan. Si la respuesta no es un JSON válido, se reintenta una
-  vez. Las preguntas se clasifican por su id: la cita y el minuto los pone el código.
+  vez. Las preguntas se clasifican por su id: la cita y el minuto los pone el código. Una
+  pregunta que un alumno respondió nunca queda como retórica (el manual la define como la que se
+  hace "sin esperar una respuesta del estudiante"): si el LLM la marca así, se le vuelve a pedir
+  solo entre abierta y cerrada.
 - **Invitación a participar** solo cuando el docente se dirige a un estudiante en particular. El
   LLM copia la palabra con que lo hace ("hija", un nombre); si no está en la cita o es de toda la
   clase ("ustedes", "niños"), se rechaza.
@@ -246,9 +249,9 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 4. **Monitoreo sin diarización es menos preciso.** Sin saber quién habla se cuentan las preguntas
    de cualquier persona y cualquier voz posterior cuenta como posible respuesta.
 5. **El LLM local de 7B se equivoca y es sensible al prompt.** En una prueba con una clase real
-   acertó 39 de 44 preguntas contra una referencia hecha a mano, pero marcó como retóricas
-   preguntas que la alumna respondió. Cambios pequeños en el prompt movían varias
-   clasificaciones. El 14B no entra en una GPU de 8 GB; con 12 GB o más se usa solo.
+   acertó 39 de 44 preguntas contra una referencia hecha a mano; aún marca como retóricas
+   algunas preguntas sin respuesta que sí pedían explicar ("¿por qué?"). Cambios pequeños en el
+   prompt movían varias clasificaciones. El 14B no entra en una GPU de 8 GB; con 12 GB o más se usa solo.
 6. **Silero no oye bien voces lejanas.** Por eso la regla de "texto inventado sin voz" solo se
    aplica a segmentos de 3 palabras o menos; aun así puede borrar frases reales muy cortas.
 

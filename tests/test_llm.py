@@ -17,7 +17,7 @@ from espejo.audio.schemas import (
 from espejo.config import load_llm_config
 from espejo.llm.analyzer import LlmAnalyzer, apply_question_labels
 from espejo.llm.clients import ClientChoice, LlmError, complete_json
-from espejo.llm.prompts import EVENTS_SCHEMA
+from espejo.llm.prompts import ANSWERED_QUESTIONS_SCHEMA, EVENTS_SCHEMA
 from espejo.llm.schemas import (
     CandidateQuestion,
     Evidence,
@@ -179,8 +179,12 @@ def make_segment(start_s: float, text: str, role: SpeakerRole) -> TranscriptSegm
     return TranscriptSegment(start_s, start_s + 2.0, text, [], -0.3, 0.1, role=role)
 
 
-def make_question(start_s: float, text: str, is_tag: bool = False) -> Question:
-    response = StudentResponse(start_s + 3, start_s + 4, "SPEAKER_01", ResponseCertainty.HIGH)
+def make_question(
+    start_s: float, text: str, is_tag: bool = False, answered: bool = True
+) -> Question:
+    response = None
+    if answered:
+        response = StudentResponse(start_s + 3, start_s + 4, "SPEAKER_01", ResponseCertainty.HIGH)
     return Question(
         text=text,
         start_s=start_s,
@@ -219,7 +223,7 @@ def test_llm_classes_replace_the_rule_in_metrics(tmp_path: Path) -> None:
         make_segment(16.0, "Muy bien, ¿ya?", SpeakerRole.TEACHER),
     ]
     questions = [make_question(10.0, "¿Cuántos hijos habrá tenido el labrador?")]
-    questions.append(make_question(16.0, "¿ya?", is_tag=True))
+    questions.append(make_question(16.0, "¿ya?", is_tag=True, answered=False))
     reply = classification_reply(
         questions=[
             {
@@ -375,3 +379,54 @@ def test_invitation_must_address_one_student() -> None:
 
     assert result.accepted == [to_one]
     assert len(result.rejected) == 2
+
+
+RHETORICAL_ANSWERED = {
+    "question_id": 0,
+    "label": "question_rhetorical",
+    "reason": "no espera respuesta",
+    "confidence": "media",
+}
+
+
+def answered_case() -> tuple[list[TranscriptSegment], list[Question]]:
+    segments = [
+        make_segment(10.0, "¿qué sucederá en el cuento?", SpeakerRole.TEACHER),
+        make_segment(13.0, "Que los hijos estarían ayudando", SpeakerRole.STUDENT),
+    ]
+    return segments, [make_question(10.0, "¿qué sucederá en el cuento?")]
+
+
+def test_answered_question_marked_rhetorical_is_asked_again(tmp_path: Path) -> None:
+    segments, questions = answered_case()
+    open_label = dict(RHETORICAL_ANSWERED, label="question_open", reason="pide predecir")
+    replies = [
+        classification_reply(),
+        classification_reply(questions=[RHETORICAL_ANSWERED]),
+        classification_reply(questions=[open_label]),
+    ]
+    client = FakeClient(replies)
+    analyzer = analyzer_with(client, tmp_path)
+
+    analysis = analyzer.classify(segments, questions, topic=None)
+
+    assert analysis.question_labels[0].label == "question_open"
+    assert len(client.prompts) == 3
+    assert "PREGUNTAS QUE UN ALUMNO RESPONDIÓ" in client.prompts[2]
+
+
+def test_answered_question_never_stays_rhetorical(tmp_path: Path) -> None:
+    # El segundo llamado insiste en "retórica" (inválido en su esquema): se rechaza igual
+    segments, questions = answered_case()
+    client = FakeClient([classification_reply(questions=[RHETORICAL_ANSWERED])])
+    analyzer = analyzer_with(client, tmp_path)
+
+    analysis = analyzer.classify(segments, questions, topic=None)
+
+    assert analysis.question_labels == {}
+    assert analysis.rejected[0].reason == "un alumno respondió: no puede ser retórica"
+
+
+def test_answered_questions_schema_only_allows_open_or_closed() -> None:
+    item_schema = ANSWERED_QUESTIONS_SCHEMA["properties"]["questions"]["items"]
+    assert item_schema["properties"]["label"]["enum"] == ["question_open", "question_closed"]

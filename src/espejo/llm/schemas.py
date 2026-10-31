@@ -46,6 +46,9 @@ class EvidenceKind(StrEnum):
 
 
 QUESTION_LABELS = [category.value for category in QuestionCategory]
+# Una pregunta que un alumno respondió no es retórica: el manual define la retórica como la que
+# se hace "sin esperar una respuesta del estudiante" (R2, nivel I).
+ANSWERED_QUESTION_LABELS = [QuestionCategory.OPEN.value, QuestionCategory.CLOSED.value]
 FEEDBACK_LABELS = [feedback.value for feedback in FeedbackType]
 REGULATION_LABELS = [regulation.value for regulation in RegulationType]
 PARTICIPATION_LABELS = [LanguageSignal.PARTICIPATION_INVITATION.value]

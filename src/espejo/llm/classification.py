@@ -4,11 +4,14 @@ import logging
 from dataclasses import dataclass, field
 from typing import Any
 
+from espejo.audio.schemas import QuestionCategory
 from espejo.config import LlmConfig
 from espejo.llm.clients import LlmClient, LlmError, complete_json
 from espejo.llm.prompts import (
+    ANSWERED_QUESTIONS_SCHEMA,
     EVENTS_SCHEMA,
     QUESTIONS_SCHEMA,
+    build_answered_questions_prompt,
     build_events_prompt,
     build_questions_prompt,
 )
@@ -33,6 +36,7 @@ logger = logging.getLogger(__name__)
 
 INVALID_TIME_REASON = "minuto con formato inválido"
 UNKNOWN_QUESTION_REASON = "question_id que no es una pregunta candidata de esa ventana"
+ANSWERED_RHETORICAL_REASON = "un alumno respondió: no puede ser retórica"
 REPLY_KEYS = {
     EvidenceKind.QUESTION: "questions",
     EvidenceKind.FEEDBACK: "feedback",
@@ -109,6 +113,9 @@ def parse_reply(content: dict[str, Any], window: TranscriptWindow) -> ParsedItem
         candidate = candidates_by_id.get(raw["question_id"])
         if candidate is None:
             rejected.append(RejectedEvidence(unknown_question(raw), UNKNOWN_QUESTION_REASON))
+        elif candidate.student_answered and raw["label"] == QuestionCategory.RHETORICAL:
+            evidence = question_from_raw(raw, candidate)
+            rejected.append(RejectedEvidence(evidence, ANSWERED_RHETORICAL_REASON))
         else:
             items.append(question_from_raw(raw, candidate))
 
@@ -123,6 +130,20 @@ def parse_reply(content: dict[str, Any], window: TranscriptWindow) -> ParsedItem
             else:
                 items.append(evidence)
     return ParsedItems(items, rejected)
+
+
+def answered_marked_rhetorical(
+    raw_questions: list[dict[str, Any]], candidates: list[CandidateQuestion]
+) -> list[CandidateQuestion]:
+    rhetorical_ids = set()
+    for raw in raw_questions:
+        if raw["label"] == QuestionCategory.RHETORICAL:
+            rhetorical_ids.add(raw["question_id"])
+    selected = []
+    for candidate in candidates:
+        if candidate.student_answered and candidate.question_id in rhetorical_ids:
+            selected.append(candidate)
+    return selected
 
 
 def items_of_kind(items: list[Evidence], kind: EvidenceKind) -> list[Evidence]:
@@ -180,9 +201,41 @@ class LlmClassifier:
 
         questions_prompt = build_questions_prompt(window, self.definitions, topic)
         questions = complete_json(self.client, questions_prompt, QUESTIONS_SCHEMA, attempts)
+        questions = self.reclassify_answered(window, topic, questions)
         content = dict(events.content)
         content.update(questions.content)
         return JsonReply(content, events.usage.plus(questions.usage))
+
+    def reclassify_answered(
+        self, window: TranscriptWindow, topic: str | None, reply: JsonReply
+    ) -> JsonReply:
+        """Si marcó retórica una pregunta que un alumno respondió, la vuelve a pedir solo
+        entre abierta y cerrada. Si ese llamado falla, parse_reply la rechaza igual."""
+        raw_questions = reply.content.get(REPLY_KEYS[EvidenceKind.QUESTION], [])
+        answered = answered_marked_rhetorical(raw_questions, window.candidates)
+        if not answered:
+            return reply
+
+        prompt = build_answered_questions_prompt(window, self.definitions, topic, answered)
+        try:
+            second = complete_json(
+                self.client, prompt, ANSWERED_QUESTIONS_SCHEMA, self.config.max_attempts
+            )
+        except LlmError as error:
+            logger.warning("No se pudo reclasificar preguntas respondidas: %s", error)
+            return reply
+
+        answered_ids = set()
+        for candidate in answered:
+            answered_ids.add(candidate.question_id)
+        kept = []
+        for raw in raw_questions:
+            if raw["question_id"] not in answered_ids:
+                kept.append(raw)
+        for raw in second.content["questions"]:
+            if raw["question_id"] in answered_ids:
+                kept.append(raw)
+        return JsonReply({"questions": kept}, reply.usage.plus(second.usage))
 
     def tolerance_s(self) -> float:
         return self.config.validation.timestamp_tolerance_s

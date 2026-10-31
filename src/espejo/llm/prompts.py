@@ -8,12 +8,14 @@ local de 7B se concentraba en la lista de preguntas y devolvía vacíos los even
 from typing import Any
 
 from espejo.llm.schemas import (
+    ANSWERED_QUESTION_LABELS,
     CONFIDENCE_LABELS,
     FEEDBACK_LABELS,
     PARTICIPATION_LABELS,
     QUESTION_LABELS,
     REGULATION_LABELS,
     RESPECT_LABELS,
+    CandidateQuestion,
     SuggestionFocus,
     TranscriptLine,
     Weakness,
@@ -60,28 +62,36 @@ EVENTS_SCHEMA: dict[str, Any] = {
     "additionalProperties": False,
 }
 
+
 # Las preguntas no llevan cita ni minuto: el question_id ya apunta a la pregunta real y el código
 # pone su texto y su minuto. Un 7B copiaba mal la cita (le pegaba el minuto) y se perdían.
-QUESTION_ITEM_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "question_id": {"type": "integer"},
-        "label": {"type": "string", "enum": QUESTION_LABELS},
-        "reason": {"type": "string"},
-        "confidence": {"type": "string", "enum": CONFIDENCE_LABELS},
-    },
-    "required": ["question_id", "label", "reason", "confidence"],
-    "additionalProperties": False,
-}
+def question_item_schema(labels: list[str]) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": {
+            "question_id": {"type": "integer"},
+            "label": {"type": "string", "enum": labels},
+            "reason": {"type": "string"},
+            "confidence": {"type": "string", "enum": CONFIDENCE_LABELS},
+        },
+        "required": ["question_id", "label", "reason", "confidence"],
+        "additionalProperties": False,
+    }
 
-QUESTIONS_SCHEMA: dict[str, Any] = {
-    "type": "object",
-    "properties": {
-        "questions": array_of(QUESTION_ITEM_SCHEMA),
-    },
-    "required": ["questions"],
-    "additionalProperties": False,
-}
+
+def questions_schema(labels: list[str]) -> dict[str, Any]:
+    return {
+        "type": "object",
+        "properties": {"questions": array_of(question_item_schema(labels))},
+        "required": ["questions"],
+        "additionalProperties": False,
+    }
+
+
+QUESTIONS_SCHEMA = questions_schema(QUESTION_LABELS)
+# Segundo llamado, solo para preguntas que un alumno respondió y que el LLM marcó como
+# retóricas: el esquema solo deja elegir entre abierta y cerrada.
+ANSWERED_QUESTIONS_SCHEMA = questions_schema(ANSWERED_QUESTION_LABELS)
 
 SUGGESTION_SCHEMA: dict[str, Any] = {
     "type": "object",
@@ -162,15 +172,44 @@ def build_events_prompt(window: TranscriptWindow, definitions: str, topic: str |
     return f"{ROLE_TEXT}\n{EVENTS_TASK}\n{RULES_TEXT}\n{shared_context(definitions, topic, window)}"
 
 
+def candidate_block(candidates: list[CandidateQuestion]) -> str:
+    formatted = []
+    for candidate in candidates:
+        formatted.append(format_candidate(candidate))
+    return joined_or_none(formatted)
+
+
 def build_questions_prompt(window: TranscriptWindow, definitions: str, topic: str | None) -> str:
-    candidates = []
-    for candidate in window.candidates:
-        candidates.append(format_candidate(candidate))
     return (
         f"{ROLE_TEXT}\n{QUESTIONS_TASK}\n"
         f"{shared_context(definitions, topic, window)}\n"
         "PREGUNTAS CANDIDATAS (question_id | [mm:ss] | texto | si respondió un alumno):\n"
-        f"{joined_or_none(candidates)}\n"
+        f"{candidate_block(window.candidates)}\n"
+    )
+
+
+ANSWERED_QUESTIONS_TASK = """\
+Tarea: un alumno respondió cada una de estas preguntas, así que NO son retóricas (el manual
+define la retórica como la que se hace "sin esperar una respuesta del estudiante"). Mirando las
+líneas de antes y de después, elige SOLO entre:
+- question_open: pide razonar, inferir, predecir, explicar, justificar, comparar o crear.
+- question_closed: pide afirmar o negar, un dato puntual o recordar información ya dada.
+Un elemento por cada question_id. "reason" es una sola línea breve, en español. "confidence"
+es alta, media o baja.
+"""
+
+
+def build_answered_questions_prompt(
+    window: TranscriptWindow,
+    definitions: str,
+    topic: str | None,
+    candidates: list[CandidateQuestion],
+) -> str:
+    return (
+        f"{ROLE_TEXT}\n{ANSWERED_QUESTIONS_TASK}\n"
+        f"{shared_context(definitions, topic, window)}\n"
+        "PREGUNTAS QUE UN ALUMNO RESPONDIÓ (question_id | [mm:ss] | texto | si respondió):\n"
+        f"{candidate_block(candidates)}\n"
     )
 
 

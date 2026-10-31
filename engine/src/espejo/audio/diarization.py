@@ -7,6 +7,7 @@ de los modelos en Hugging Face, el pipeline sigue y todos los segmentos quedan "
 import logging
 from dataclasses import replace
 from pathlib import Path
+from typing import Any
 
 from espejo.audio.schemas import (
     UNKNOWN_SPEAKER,
@@ -56,10 +57,19 @@ class SpeakerDiarizer:
         logger.info("Sin diarización: %s", reason)
         return DiarizationOutcome(None, reason)
 
-    def run_pyannote(self, audio_path: Path, token: str) -> list[SpeakerTurn]:
+    def preload(self) -> None:
+        """Carga pyannote de antemano (el worker, al arrancar). Si falla, diarize lo reporta."""
+        token = read_secret(self.config.token_env_var)
+        if not self.config.enabled or token is None:
+            return
+        try:
+            self.load_pipeline(token)
+        except Exception as error:
+            logger.warning("No se pudo precargar pyannote: %s", describe_failure(error))
+
+    def load_pipeline(self, token: str) -> Any:
         # Imports locales: pyannote y torch son pesados y la diarización es opcional
         import torch
-        from faster_whisper.audio import decode_audio
         from pyannote.audio import Pipeline
 
         if self.pipeline is None:
@@ -69,7 +79,13 @@ class SpeakerDiarizer:
             if torch.cuda.is_available():
                 pipeline.to(torch.device("cuda"))
             self.pipeline = pipeline
-        pipeline = self.pipeline
+        return self.pipeline
+
+    def run_pyannote(self, audio_path: Path, token: str) -> list[SpeakerTurn]:
+        import torch
+        from faster_whisper.audio import decode_audio
+
+        pipeline = self.load_pipeline(token)
 
         # Se pasa la onda en memoria para no depender del backend de audio de torchaudio
         samples = decode_audio(str(audio_path), sampling_rate=self.sample_rate_hz)

@@ -269,7 +269,7 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 7. **Sin retroalimentación incorrecta.** Por privacidad, lo que dicen los alumnos llega al LLM
    como "[ALUMNO responde]". Sin la respuesta no se puede juzgar si el docente dio por buena una
    respuesta equivocada, así que esa categoría del manual (R3) no se marca.
-8. **Nombres tapados con un modelo pequeño.** spaCy `es_core_news_sm` a veces tapa una palabra
+8. **Nombres tapados con un modelo.** spaCy `es_core_news_md` más una lista de nombres comunes en el Perú (`configs/names_pe.yaml`) a veces tapa una palabra
    de más (p. ej. "Analizar" al inicio de una frase) o deja pasar un nombre poco común.
 
 ## Mejoras futuras

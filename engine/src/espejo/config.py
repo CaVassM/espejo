@@ -213,6 +213,7 @@ class PrivacyConfig:
     person_labels: list[str]
     proper_noun_labels: list[str]
     keep_words: list[str]
+    names_path: str
 
 
 @dataclass(frozen=True)

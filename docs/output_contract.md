@@ -138,7 +138,7 @@ Antes de guardar `audio_raw.json`:
 
 - Todo segmento que no es del docente pasa a `"[ALUMNO responde]"`, con su minuto y su duración;
   su texto y sus palabras se descartan. Antes se le aplica el filtro de texto inventado.
-- En las líneas del docente, los nombres pasan a `"[NOMBRE]"` (spaCy `es_core_news_sm`): una
+- En las líneas del docente, los nombres pasan a `"[NOMBRE]"` (spaCy `es_core_news_md` y la lista de respaldo `configs/names_pe.yaml`): una
   entidad PER, MISC o LOC hecha solo de nombres propios, salvo `privacy.keep_words` y las
   palabras del tema.
 - Docente y alumnos se distinguen con la misma regla de INTERPRETAR (el que más habla es el

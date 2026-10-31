@@ -6,9 +6,12 @@
   pequeño de spaCy confunde las etiquetas: marca "María" o "Pedro" como MISC o LOC, y "¿Qué",
   "Claro" o "Aquí" como PER. Por eso se tapa una entidad PER, MISC o LOC solo si todas sus
   palabras son nombres propios, salvo una lista de palabras a conservar y las del tema.
+- Respaldo: una palabra con mayúscula que está en la lista de nombres comunes en el Perú
+  (configs/names_pe.yaml: nombres, diminutivos, nombres quechuas y apellidos) también se tapa.
 """
 
 import logging
+import re
 from collections.abc import Iterable
 from dataclasses import dataclass, replace
 from typing import Any, Protocol
@@ -24,6 +27,7 @@ from espejo.audio.schemas import (
     Word,
 )
 from espejo.audio.speaker_roles import assign_roles
+from espejo.common.config_io import read_yaml, resolve_project_path
 from espejo.common.text import normalize_text
 from espejo.config import HallucinationConfig, PrivacyConfig
 
@@ -31,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 PROPER_NOUN_TAG = "PROPN"
 PUNCTUATION_TAG = "PUNCT"
+# Palabras con letras (incluye tildes y ñ); los signos y números las separan
+WORD_PATTERN = re.compile(r"[^\W\d_]+")
 
 
 @dataclass(frozen=True)
@@ -108,6 +114,56 @@ def only_proper_nouns(tokens: Iterable[Any]) -> bool:
     return has_proper_noun
 
 
+def load_fallback_names(config: PrivacyConfig) -> set[str]:
+    raw = read_yaml(resolve_project_path(config.names_path))
+    names = set()
+    for name in raw["names"]:
+        names.add(normalize_text(name))
+    return names
+
+
+class ListNameFinder:
+    """Respaldo de spaCy: palabras con mayúscula que están en la lista de nombres."""
+
+    def __init__(self, names: set[str]) -> None:
+        self.names = names
+
+    def find(self, text: str, keep_words: set[str]) -> list[NameSpan]:
+        spans = []
+        for match in WORD_PATTERN.finditer(text):
+            word = match.group()
+            normalized = normalize_text(word)
+            if word[0].isupper() and normalized in self.names and normalized not in keep_words:
+                spans.append(NameSpan(match.start(), match.end(), word))
+        return spans
+
+
+class CombinedNameFinder:
+    """Une lo que encuentran varios buscadores; si dos se solapan, queda el primero."""
+
+    def __init__(self, finders: list[NameFinder]) -> None:
+        self.finders = finders
+
+    def find(self, text: str, keep_words: set[str]) -> list[NameSpan]:
+        found = []
+        for finder in self.finders:
+            found += finder.find(text, keep_words)
+        return without_overlaps(found)
+
+
+def without_overlaps(spans: list[NameSpan]) -> list[NameSpan]:
+    kept: list[NameSpan] = []
+    for span in sorted(spans, key=span_start):
+        if not kept or span.start_char >= kept[-1].end_char:
+            kept.append(span)
+    return kept
+
+
+def default_name_finder(config: PrivacyConfig) -> NameFinder:
+    fallback = ListNameFinder(load_fallback_names(config))
+    return CombinedNameFinder([SpacyNameFinder(config), fallback])
+
+
 def mask_text(text: str, spans: list[NameSpan]) -> str:
     """Reemplaza de atrás hacia adelante para no mover las posiciones que faltan."""
     masked = text
@@ -150,7 +206,7 @@ class Anonymizer:
         """name_finder permite inyectar uno simulado en los tests (sin spaCy)."""
         self.config = config
         self.hallucination_filter = HallucinationFilter(hallucinations)
-        self.name_finder = name_finder or SpacyNameFinder(config)
+        self.name_finder = name_finder or default_name_finder(config)
         self.base_keep_words = set()
         for word in config.keep_words:
             self.base_keep_words.add(normalize_text(word))

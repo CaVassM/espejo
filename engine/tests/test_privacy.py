@@ -1,6 +1,17 @@
+import pytest
+
 from espejo.audio.diarization import DiarizationOutcome
 from espejo.audio.hallucinations import HallucinationFilter
-from espejo.audio.privacy import Anonymizer, Entity, NameSpan, is_name, topic_words
+from espejo.audio.privacy import (
+    Anonymizer,
+    Entity,
+    ListNameFinder,
+    NameSpan,
+    default_name_finder,
+    is_name,
+    load_fallback_names,
+    topic_words,
+)
 from espejo.audio.schemas import (
     AudioCapture,
     SpeakerTurn,
@@ -116,3 +127,33 @@ def test_topic_words_are_kept() -> None:
     expected = {"cuento", "los", "hijos", "del", "labrador"}
     assert topic_words("Cuento: Los hijos del labrador") == expected
     assert topic_words(None) == set()
+
+
+def found_names(finder: object, text: str) -> list[str]:
+    names = []
+    for span in finder.find(text, {"hija", "hijos"}):
+        names.append(span.text)
+    return names
+
+
+def test_fallback_list_masks_capitalized_names_only() -> None:
+    finder = ListNameFinder(load_fallback_names(PRIVACY))
+
+    assert found_names(finder, "Muy bien, Juanita") == ["Juanita"]
+    assert found_names(finder, "A ver, Pedrito") == ["Pedrito"]
+    assert found_names(finder, "Quispe, pasa a la pizarra") == ["Quispe"]
+    assert found_names(finder, "una rosa roja") == []
+    assert found_names(finder, "El labrador tenía dos hijos") == []
+
+
+def test_invented_phrases_with_spacy() -> None:
+    pytest.importorskip("spacy")
+    try:
+        finder = default_name_finder(PRIVACY)
+    except OSError:
+        pytest.skip("falta el modelo de spaCy (python -m spacy download es_core_news_md)")
+
+    assert found_names(finder, "Muy bien, Juanita") == ["Juanita"]
+    assert found_names(finder, "A ver, Pedrito") == ["Pedrito"]
+    assert found_names(finder, "Quispe, pasa a la pizarra") == ["Quispe"]
+    assert found_names(finder, "El labrador tenía dos hijos") == []

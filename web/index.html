@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aula Evidente</title>
+<meta name="description" content="Hopewell is a transparent, donor-first charity connecting givers directly to verified causes worldwide.">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Nunito+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Bootstrap -->
+<link href="assets/bootstrap.min.css" rel="stylesheet">
+<!-- Bootstrap Icons -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+<!-- AOS -->
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="assets/style.css" rel="stylesheet" />
+<link rel="icon" type="image/x-icon" href="assets/hand-heart.png">
+
+
+
+
+</head>
+<body>
+
+<!-- ============================================
+     PRELOADER
+============================================ -->
+<div id="preloader" aria-hidden="true">
+  <div class="preload-ring"><i class="bi bi-heart-fill preload-heart"></i></div>
+  <div class="preload-text">CARGANDO&hellip;</div>
+</div>
+
+<!-- ============================================
+     NAVBAR
+============================================ -->
+<nav class="navbar navbar-expand-lg navbar-hw" id="mainNav">
+  <div class="container">
+    <a class="hw-logo" href="#home">
+      <img src="assets/image_70ae41.png" alt="Logo Aula Evidente" style="max-height: 45px; width: auto;">
+    </a>
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-label="Toggle navigation">
+      <i class="bi bi-list fs-2"></i>
+    </button>
+    <div class="collapse navbar-collapse" id="navMenu">
+      <ul class="navbar-nav nav-hw mx-auto mt-3 mt-lg-0">
+        <li class="nav-item"><a class="nav-link" href="#home">Inicio</a></li>
+        <li class="nav-item"><a class="nav-link" href="#how">Cómo Funciona</a></li>
+        <li class="nav-item"><a class="nav-link" href="#about">Nuestra Propuesta</a></li>
+        <li class="nav-item"><a class="nav-link" href="#why">¿Por qué nosotros?</a></li>
+      </ul>
+      <a href="#demo" class="btn-hw-primary d-none d-lg-inline-flex">Probar Demo <i class="bi bi-arrow-right"></i></a>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================
+     HERO EDTECH (Centrado y Compacto)
+============================================ -->
+<header class="hero text-center d-flex align-items-center justify-content-center flex-column" id="home">
+  
+  <!-- Fondos Difusos Animados (Blobs) -->
+  <div class="hero-glow position-absolute" style="top: 10%; right: 20%; animation: pulse-beat 6s infinite alternate;"></div>
+  <div class="hero-glow position-absolute" style="bottom: 10%; left: 10%; background: radial-gradient(circle, rgba(245, 158, 11, 0.15), transparent 70%); animation: pulse-beat 8s infinite alternate-reverse;"></div>
+
+  <div class="container position-relative z-index-1">
+    
+    <!-- Textos Principales -->
+    <div class="row justify-content-center mb-4">
+      <div class="col-lg-9" data-aos="zoom-in" data-aos-duration="800">
+        <h1 class="hero-title fw-bolder mt-3">De tu clase a <span class="accent-underline position-relative">evidencias<svg viewBox="0 0 200 14" preserveAspectRatio="none" style="position:absolute; bottom:-10px; left:0; width:100%; height:14px;"><path d="M2 10 Q 50 2 100 8 T 198 6" stroke="#0369a1" stroke-width="5" fill="none" stroke-linecap="round"/></svg></span> revisables.</h1>
+        <p class="hero-lead mx-auto mt-4" style="font-size: 1.15rem;">Aula Evidente convierte grabaciones de clase en una ficha privada de evidencias con minutos y fragmentos verificables, organizada según las cinco rúbricas del Minedu.</p>
+        
+        <div class="d-flex justify-content-center flex-wrap gap-3 mt-4">
+          <a href="#demo" class="btn-hw-primary btn-lg shadow-lift transition-all hover-scale">Probar Demostración <i class="bi bi-arrow-right"></i></a>
+          <a href="#how" class="btn-hw-outline btn-lg transition-all hover-scale"><i class="bi bi-play-circle"></i> Cómo funciona</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="row justify-content-center position-relative mt-4">
+      <div class="col-lg-9" data-aos="zoom-in" data-aos-delay="150">
+        <div class="mx-auto shadow-lg" style="max-width: 750px; height: 280px; border-radius: 20px; overflow: hidden; border: 6px solid white;">
+          <img src="https://images.unsplash.com/photo-1577896851231-70ef18881754?w=1000&h=600&fit=crop&auto=format" alt="Docente impartiendo clase" class="img-fluid w-100 h-100" style="object-fit: cover; object-position: center top;">
+        </div>
+      </div>
+    </div>
+    
+  </div>
+</header>
+
+<!-- ============================================
+     IMPACT STATS (Cifras del Minedu)
+============================================ -->
+<section class="section-pad pt-0" id="impact">
+  <div class="container">
+    <div class="stats-band" data-aos="zoom-in">
+      <div class="row g-0">
+        <div class="col-6 col-md-3 stat-item">
+          <div class="stat-num"><span class="counter" data-target="5">0</span></div>
+          <div class="stat-label">Rúbricas Oficiales</div>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <div class="stat-num">Hasta <span class="counter" data-target="90">0</span>m</div>
+          <div class="stat-label">De observación de clase</div>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <div class="stat-num">+<span class="counter" data-target="45">0</span>m</div>
+          <div class="stat-label">De registro manual actual</div>
+        </div>
+        <div class="col-6 col-md-3 stat-item">
+          <div class="stat-num"><span class="counter" data-target="1">0</span></div>
+          <div class="stat-label">Consejo práctico accionable</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<!-- ============================================
+     ABOUT / PROPUESTA DE VALOR
+============================================ -->
+<section class="section-pad" id="about">
+  <div class="container contact-card about-card">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="about-collage">
+          <div class="about-badge">
+            <div class="ab-ring"><span>5</span></div>
+            <div>
+              <div class="fw-bold font-display" style="font-size:.9rem;">Rúbricas</div>
+              <div class="text-muted" style="font-size:.78rem;">MINEDU 2025</div>
+            </div>
+          </div>
+          <!-- Imágenes sugeridas enfocadas en docencia y EdTech -->
+          <div class="img-a"><img src="https://images.unsplash.com/photo-1509062522246-3755977927d7?w=800&h=650&fit=crop&auto=format" alt="Docente impartiendo clase" loading="lazy"></div>
+        </div>
+      </div>
+      <div class="col-lg-6" data-aos="fade-left">
+        <span span class="eyebrow"><i class="bi bi-lightbulb-fill"></i> El Problema y la Solución</span>
+        <h2 class="section-title mt-3 mb-3" style="font-size:clamp(1.7rem,3vw,2.4rem);">Más atención a la pedagogía, menos esfuerzo registrando.</h2>
+        <p class="section-sub">El acompañamiento de calidad requiere observación y registro. Observar una sesión exige hasta 90 minutos y registrarla toma entre 30 y 45 minutos adicionales. Aula Evidente automatiza la preparación de evidencias para que dediques ese tiempo a la conversación pedagógica.</p>
+        <ul class="about-list mt-3">
+          <li>
+            <span class="ic"><i class="bi bi-quote"></i></span>
+            <div>
+              <strong>Citas textuales auditables</strong>
+              <div class="text-muted small">El análisis se basa estrictamente en la transcripción con marcas de tiempo, sin inventar diálogos ni inferir estados mentales.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ic"><i class="bi bi-file-earmark-text-fill"></i></span>
+            <div>
+              <strong>Alineación transparente</strong>
+              <div class="text-muted small">Clasifica evidencias sugeridas según el manual vigente de rúbricas Minedu 2025, sin emitir calificaciones oficiales.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ic"><i class="bi bi-incognito"></i></span>
+            <div>
+              <strong>Privacidad bajo tu control</strong>
+              <div class="text-muted small">Sesiones seguras donde el docente es propietario del video: tú lo subes, revisas tu reporte y decides si lo borras o compartes.</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     WHY CHOOSE US / DIFERENCIALES DE AULA EVIDENTE
+============================================ -->
+<section class="section-pad" id="why" style="background:var(--clr-bg);">
+  <div class="container">
+    <div class="text-center mx-auto mb-5" style="max-width:640px;" data-aos="fade-up">
+      <span class="eyebrow"><i class="bi bi-award-fill"></i> ¿Por qué Aula Evidente?</span>
+      <h2 class="section-title mt-3" style="font-size:clamp(1.8rem,3.2vw,2.5rem);">Tecnología asistida con rigor pedagógico</h2>
+    </div>
+    <div class="row g-4">
+      
+      <!-- 1. Citas verificables -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-search"></i></div>
+          <h5 class="font-display fw-bold">Citas y Tiempos Exactos</h5>
+          <p class="text-muted mb-0">Cada hallazgo está vinculado de forma directa a un segmento de transcripción y un minuto comprobable.</p>
+        </div>
+      </div>
+
+      <!-- 2. Rúbricas Minedu -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="80">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-journal-check"></i></div>
+          <h5 class="font-display fw-bold">Alineado al Minedu</h5>
+          <p class="text-muted mb-0">Organizado estrictamente según las cinco rúbricas oficiales de observación de aula vigentes.</p>
+        </div>
+      </div>
+
+      <!-- 3. Privacidad y Control -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="160">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-shield-lock-fill"></i></div>
+          <h5 class="font-display fw-bold">Privacidad Total</h5>
+          <p class="text-muted mb-0">Tú eres propietario de tu sesión: subes la clase, revisas el reporte privado y controlas su eliminación.</p>
+        </div>
+      </div>
+
+      <!-- 4. Revisión Humana -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-person-check-fill"></i></div>
+          <h5 class="font-display fw-bold">Revisión Humana</h5>
+          <p class="text-muted mb-0">No emitimos calificaciones automáticas ni rankings punitivos; preparamos evidencias para tu juicio profesional.</p>
+        </div>
+      </div>
+
+      <!-- 5. Consejos Prácticos -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="80">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-lightbulb-fill"></i></div>
+          <h5 class="font-display fw-bold">Consejos Accionables</h5>
+          <p class="text-muted mb-0">Recibe una sugerencia práctica y constructiva orientada a mejorar la dinámica en tu siguiente clase.</p>
+        </div>
+      </div>
+
+      <!-- 6. Sin Fricción Técnica -->
+      <div class="col-md-6 col-lg-4" data-aos="fade-up" data-aos-delay="160">
+        <div class="why-card">
+          <div class="why-ic"><i class="bi bi-phone-vibrate"></i></div>
+          <h5 class="font-display fw-bold">Diseño Web Responsive</h5>
+          <p class="text-muted mb-0">Accede de manera rápida y fluida desde cualquier navegador móvil o de escritorio sin instalar aplicaciones pesadas</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============================================
+     HOW IT WORKS / FLUJO DE TRABAJO
+============================================ -->
+<section class="section-pad bg-white" id="how">
+  <div class="container contact-card">
+    <div class="text-center mx-auto mb-5" style="max-width:640px;" data-aos="fade-up">
+      <span class="eyebrow"><i class="bi bi-signpost-split-split bi-signpost-split-fill"></i> Proceso Simple</span>
+      <h2 class="section-title mt-3" style="font-size:clamp(1.8rem,3.2vw,2.5rem);">De tu clase al reporte en 3 pasos</h2>
+    </div>
+    <div class="hiw-wrap">
+      <div class="hiw-line"></div>
+      <div class="row g-4">
+        
+        <!-- Paso 1 -->
+        <div class="col-md-4 hiw-step" data-aos="fade-up">
+          <div class="hiw-num">1</div>
+          <h5 class="font-display fw-bold">Sube tu Clase</h5>
+          <p class="text-muted">Carga el video de tu sesión de manera privada y segura con declaración de consentimiento informada</p>
+        </div>
+
+        <!-- Paso 2 -->
+        <div class="col-md-4 hiw-step" data-aos="fade-up" data-aos-delay="120">
+          <div class="hiw-num">2</div>
+          <h5 class="font-display fw-bold">Análisis Asistido</h5>
+          <p class="text-muted">El motor extrae el audio, genera la transcripción con tiempos y extrae citas organizadas según las cinco rúbricas del Minedu</p>
+        </div>
+
+        <!-- Paso 3 -->
+        <div class="col-md-4 hiw-step" data-aos="fade-up" data-aos-delay="240">
+          <div class="hiw-num">3</div>
+          <h5 class="font-display fw-bold">Revisa y Mejora</h5>
+          <p class="text-muted">Explora el reporte con saltos directos al minuto exacto del video y obtén una sugerencia práctica para tu próxima sesión</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- ============================================
+     CTA BANNER / LLAMADA A LA ACCIÓN
+============================================ -->
+<section class="section-pad" id="cta">
+  <div class="container">
+    <div class="cta-banner text-center" data-aos="zoom-in">
+      <i class="bi bi-file-earmark-check-fill" style="font-size:2.4rem;"></i>
+      <h2 class="mt-3">Lleva tu reflexión pedagógica al siguiente nivel con evidencias claras.</h2>
+      <p class="mb-4 mx-auto" style="opacity:.92; max-width:600px;">Optimiza el registro de tus sesiones y concéntrate en lo que realmente importa: acompañar y mejorar el aprendizaje.</p>
+      <a href="#home" class="btn-cta text-decoration-none"><i class="bi bi-arrow-right-circle-fill me-2"></i>Comenzar Ahora</a>
+    </div>
+  </div>
+</section>
+
+
+
+<!-- ============================================
+     FOOTER (Sin enlaces externos)
+============================================ -->
+<footer class="footer-hw">
+  <svg class="footer-wave" viewBox="0 0 1440 70" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+    <path fill="#0B1220" d="M0,32 C240,70 480,0 720,18 C960,36 1200,70 1440,26 L1440,70 L0,70 Z"></path>
+  </svg>
+  <span class="footer-glow"></span>
+  <span class="footer-glow-2"></span>
+  <div class="container footer-top">
+    <div class="row g-4">
+      <div class="col-lg-4 col-md-6">
+        <a class="hw-logo" href="#home">
+          <img src="assets/image_70ae41.png" alt="Logo Aula Evidente" class="bg-white p-2 rounded" style="max-height: 60px; width: auto;">
+        </a>
+        <p class="mt-3">Convertimos grabaciones de clase en una ficha privada de evidencias verificables, organizada según las cinco rúbricas del Minedu y orientada a la mejora continua.</p>
+        <div class="footer-badges mt-3">
+          <span class="footer-badge"><i class="bi bi-shield-lock-fill"></i> Privacidad y RLS</span>
+          <span class="footer-badge"><i class="bi bi-check-circle-fill"></i> Trazabilidad 100%</span>
+        </div>
+      </div>
+
+      <div class="col-6 col-md-3 col-lg-2">
+        <h6>Navegación</h6>
+        <ul>
+          <li><a class="footer-link" href="#home"><i class="bi bi-caret-right-fill"></i>Inicio</a></li>
+          <li><a class="footer-link" href="#how"><i class="bi bi-caret-right-fill"></i>Cómo Funciona</a></li>
+          <li><a class="footer-link" href="#about"><i class="bi bi-caret-right-fill"></i>Rúbricas Minedu</a></li>
+          <li><a class="footer-link" href="#why"><i class="bi bi-caret-right-fill"></i>Privacidad</a></li>
+          <li><a class="footer-link" href="#contact"><i class="bi bi-caret-right-fill"></i>Contacto</a></li>
+        </ul>
+      </div>
+
+      <div class="col-6 col-md-3 col-lg-2">
+        <h6 class="text-white">Rúbricas Minedu</h6>
+        <ul class="list-unstyled">
+          <li><span class="text-white-50 small d-block mb-2">R1. Involucra activamente</span></li>
+          <li><span class="text-white-50 small d-block mb-2">R2. Razonamiento crítico</span></li>
+          <li><span class="text-white-50 small d-block mb-2">R3. Retroalimentación</span></li>
+          <li><span class="text-white-50 small d-block mb-2">R4. Ambiente de respeto</span></li>
+          <li><span class="text-white-50 small d-block">R5. Regulación positiva</span></li>
+        </ul>
+      </div>
+
+     
+        
+    </div>
+
+    <div class="footer-divider"></div>
+    <div class="footer-bottom d-flex flex-wrap justify-content-between align-items-center gap-3">
+      <div>
+        <div>&copy; 2026 Aula Evidente. Producto EdTech asistido por IA para acompañamiento pedagógico.</div>
+      </div>
+      <div class="text-md-end">
+        <div>Desarrollado para el hackathon &bull; Sin fines de certificación oficial por el MINEDU</div>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ============================================
+     MOBILE STICKY DONATE BAR
+============================================ -->
+<div class="mobile-donate-bar">
+  <a href="#causes" class="btn-hw-primary">Donate Now <i class="bi bi-heart-fill"></i></a>
+</div>
+
+<!-- ============================================
+     SCROLL TO TOP
+============================================ -->
+<div id="scrollTop" role="button" aria-label="Scroll to top" tabindex="0">
+  <svg viewBox="0 0 52 52"><circle cx="26" cy="26" r="23"></circle><circle class="progress" cx="26" cy="26" r="23"></circle></svg>
+  <i class="bi bi-arrow-up"></i>
+</div>
+
+<!-- ============================================
+     WATCH STORY MODAL (demo)
+============================================ -->
+<div class="modal fade" id="storyModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content" style="border-radius:20px;border:none;">
+      <div class="modal-header border-0">
+        <h5 class="modal-title font-display fw-bold">Our Story</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body pb-4">
+        <div class="ratio ratio-16x9 rounded-4 overflow-hidden">
+          <img src="https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=900&h=500&fit=crop&auto=format" alt="Hopewell story preview" style="object-fit:cover;">
+        </div>
+        <p class="text-muted mt-3 mb-0">Video placeholder &mdash; connect your hosted story video here.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Bootstrap Bundle -->
+<script src="assets/bootstrap.bundle.min.js"></script>
+<!-- AOS -->
+<script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+<script src="assets/script.js"></script>
+
+</body>
+</html>

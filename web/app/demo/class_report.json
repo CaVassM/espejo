@@ -21,18 +21,18 @@
     {
       "label": "other",
       "start_s": 0.0,
-      "end_s": 172.52,
+      "end_s": 174.52,
       "start": "00:00",
-      "end": "02:53",
-      "duration_s": 172.52
+      "end": "02:55",
+      "duration_s": 174.52
     },
     {
       "label": "board_writing",
-      "start_s": 172.52,
+      "start_s": 174.52,
       "end_s": 176.52,
-      "start": "02:53",
+      "start": "02:55",
       "end": "02:57",
-      "duration_s": 4.0
+      "duration_s": 2.0
     },
     {
       "label": "other",
@@ -316,7 +316,7 @@
       "speaker_known": true,
       "reliable": true,
       "is_tag": false,
-      "llm_category": "question_open",
+      "llm_category": "question_closed",
       "counts_as_question": true,
       "wait_time_s": 0.0,
       "wait_time_ok": false,
@@ -586,8 +586,8 @@
       "speaker_known": true,
       "reliable": true,
       "is_tag": false,
-      "llm_category": "question_rhetorical",
-      "counts_as_question": false,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
       "wait_time_s": 0.0,
       "wait_time_ok": false,
       "response": null
@@ -646,7 +646,7 @@
       "speaker_known": true,
       "reliable": true,
       "is_tag": false,
-      "llm_category": "question_open",
+      "llm_category": "question_closed",
       "counts_as_question": true,
       "wait_time_s": 5.85,
       "wait_time_ok": true,
@@ -868,12 +868,13 @@
   ],
   "metrics": {
     "board_writing_ratio": {
-      "value": 0.013,
+      "value": 0.007,
       "rubric": [
         "R1"
       ],
       "description": "Tiempo escribiendo en la pizarra, de espaldas a la clase",
-      "note": null
+      "note": "experimental",
+      "experimental": true
     },
     "stage_interaction_count": {
       "value": 0,
@@ -881,7 +882,8 @@
         "R1"
       ],
       "description": "Veces que un alumno pasó al frente",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "path_length_normalized": {
       "value": 11.507,
@@ -889,23 +891,26 @@
         "R4"
       ],
       "description": "Recorrido del docente en anchos de frame (evidencia visual: heatmap.png)",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "monitoring_ratio": {
       "value": 0.243,
       "rubric": [
         "R3"
       ],
-      "description": "Tiempo monitoreando: guiando en carpetas o preguntando a la clase (sin doble conteo)",
-      "note": null
+      "description": "Tiempo monitoreando: desde cada pregunta hasta la respuesta de un alumno (audio)",
+      "note": null,
+      "experimental": false
     },
     "monitoring_video_ratio": {
       "value": 0.0,
       "rubric": [
         "R3"
       ],
-      "description": "Parte del monitoreo que ve el video: guiando en las carpetas",
-      "note": null
+      "description": "Complemento experimental: tiempo guiando en las carpetas (video)",
+      "note": "experimental",
+      "experimental": true
     },
     "monitoring_audio_ratio": {
       "value": 0.243,
@@ -913,7 +918,8 @@
         "R3"
       ],
       "description": "Parte del monitoreo que se oye: desde cada pregunta hasta su respuesta",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "meets_monitoring_threshold": {
       "value": false,
@@ -921,65 +927,73 @@
         "R3"
       ],
       "description": "Monitorea al menos el 25% de la sesión, como pide el manual",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "teacher_question_count": {
-      "value": 33,
+      "value": 34,
       "rubric": [
         "R2",
         "R3"
       ],
       "description": "Preguntas",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "questions_per_minute": {
-      "value": 6.555,
+      "value": 6.754,
       "rubric": [
         "R2",
         "R3"
       ],
       "description": "Preguntas por minuto",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "rhetorical_question_count": {
-      "value": 11,
+      "value": 10,
       "rubric": [
         "R2"
       ],
       "description": "Muletillas o preguntas retóricas (no cuentan como preguntas)",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "open_question_ratio": {
-      "value": 0.848,
+      "value": 0.765,
       "rubric": [
         "R2"
       ],
       "description": "Preguntas abiertas / (abiertas + cerradas), según el LLM",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "mean_wait_time_s": {
-      "value": 1.218,
+      "value": 1.183,
       "rubric": [
         "R2"
       ],
       "description": "Espera promedio después de preguntar (solo audio confiable)",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "median_wait_time_s": {
-      "value": 0.842,
+      "value": 0.8,
       "rubric": [
         "R2"
       ],
       "description": "Espera mediana después de preguntar (solo audio confiable)",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "wait_time_ok_ratio": {
-      "value": 0.121,
+      "value": 0.118,
       "rubric": [
         "R2"
       ],
       "description": "Preguntas con al menos 3 s de espera (umbral de Rowe)",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "student_response_count": {
       "value": 24,
@@ -987,15 +1001,17 @@
         "R1"
       ],
       "description": "Preguntas que recibieron respuesta",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "response_rate": {
-      "value": 0.727,
+      "value": 0.706,
       "rubric": [
         "R1"
       ],
       "description": "Respuestas / preguntas",
-      "note": null
+      "note": null,
+      "experimental": false
     },
     "teacher_talk_ratio": {
       "value": 0.649,
@@ -1003,7 +1019,8 @@
         "R1"
       ],
       "description": "Fracción de la clase en que habla el docente",
-      "note": null
+      "note": null,
+      "experimental": false
     }
   },
   "data_quality": {
@@ -1025,43 +1042,54 @@
       "metrics": [
         {
           "name": "board_writing_ratio",
-          "value": 0.013
+          "value": 0.007,
+          "experimental": true
         },
         {
           "name": "stage_interaction_count",
-          "value": 0
+          "value": 0,
+          "experimental": false
         },
         {
           "name": "student_response_count",
-          "value": 24
+          "value": 24,
+          "experimental": false
         },
         {
           "name": "response_rate",
-          "value": 0.727
+          "value": 0.706,
+          "experimental": false
         },
         {
           "name": "teacher_talk_ratio",
-          "value": 0.649
+          "value": 0.649,
+          "experimental": false
         }
       ],
       "citations": [
         {
-          "timestamp": "01:09",
+          "timestamp": "01:07",
           "label": "participation_invitation",
           "quote": "¿Qué me han dicho, hija? [NOMBRE], ¿no?",
-          "reason": "Llama a una alumna por su nombre para que responda."
+          "reason": "Llama a una alumna por nombre para que responda."
         },
         {
           "timestamp": "02:08",
           "label": "participation_invitation",
-          "quote": "¿por qué hija más de uno?",
-          "reason": "Se dirige a una alumna específica con 'hija'."
+          "quote": "¿Por qué hija más de uno?",
+          "reason": "Dirige pregunta a una alumna específica con 'hija'."
+        },
+        {
+          "timestamp": "03:17",
+          "label": "participation_invitation",
+          "quote": "ah, muy bien hija",
+          "reason": "Respuesta dirigida a una alumna con 'hija'."
         },
         {
           "timestamp": "04:03",
           "label": "participation_invitation",
-          "quote": "a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
-          "reason": "Invita a una alumna con 'a ver usted, hija'."
+          "quote": "Ya, muy bien, muy bien, está bien, a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
+          "reason": "Invita a una alumna específica con 'hija'."
         }
       ]
     },
@@ -1072,31 +1100,38 @@
       "metrics": [
         {
           "name": "teacher_question_count",
-          "value": 33
+          "value": 34,
+          "experimental": false
         },
         {
           "name": "questions_per_minute",
-          "value": 6.555
+          "value": 6.754,
+          "experimental": false
         },
         {
           "name": "rhetorical_question_count",
-          "value": 11
+          "value": 10,
+          "experimental": false
         },
         {
           "name": "open_question_ratio",
-          "value": 0.848
+          "value": 0.765,
+          "experimental": false
         },
         {
           "name": "mean_wait_time_s",
-          "value": 1.218
+          "value": 1.183,
+          "experimental": false
         },
         {
           "name": "median_wait_time_s",
-          "value": 0.842
+          "value": 0.8,
+          "experimental": false
         },
         {
           "name": "wait_time_ok_ratio",
-          "value": 0.121
+          "value": 0.118,
+          "experimental": false
         }
       ],
       "citations": [
@@ -1134,31 +1169,31 @@
           "timestamp": "01:28",
           "label": "question_open",
           "quote": "¿Qué más?",
-          "reason": "pide agregar detalles al tema"
+          "reason": "pide predecir detalles adicionales"
         },
         {
           "timestamp": "01:30",
           "label": "question_open",
           "quote": "¿Cómo será?",
-          "reason": "pide describir la naturaleza del suceso"
+          "reason": "pide predecir características del suceso"
         },
         {
           "timestamp": "01:31",
           "label": "question_open",
           "quote": "¿Cómo será el suceso?",
-          "reason": "pide detallar el desarrollo del suceso"
+          "reason": "pide predecir desarrollo del suceso"
         },
         {
           "timestamp": "01:33",
           "label": "question_open",
           "quote": "¿Qué pasará al inicio?",
-          "reason": "pide predecir el inicio del cuento"
+          "reason": "pide predecir eventos iniciales"
         },
         {
           "timestamp": "01:35",
           "label": "question_open",
           "quote": "¿Después qué sucederá y al final qué pasará?",
-          "reason": "pide predecir desarrollo y final"
+          "reason": "pide predecir eventos intermedios y finales"
         },
         {
           "timestamp": "01:42",
@@ -1170,13 +1205,13 @@
           "timestamp": "01:45",
           "label": "question_open",
           "quote": "¿Dónde habrá sucedido?",
-          "reason": "pide inferir la ubicación"
+          "reason": "pide inferir ubicación del suceso"
         },
         {
           "timestamp": "01:48",
-          "label": "question_open",
+          "label": "question_closed",
           "quote": "¿Dónde habrá pasado?",
-          "reason": "La pregunta invita a inferir y predecir un lugar basado en el contexto."
+          "reason": "repite la pregunta anterior sin añadir nuevo elemento"
         },
         {
           "timestamp": "01:54",
@@ -1194,25 +1229,25 @@
           "timestamp": "02:04",
           "label": "question_closed",
           "quote": "¿Cierto?",
-          "reason": "La pregunta busca confirmar una afirmación, no requiere razonamiento."
+          "reason": "La pregunta busca confirmar un dato puntual, no razonamiento."
         },
         {
           "timestamp": "02:05",
           "label": "question_closed",
           "quote": "¿Cuántos hijos habrá tenido?",
-          "reason": "repite la pregunta 16 sin nueva información"
+          "reason": "repite la pregunta anterior sin añadir nuevo elemento"
         },
         {
           "timestamp": "02:08",
           "label": "question_open",
           "quote": "¿Por qué hija más de uno?",
-          "reason": "pide justificar la respuesta anterior"
+          "reason": "pide justificar una respuesta anterior"
         },
         {
           "timestamp": "02:59",
           "label": "question_open",
           "quote": "¿Qué más?",
-          "reason": "pide agregar nuevos eventos"
+          "reason": "pide predecir eventos adicionales"
         },
         {
           "timestamp": "03:00",
@@ -1230,67 +1265,73 @@
           "timestamp": "03:06",
           "label": "question_open",
           "quote": "¿qué es lo que va a pasar?",
-          "reason": "pide detallar eventos específicos"
+          "reason": "pide predecir eventos específicos"
+        },
+        {
+          "timestamp": "03:10",
+          "label": "question_closed",
+          "quote": "¿felices no?",
+          "reason": "pide confirmar una suposición del docente"
         },
         {
           "timestamp": "03:12",
           "label": "question_open",
           "quote": "¿por qué me dicen que van a estar felices?",
-          "reason": "pide justificar la predicción de felicidad"
+          "reason": "pide justificar una respuesta anterior"
         },
         {
           "timestamp": "03:14",
           "label": "question_open",
           "quote": "¿por qué?",
-          "reason": "pide justificar la respuesta anterior"
+          "reason": "pide justificar una respuesta anterior"
         },
         {
           "timestamp": "03:25",
-          "label": "question_open",
+          "label": "question_closed",
           "quote": "¿qué cosa?",
-          "reason": "pide identificar elementos visuales"
+          "reason": "pide identificar un elemento ya mencionado"
         },
         {
           "timestamp": "03:36",
           "label": "question_open",
           "quote": "¿cómo nos sentimos?",
-          "reason": "pide describir sentimientos en el campo"
+          "reason": "pide describir sentimientos personales"
         },
         {
           "timestamp": "03:48",
           "label": "question_open",
           "quote": "¿cómo vivirá esta familia?",
-          "reason": "pide inferir el estilo de vida"
+          "reason": "pide inferir estilo de vida de la familia"
         },
         {
           "timestamp": "03:51",
           "label": "question_open",
           "quote": "¿cómo van a estar?",
-          "reason": "pide predecir el estado emocional"
+          "reason": "pide predecir estado emocional"
         },
         {
           "timestamp": "03:52",
           "label": "question_open",
           "quote": "¿cómo será la historia?",
-          "reason": "pide describir la trama"
+          "reason": "pide predecir desarrollo de la historia"
         },
         {
           "timestamp": "03:54",
           "label": "question_open",
           "quote": "¿cómo empezará?",
-          "reason": "pide predecir el inicio"
+          "reason": "pide predecir inicio de la historia"
         },
         {
           "timestamp": "03:56",
           "label": "question_open",
           "quote": "¿Algo habrá sucedido acá?",
-          "reason": "pide inferir eventos iniciales"
+          "reason": "pide inferir eventos pasados"
         },
         {
           "timestamp": "04:08",
           "label": "question_open",
           "quote": "¿qué sucederá, qué pasará?",
-          "reason": "pide predecir eventos específicos"
+          "reason": "pide predecir eventos futuros"
         },
         {
           "timestamp": "04:14",
@@ -1307,27 +1348,33 @@
       "metrics": [
         {
           "name": "monitoring_ratio",
-          "value": 0.243
+          "value": 0.243,
+          "experimental": false
         },
         {
           "name": "monitoring_video_ratio",
-          "value": 0.0
+          "value": 0.0,
+          "experimental": true
         },
         {
           "name": "monitoring_audio_ratio",
-          "value": 0.243
+          "value": 0.243,
+          "experimental": false
         },
         {
           "name": "meets_monitoring_threshold",
-          "value": false
+          "value": false,
+          "experimental": false
         },
         {
           "name": "teacher_question_count",
-          "value": 33
+          "value": 34,
+          "experimental": false
         },
         {
           "name": "questions_per_minute",
-          "value": 6.555
+          "value": 6.754,
+          "experimental": false
         }
       ],
       "citations": [
@@ -1335,25 +1382,19 @@
           "timestamp": "00:09",
           "label": "feedback_elemental",
           "quote": "¡Muy bien!",
-          "reason": "Respuesta breve de validación sin detalles."
+          "reason": "Respuesta breve de validación tras una intervención del alumno."
         },
         {
           "timestamp": "02:16",
           "label": "feedback_elemental",
           "quote": "Muy bien, felicitaciones hija",
-          "reason": "Validación con felicitación, sin detalles específicos."
-        },
-        {
-          "timestamp": "03:17",
-          "label": "feedback_elemental",
-          "quote": "ah, muy bien hija",
-          "reason": "Respuesta breve de validación sin explicación."
+          "reason": "Validación elemental con felicitación tras respuesta."
         },
         {
           "timestamp": "04:22",
           "label": "feedback_elemental",
           "quote": "Muy bien, los hijos estarán ayudando infelices, muy bien.",
-          "reason": "Repite la respuesta del alumno sin corregir ni ampliar."
+          "reason": "Repite la respuesta del alumno con validación elemental."
         }
       ]
     },
@@ -1364,7 +1405,8 @@
       "metrics": [
         {
           "name": "path_length_normalized",
-          "value": 11.507
+          "value": 11.507,
+          "experimental": false
         }
       ],
       "citations": []
@@ -1383,9 +1425,9 @@
     "provider": "cohere",
     "model": "command-a-03-2025",
     "usage": {
-      "input_tokens": 19098,
-      "output_tokens": 3215,
-      "seconds": 371.34,
+      "input_tokens": 19074,
+      "output_tokens": 3119,
+      "seconds": 180.41,
       "cost_usd": 0.0,
       "calls": 5
     },
@@ -1455,7 +1497,7 @@
         "timestamp": "01:28",
         "label": "question_open",
         "quote": "¿Qué más?",
-        "reason": "pide agregar detalles al tema",
+        "reason": "pide predecir detalles adicionales",
         "confidence": "alta",
         "question_id": 7,
         "addressee": null
@@ -1465,7 +1507,7 @@
         "timestamp": "01:30",
         "label": "question_open",
         "quote": "¿Cómo será?",
-        "reason": "pide describir la naturaleza del suceso",
+        "reason": "pide predecir características del suceso",
         "confidence": "alta",
         "question_id": 8,
         "addressee": null
@@ -1475,7 +1517,7 @@
         "timestamp": "01:31",
         "label": "question_open",
         "quote": "¿Cómo será el suceso?",
-        "reason": "pide detallar el desarrollo del suceso",
+        "reason": "pide predecir desarrollo del suceso",
         "confidence": "alta",
         "question_id": 9,
         "addressee": null
@@ -1485,7 +1527,7 @@
         "timestamp": "01:33",
         "label": "question_open",
         "quote": "¿Qué pasará al inicio?",
-        "reason": "pide predecir el inicio del cuento",
+        "reason": "pide predecir eventos iniciales",
         "confidence": "alta",
         "question_id": 10,
         "addressee": null
@@ -1495,7 +1537,7 @@
         "timestamp": "01:35",
         "label": "question_open",
         "quote": "¿Después qué sucederá y al final qué pasará?",
-        "reason": "pide predecir desarrollo y final",
+        "reason": "pide predecir eventos intermedios y finales",
         "confidence": "alta",
         "question_id": 11,
         "addressee": null
@@ -1515,9 +1557,19 @@
         "timestamp": "01:45",
         "label": "question_open",
         "quote": "¿Dónde habrá sucedido?",
-        "reason": "pide inferir la ubicación",
+        "reason": "pide inferir ubicación del suceso",
         "confidence": "alta",
         "question_id": 13,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 107.92,
+        "timestamp": "01:48",
+        "label": "question_closed",
+        "quote": "¿Dónde habrá pasado?",
+        "reason": "repite la pregunta anterior sin añadir nuevo elemento",
+        "confidence": "media",
+        "question_id": 14,
         "addressee": null
       },
       {
@@ -1545,8 +1597,8 @@
         "timestamp": "02:05",
         "label": "question_closed",
         "quote": "¿Cuántos hijos habrá tenido?",
-        "reason": "repite la pregunta 16 sin nueva información",
-        "confidence": "alta",
+        "reason": "repite la pregunta anterior sin añadir nuevo elemento",
+        "confidence": "media",
         "question_id": 18,
         "addressee": null
       },
@@ -1555,7 +1607,7 @@
         "timestamp": "02:08",
         "label": "question_open",
         "quote": "¿Por qué hija más de uno?",
-        "reason": "pide justificar la respuesta anterior",
+        "reason": "pide justificar una respuesta anterior",
         "confidence": "alta",
         "question_id": 19,
         "addressee": null
@@ -1605,7 +1657,7 @@
         "timestamp": "02:59",
         "label": "question_open",
         "quote": "¿Qué más?",
-        "reason": "pide agregar nuevos eventos",
+        "reason": "pide predecir eventos adicionales",
         "confidence": "alta",
         "question_id": 24,
         "addressee": null
@@ -1635,7 +1687,7 @@
         "timestamp": "03:06",
         "label": "question_open",
         "quote": "¿qué es lo que va a pasar?",
-        "reason": "pide detallar eventos específicos",
+        "reason": "pide predecir eventos específicos",
         "confidence": "alta",
         "question_id": 27,
         "addressee": null
@@ -1643,9 +1695,9 @@
       {
         "timestamp_s": 190.32,
         "timestamp": "03:10",
-        "label": "question_rhetorical",
+        "label": "question_closed",
         "quote": "¿felices no?",
-        "reason": "muletilla sin esperar respuesta",
+        "reason": "pide confirmar una suposición del docente",
         "confidence": "alta",
         "question_id": 28,
         "addressee": null
@@ -1655,7 +1707,7 @@
         "timestamp": "03:12",
         "label": "question_open",
         "quote": "¿por qué me dicen que van a estar felices?",
-        "reason": "pide justificar la predicción de felicidad",
+        "reason": "pide justificar una respuesta anterior",
         "confidence": "alta",
         "question_id": 29,
         "addressee": null
@@ -1665,7 +1717,7 @@
         "timestamp": "03:14",
         "label": "question_open",
         "quote": "¿por qué?",
-        "reason": "pide justificar la respuesta anterior",
+        "reason": "pide justificar una respuesta anterior",
         "confidence": "alta",
         "question_id": 30,
         "addressee": null
@@ -1683,10 +1735,10 @@
       {
         "timestamp_s": 204.88,
         "timestamp": "03:25",
-        "label": "question_open",
+        "label": "question_closed",
         "quote": "¿qué cosa?",
-        "reason": "pide identificar elementos visuales",
-        "confidence": "alta",
+        "reason": "pide identificar un elemento ya mencionado",
+        "confidence": "media",
         "question_id": 32,
         "addressee": null
       },
@@ -1695,7 +1747,7 @@
         "timestamp": "03:36",
         "label": "question_open",
         "quote": "¿cómo nos sentimos?",
-        "reason": "pide describir sentimientos en el campo",
+        "reason": "pide describir sentimientos personales",
         "confidence": "alta",
         "question_id": 33,
         "addressee": null
@@ -1715,7 +1767,7 @@
         "timestamp": "03:48",
         "label": "question_open",
         "quote": "¿cómo vivirá esta familia?",
-        "reason": "pide inferir el estilo de vida",
+        "reason": "pide inferir estilo de vida de la familia",
         "confidence": "alta",
         "question_id": 35,
         "addressee": null
@@ -1725,7 +1777,7 @@
         "timestamp": "03:51",
         "label": "question_open",
         "quote": "¿cómo van a estar?",
-        "reason": "pide predecir el estado emocional",
+        "reason": "pide predecir estado emocional",
         "confidence": "alta",
         "question_id": 36,
         "addressee": null
@@ -1735,7 +1787,7 @@
         "timestamp": "03:52",
         "label": "question_open",
         "quote": "¿cómo será la historia?",
-        "reason": "pide describir la trama",
+        "reason": "pide predecir desarrollo de la historia",
         "confidence": "alta",
         "question_id": 37,
         "addressee": null
@@ -1745,7 +1797,7 @@
         "timestamp": "03:54",
         "label": "question_open",
         "quote": "¿cómo empezará?",
-        "reason": "pide predecir el inicio",
+        "reason": "pide predecir inicio de la historia",
         "confidence": "alta",
         "question_id": 38,
         "addressee": null
@@ -1755,7 +1807,7 @@
         "timestamp": "03:56",
         "label": "question_open",
         "quote": "¿Algo habrá sucedido acá?",
-        "reason": "pide inferir eventos iniciales",
+        "reason": "pide inferir eventos pasados",
         "confidence": "alta",
         "question_id": 39,
         "addressee": null
@@ -1765,7 +1817,7 @@
         "timestamp": "04:08",
         "label": "question_open",
         "quote": "¿qué sucederá, qué pasará?",
-        "reason": "pide predecir eventos específicos",
+        "reason": "pide predecir eventos futuros",
         "confidence": "alta",
         "question_id": 40,
         "addressee": null
@@ -1785,7 +1837,7 @@
         "timestamp": "04:25",
         "label": "question_rhetorical",
         "quote": "¿Quieren enterarse qué es lo que va a suceder?",
-        "reason": "muletilla sin esperar respuesta",
+        "reason": "pregunta retórica para generar interés",
         "confidence": "alta",
         "question_id": 42,
         "addressee": null
@@ -1795,7 +1847,7 @@
         "timestamp": "04:28",
         "label": "question_rhetorical",
         "quote": "¿Quieren saber?",
-        "reason": "muletilla sin esperar respuesta",
+        "reason": "pregunta retórica para generar interés",
         "confidence": "alta",
         "question_id": 43,
         "addressee": null
@@ -1811,21 +1863,11 @@
         "addressee": null
       },
       {
-        "timestamp_s": 107.92,
-        "timestamp": "01:48",
-        "label": "question_open",
-        "quote": "¿Dónde habrá pasado?",
-        "reason": "La pregunta invita a inferir y predecir un lugar basado en el contexto.",
-        "confidence": "alta",
-        "question_id": 14,
-        "addressee": null
-      },
-      {
         "timestamp_s": 123.98,
         "timestamp": "02:04",
         "label": "question_closed",
         "quote": "¿Cierto?",
-        "reason": "La pregunta busca confirmar una afirmación, no requiere razonamiento.",
+        "reason": "La pregunta busca confirmar un dato puntual, no razonamiento.",
         "confidence": "alta",
         "question_id": 17,
         "addressee": null
@@ -1837,7 +1879,7 @@
         "timestamp": "00:09",
         "label": "feedback_elemental",
         "quote": "¡Muy bien!",
-        "reason": "Respuesta breve de validación sin detalles.",
+        "reason": "Respuesta breve de validación tras una intervención del alumno.",
         "confidence": "alta",
         "question_id": null,
         "addressee": null
@@ -1847,17 +1889,7 @@
         "timestamp": "02:16",
         "label": "feedback_elemental",
         "quote": "Muy bien, felicitaciones hija",
-        "reason": "Validación con felicitación, sin detalles específicos.",
-        "confidence": "alta",
-        "question_id": null,
-        "addressee": null
-      },
-      {
-        "timestamp_s": 197.0,
-        "timestamp": "03:17",
-        "label": "feedback_elemental",
-        "quote": "ah, muy bien hija",
-        "reason": "Respuesta breve de validación sin explicación.",
+        "reason": "Validación elemental con felicitación tras respuesta.",
         "confidence": "alta",
         "question_id": null,
         "addressee": null
@@ -1867,7 +1899,7 @@
         "timestamp": "04:22",
         "label": "feedback_elemental",
         "quote": "Muy bien, los hijos estarán ayudando infelices, muy bien.",
-        "reason": "Repite la respuesta del alumno sin corregir ni ampliar.",
+        "reason": "Repite la respuesta del alumno con validación elemental.",
         "confidence": "alta",
         "question_id": null,
         "addressee": null
@@ -1876,11 +1908,11 @@
     "regulation": [],
     "participation": [
       {
-        "timestamp_s": 69.0,
-        "timestamp": "01:09",
+        "timestamp_s": 67.0,
+        "timestamp": "01:07",
         "label": "participation_invitation",
         "quote": "¿Qué me han dicho, hija? [NOMBRE], ¿no?",
-        "reason": "Llama a una alumna por su nombre para que responda.",
+        "reason": "Llama a una alumna por nombre para que responda.",
         "confidence": "alta",
         "question_id": null,
         "addressee": "[NOMBRE]"
@@ -1889,8 +1921,18 @@
         "timestamp_s": 128.0,
         "timestamp": "02:08",
         "label": "participation_invitation",
-        "quote": "¿por qué hija más de uno?",
-        "reason": "Se dirige a una alumna específica con 'hija'.",
+        "quote": "¿Por qué hija más de uno?",
+        "reason": "Dirige pregunta a una alumna específica con 'hija'.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": "hija"
+      },
+      {
+        "timestamp_s": 197.0,
+        "timestamp": "03:17",
+        "label": "participation_invitation",
+        "quote": "ah, muy bien hija",
+        "reason": "Respuesta dirigida a una alumna con 'hija'.",
         "confidence": "alta",
         "question_id": null,
         "addressee": "hija"
@@ -1899,8 +1941,8 @@
         "timestamp_s": 243.0,
         "timestamp": "04:03",
         "label": "participation_invitation",
-        "quote": "a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
-        "reason": "Invita a una alumna con 'a ver usted, hija'.",
+        "quote": "Ya, muy bien, muy bien, está bien, a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
+        "reason": "Invita a una alumna específica con 'hija'.",
         "confidence": "alta",
         "question_id": null,
         "addressee": "hija"
@@ -1913,29 +1955,29 @@
       "timestamp": "00:04",
       "quote": "¿Qué vamos a hacer después?",
       "what_we_saw": "En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.",
-      "why_it_matters": "Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.",
-      "try_this": "Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar.",
-      "example_phrase": "¿Qué crees que pasará después en el cuento de Los hijos del labrador?",
-      "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.\nPrueba esto: Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar. Por ejemplo: \"¿Qué crees que pasará después en el cuento de Los hijos del labrador?\""
+      "why_it_matters": "Dar tiempo para pensar después de una pregunta permite que más estudiantes participen y desarrollen respuestas más completas, fomentando una participación más activa y reflexiva en clase.",
+      "try_this": "Después de hacer una pregunta, cuenta mentalmente hasta tres antes de continuar.",
+      "example_phrase": "¿Qué creen que pasará después en el cuento de Los hijos del labrador?",
+      "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta permite que más estudiantes participen y desarrollen respuestas más completas, fomentando una participación más activa y reflexiva en clase.\nPrueba esto: Después de hacer una pregunta, cuenta mentalmente hasta tres antes de continuar. Por ejemplo: \"¿Qué creen que pasará después en el cuento de Los hijos del labrador?\""
     },
     "ai_tips": [
       {
         "title": "Generar repreguntas",
         "what_for": "Ayuda a profundizar en las preguntas que ya haces, para que los estudiantes expliquen más y piensen mejor.",
-        "how": "Pídele a la IA que cree repreguntas basadas en las que ya usas en clase, para que los estudiantes amplíen sus respuestas.",
-        "example_prompt": "Crea una lista de 5 repreguntas para usar en mi clase de comunicación del segundo grado de secundaria sobre el cuento 'Los hijos del labrador'. Las repreguntas deben ayudar a los estudiantes a analizar los motivos de los personajes y las consecuencias de sus acciones. Por ejemplo, si pregunto: '¿Por qué el labrador decide enviar a sus hijos al bosque?', una repregunta podría ser: '¿Qué crees que sentirían los hijos al escuchar esa decisión?'"
+        "how": "Pídele a la IA que cree repreguntas basadas en las que ya usas en clase, para dar tiempo a pensar y explorar más el tema.",
+        "example_prompt": "Quiero trabajar el cuento 'Los hijos del labrador' con estudiantes de secundaria. Si les pregunto: '¿Por qué el labrador decide enviar a sus hijos a la ciudad?', genera 3 repreguntas que me ayuden a explorar sus respuestas y que ellos den más detalles."
       },
       {
         "title": "Reducir muletillas",
-        "what_for": "Te ayuda a identificar y reemplazar las muletillas que usas, para que tus preguntas sean más claras y efectivas.",
-        "how": "Pídele a la IA que te sugiera alternativas a las muletillas que usas con frecuencia, para que tus preguntas sean más directas y fomenten la participación.",
-        "example_prompt": "Quiero reducir el uso de muletillas como '¿no?' o '¿ya?' en mi clase de comunicación del segundo grado de secundaria. Proporciona una lista de 5 alternativas que pueda usar en su lugar para hacer preguntas más claras y directas sobre el cuento 'Los hijos del labrador'. Por ejemplo, en lugar de decir: '¿Qué les parece el final, no?', sugiere: '¿Qué opinan sobre el final del cuento y por qué?'"
+        "what_for": "Te ayuda a evitar frases como '¿no?' o '¿ya?' que no aportan a la conversación y distrae a los estudiantes.",
+        "how": "Pídele a la IA que te sugiera alternativas a las muletillas que usas, para que tus preguntas sean más claras y efectivas.",
+        "example_prompt": "Quiero mejorar mis preguntas en clase sobre el cuento 'Los hijos del labrador' para estudiantes de secundaria. Identifica y reemplaza 5 muletillas como '¿no?' o '¿ya?' con frases que inviten a pensar o a responder."
       },
       {
-        "title": "Crear actividades de evidencia",
-        "what_for": "Aumenta el tiempo dedicado a recoger evidencia de lo que entienden los estudiantes, con actividades cortas y enfocadas.",
-        "how": "Pídele a la IA que diseñe actividades rápidas para evaluar la comprensión de los estudiantes sobre el cuento, que puedas usar durante la clase.",
-        "example_prompt": "Diseña 3 actividades cortas para mi clase de comunicación del segundo grado de secundaria sobre el cuento 'Los hijos del labrador'. Las actividades deben ayudarme a evaluar si los estudiantes comprenden los temas principales del cuento, como la justicia y la venganza. Cada actividad debe durar menos de 5 minutos y no requerir materiales adicionales."
+        "title": "Crear actividades interactivas",
+        "what_for": "Aumenta el tiempo dedicado a recoger evidencia de lo que entienden los estudiantes, con actividades que los hagan participar más.",
+        "how": "Pídele a la IA que diseñe una actividad en parejas o grupos para aplicar lo aprendido en el cuento, con preguntas guiadas que los estudiantes discutan y respondan juntos.",
+        "example_prompt": "Necesito una actividad interactiva para que mis estudiantes de secundaria apliquen lo aprendido del cuento 'Los hijos del labrador'. Crea una dinámica en parejas donde discutan y respondan: '¿Qué valores se reflejan en las decisiones de los hijos del labrador y cómo se aplican en nuestra vida diaria?'"
       }
     ]
   },
@@ -1944,9 +1986,9 @@
     "timestamp": "00:04",
     "quote": "¿Qué vamos a hacer después?",
     "what_we_saw": "En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.",
-    "why_it_matters": "Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.",
-    "try_this": "Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar.",
-    "example_phrase": "¿Qué crees que pasará después en el cuento de Los hijos del labrador?",
-    "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.\nPrueba esto: Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar. Por ejemplo: \"¿Qué crees que pasará después en el cuento de Los hijos del labrador?\""
+    "why_it_matters": "Dar tiempo para pensar después de una pregunta permite que más estudiantes participen y desarrollen respuestas más completas, fomentando una participación más activa y reflexiva en clase.",
+    "try_this": "Después de hacer una pregunta, cuenta mentalmente hasta tres antes de continuar.",
+    "example_phrase": "¿Qué creen que pasará después en el cuento de Los hijos del labrador?",
+    "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta permite que más estudiantes participen y desarrollen respuestas más completas, fomentando una participación más activa y reflexiva en clase.\nPrueba esto: Después de hacer una pregunta, cuenta mentalmente hasta tres antes de continuar. Por ejemplo: \"¿Qué creen que pasará después en el cuento de Los hijos del labrador?\""
   }
 }

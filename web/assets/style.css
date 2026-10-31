@@ -2430,3 +2430,16 @@ img {
   50% { transform: translateY(-15px); }
   100% { transform: translateY(0px); }
 }
+
+/* ---------------------------------------------------------------------------
+   Sin arrastre lateral en móvil.
+
+   AOS desplaza los elementos antes de animarlos: data-aos="fade-left" les pone
+   translateX(100px) hasta que entran en pantalla. En un celular de 375 px eso
+   deja la página 104 px más ancha y se puede arrastrar de lado. Los resplandores
+   decorativos del hero hacen lo mismo.
+
+   Se usa "clip" y no "hidden" a propósito: hidden crearía un contenedor de
+   desplazamiento y rompería cualquier position:sticky de la página.
+--------------------------------------------------------------------------- */
+html, body { overflow-x: clip; }

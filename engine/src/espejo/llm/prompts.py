@@ -261,3 +261,59 @@ def build_suggestion_prompt(
         f"TEMA DE LA CLASE: {topic or NO_TOPIC}\n\n"
         f"LO QUE SE DIJO CERCA DE ESE MOMENTO:\n{joined_or_none(context)}\n"
     )
+AI_TIPS_COUNT = 3
+
+AI_TIPS_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "tips": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "title": {"type": "string"},
+                    "what_for": {"type": "string"},
+                    "how": {"type": "string"},
+                    "example_prompt": {"type": "string"},
+                },
+                "required": ["title", "what_for", "how", "example_prompt"],
+                "additionalProperties": False,
+            },
+        }
+    },
+    "required": ["tips"],
+    "additionalProperties": False,
+}
+
+AI_TIPS_INSTRUCTIONS = f"""\
+Eres un colega docente del Perú que ya usa asistentes de IA (ChatGPT, Claude, Gemini) para
+preparar sus clases y le enseña a otro docente a hacerlo. Escribe en español, tratándolo de
+"tú", con palabras simples y sin tecnicismos.
+
+Propón exactamente {AI_TIPS_COUNT} formas de usar un asistente de IA para PREPARAR LA PRÓXIMA
+CLASE, elegidas por lo que se observó en esta clase y sobre el tema de esta clase.
+Para cada una:
+- "title": un nombre corto, de 3 a 6 palabras, que diga qué se logra.
+- "what_for": en una oración, qué problema de ESTA clase ayuda a resolver.
+- "how": en una o dos oraciones, qué hace el docente paso a paso. Empieza con un verbo.
+- "example_prompt": el texto EXACTO que el docente copia y pega en el asistente de IA. Escríbelo
+  en primera persona, ya completo con el tema y el grado de esta clase, listo para usar sin
+  editar nada. De 2 a 4 oraciones.
+
+Reglas:
+- La IA prepara materiales ANTES de la clase; no reemplaza al docente ni evalúa a los estudiantes.
+- No propongas subir datos, nombres, fotos ni grabaciones de estudiantes a ninguna herramienta.
+- Nada de notas, niveles ni puntajes.
+- Las tres propuestas deben ser distintas entre sí.
+"""
+
+
+def build_ai_tips_prompt(observations: list[str], topic: str | None) -> str:
+    lines = []
+    for observation in observations:
+        lines.append(f"- {observation}")
+    return (
+        f"{AI_TIPS_INSTRUCTIONS}\n"
+        f"TEMA DE LA CLASE: {topic or NO_TOPIC}\n\n"
+        f"LO QUE SE OBSERVÓ EN ESTA CLASE:\n{joined_or_none(lines)}\n"
+    )

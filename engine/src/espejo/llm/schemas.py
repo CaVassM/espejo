@@ -183,6 +183,20 @@ class Suggestion:
 
 
 @dataclass(frozen=True)
+class AiTip:
+    """Una forma concreta de usar IA para preparar la próxima clase.
+
+    `example_prompt` es texto que el docente copia y pega en su asistente de IA. Es la
+    diferencia entre "usa IA" y poder usarla hoy mismo.
+    """
+
+    title: str
+    what_for: str
+    how: str
+    example_prompt: str
+
+
+@dataclass(frozen=True)
 class LlmAnalysis:
     """Resultado del LLM ya validado. used = False si no hubo LLM (se usan las reglas)."""
 
@@ -197,4 +211,5 @@ class LlmAnalysis:
     respect: list[Evidence] = field(default_factory=list)
     rejected: list[RejectedEvidence] = field(default_factory=list)
     suggestion: Suggestion | None = None
+    ai_tips: list[AiTip] = field(default_factory=list)
     usage: LlmUsage = field(default_factory=LlmUsage)

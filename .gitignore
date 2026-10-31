@@ -19,3 +19,6 @@ __pycache__/
 *.egg-info/
 .ruff_cache/
 .pytest_cache/
+
+# Basura de macOS
+.DS_Store

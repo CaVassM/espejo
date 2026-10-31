@@ -1,0 +1,1589 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aula Evidente · Ficha de evidencias</title>
+<!-- Favicon: el marco de celular y el check del logotipo, reducidos a 22 px. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 22 22'%3E%3Crect width='22' height='22' rx='5' fill='%231E4D8F'/%3E%3Crect x='5.6' y='3.6' width='10.8' height='14.8' rx='2.2' fill='none' stroke='%23fff' stroke-width='1.5'/%3E%3Ccircle cx='15.4' cy='15.4' r='4.6' fill='%23F4B740'/%3E%3Cpath d='M13.4 15.5l1.4 1.4 2.6-2.8' stroke='%23fff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E">
+<style>
+/* ---------------------------------------------------------------------------
+   Paleta de marca (identidad: cabeceras, botones, acentos)
+     --brand-blue   #1E4D8F  confianza, educación, respaldo institucional
+     --brand-teal   #14B8A6  tecnología, análisis, mejora continua
+     --brand-amber  #F4B740  guía, cercanía, crecimiento docente
+     --brand-ink    #2E3440  claridad, equilibrio, profesionalismo
+
+   Pasos de datos: los mismos tonos, corridos a la banda de luminosidad que
+   pasa separación para daltonismo (protan/deutan/tritan ΔE ≥ 14). El azul de
+   marca es muy oscuro y el ámbar muy claro para usarse como marca de dato.
+   Por el contraste bajo sobre el lienzo, TODA marca lleva su etiqueta visible.
+--------------------------------------------------------------------------- */
+:root{
+  color-scheme: light;
+
+  --brand-blue:#1E4D8F;
+  --brand-teal:#14B8A6;
+  --brand-amber:#F4B740;
+  --brand-ink:#2E3440;
+
+  --data-blue:#2A5FA8;
+  --data-teal:#14B8A6;
+  --data-amber:#D99A1F;
+
+  --surface:#FCFCFB;
+  --panel:#FFFFFF;
+  --panel-2:#F4F6F9;
+  --line:#E2E7EE;
+  --line-strong:#CDD5E0;
+
+  --ink:#2E3440;
+  --ink-2:#4C566A;
+  --ink-3:#7A8699;
+
+  --radius:14px;
+  --radius-s:9px;
+  --shadow:0 1px 2px rgba(46,52,64,.06), 0 8px 24px rgba(46,52,64,.07);
+  --shadow-lift:0 2px 6px rgba(46,52,64,.10), 0 18px 44px rgba(46,52,64,.13);
+  --sans:"Segoe UI Variable Text","Segoe UI",Inter,-apple-system,BlinkMacSystemFont,Roboto,Helvetica,Arial,sans-serif;
+  --mono:"Cascadia Mono",ui-monospace,SFMono-Regular,"SF Mono",Consolas,monospace;
+}
+
+*{box-sizing:border-box}
+/* Nada con ancho propio puede empujar la página a lo ancho. */
+img,svg,video,canvas{max-width:100%}
+/* Una palabra o una URL muy larga parte de línea en vez de desbordar. */
+.ev .q,.check-say,.tip-for,.tip-how,.prompt .px,.sug-part .b,.m5 .n{overflow-wrap:anywhere}
+html,body{margin:0;padding:0}
+body{
+  background:var(--surface);
+  color:var(--ink);
+  font-family:var(--sans);
+  font-size:15px;
+  line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3{margin:0;line-height:1.25;letter-spacing:-.011em}
+button{font:inherit;color:inherit}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* ---------- barra superior ---------- */
+/* Cabecera blanca: el logotipo usa el azul de marca en "Aula", así que sobre un
+   fondo azul desaparecería. En blanco se ve tal como fue diseñado. */
+.topbar{
+  position:sticky;top:0;z-index:40;
+  background:rgba(255,255,255,.92);
+  backdrop-filter:saturate(180%) blur(10px);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 1px 3px rgba(46,52,64,.05);
+}
+.topbar-in{
+  max-width:1480px;margin:0 auto;padding:10px 24px;
+  display:flex;align-items:center;gap:15px;flex-wrap:wrap;
+}
+/* El logotipo tal cual, recortado al icono + la palabra (el tagline se cae: a esta
+   altura sería ilegible). La imagen va al triple de resolución para verse nítida. */
+.brand{display:flex;align-items:center;gap:8px;text-decoration:none;flex:none;
+  border-radius:9px;padding:3px 7px 3px 3px;margin-left:-3px;transition:background .13s}
+.brand:hover{background:var(--panel-2)}
+.brand .back{
+  display:grid;place-items:center;width:19px;height:19px;flex:none;border-radius:50%;
+  background:var(--panel-2);color:var(--ink-3);opacity:0;transition:opacity .13s;
+}
+.brand:hover .back{opacity:1}
+.brand img{display:block;height:42px;width:auto}
+.topbar .bar{width:1px;height:22px;background:var(--line-strong);flex:none}
+.topbar .ctx{font-size:13px;color:var(--ink-2);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.topbar .ctx b{color:var(--ink);font-weight:620}
+.actions{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-ghost{
+  display:inline-flex;align-items:center;gap:6px;cursor:pointer;background:var(--panel);
+  color:var(--ink-2);border:1px solid var(--line-strong);border-radius:8px;padding:7px 12px;
+  font-size:12.5px;font-weight:570;transition:all .13s;
+}
+.btn-ghost:hover{border-color:var(--brand-blue);color:var(--brand-blue)}
+.btn-ghost.done{border-color:var(--brand-teal);color:#0d7a6e;background:rgba(20,184,166,.10)}
+.rub-tools{display:flex;justify-content:flex-end;margin-bottom:10px}
+.sug-copy{
+  position:absolute;top:18px;right:20px;z-index:2;cursor:pointer;
+  background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.28);color:#fff;
+  border-radius:7px;padding:5px 11px;font-size:12px;font-weight:570;transition:background .13s;
+}
+.sug-copy:hover{background:rgba(255,255,255,.24)}
+.sug-copy.done{background:var(--brand-teal);border-color:var(--brand-teal)}
+.btn-pdf{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  background:var(--brand-blue);color:#fff;border:0;border-radius:8px;padding:8px 14px;
+  font-size:13px;font-weight:600;transition:background .13s;
+}
+.btn-pdf:hover{background:#17407a}
+.btn-pdf svg{flex:none}
+.disclaimer{display:flex;align-items:center;gap:7px;
+  background:rgba(244,183,64,.13);border:1px solid rgba(244,183,64,.45);
+  padding:5px 12px;border-radius:999px;font-size:12.5px;color:#7a5406;font-weight:520;
+}
+.disclaimer .dot{width:6px;height:6px;border-radius:50%;background:var(--brand-amber);flex:none}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1480px;margin:0 auto;padding:22px 24px 96px}
+.band-title{
+  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  margin:0 0 13px;
+}
+.band-title h2{font-size:15px;font-weight:640;letter-spacing:.01em}
+.band-title .hint{font-size:13px;color:var(--ink-3)}
+
+/* ---------- KPIs ---------- */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(215px,1fr));gap:14px;margin-bottom:26px}
+.kpi{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 17px 15px;box-shadow:var(--shadow);position:relative;overflow:hidden;
+}
+.kpi::before{content:"";position:absolute;inset:0 auto 0 0;width:3px;background:var(--accent,var(--data-blue))}
+.kpi .k-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px}
+.kpi .k-label{font-size:12.5px;color:var(--ink-2);font-weight:560;letter-spacing:.005em}
+.kpi .k-rub{
+  font-size:10.5px;font-weight:650;letter-spacing:.055em;color:var(--ink-3);
+  background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;flex:none;
+}
+.kpi .k-val{font-size:31px;font-weight:680;letter-spacing:-.025em;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpi .k-val .u{font-size:16px;font-weight:580;color:var(--ink-3);margin-left:2px;letter-spacing:0}
+.kpi .k-sub{font-size:12.5px;color:var(--ink-3);margin-top:3px}
+
+/* medidor con marca de referencia */
+.meter{margin-top:11px}
+.meter-track{position:relative;height:7px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line);overflow:visible}
+.meter-fill{position:absolute;left:0;top:0;bottom:0;border-radius:4px 2px 2px 4px;background:var(--accent,var(--data-blue))}
+/* Solo la marca de referencia, sin etiqueta flotante: la etiqueta se montaba encima
+   del subtítulo de la tarjeta. La referencia se nombra en el texto de abajo. */
+.meter-ref{position:absolute;top:-4px;bottom:-4px;width:2px;background:var(--ink-2);border-radius:1px}
+.meter-note{font-size:11.5px;color:var(--ink-3);margin-top:8px;line-height:1.45}
+
+/* ---------- dos columnas ---------- */
+.cols{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:22px;align-items:start}
+.cols > *{min-width:0}
+.player-card, .now, .tl, .tl-rail{min-width:0}
+.tl-head{flex-wrap:wrap}
+
+/* ---------- reproductor ---------- */
+/* El reproductor acompaña al scroll para que al hacer clic en una evidencia se vea
+   el salto. Pero un elemento sticky MÁS ALTO que la ventana deja su parte baja
+   inalcanzable: por eso solo se pega cuando la pantalla da la altura suficiente,
+   y la columna se alinea arriba en vez de estirarse. */
+.player-col{align-self:start}
+@media (min-height:720px){
+  .player-col{position:sticky;top:70px;max-height:calc(100vh - 84px)}
+}
+.dq-section{margin-top:26px}
+.player-card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
+video{display:block;width:100%;aspect-ratio:16/9;background:var(--brand-ink);object-fit:contain}
+
+.no-video{
+  background:rgba(244,183,64,.12);border-bottom:1px solid rgba(244,183,64,.40);
+  padding:12px 16px;font-size:13px;line-height:1.55;color:#7a5406;
+}
+.no-video b{color:#5e4005}
+.now{
+  padding:13px 16px 14px;border-top:1px solid var(--line);
+  background:var(--panel-2);min-height:88px;
+}
+.now .now-head{display:flex;align-items:center;gap:9px;margin-bottom:6px;flex-wrap:wrap}
+.now .t{font-size:12.5px;font-weight:700;color:var(--brand-blue);letter-spacing:.02em}
+.now .quote{font-size:16px;line-height:1.45;color:var(--ink);font-weight:500}
+.now .quote.empty{color:var(--ink-3);font-weight:400;font-style:italic;font-size:14px}
+.now .meta{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+
+/* ---------- línea de tiempo ---------- */
+.tl{padding:15px 16px 16px;border-top:1px solid var(--line)}
+.scope-note{
+  background:rgba(244,183,64,.10);border:1px solid rgba(244,183,64,.40);
+  border-radius:var(--radius-s);padding:9px 12px;margin-bottom:13px;
+  font-size:12.5px;line-height:1.5;color:#7a5406;
+}
+.scope-note b{color:#5e4005}
+.tl-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:11px}
+.tl-head h3{font-size:12.5px;font-weight:640;color:var(--ink-2);letter-spacing:.01em}
+.tl-head .leg{display:flex;gap:13px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-3)}
+.tl-head .leg i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.tl-rail{position:relative;height:46px;cursor:pointer;user-select:none}
+.tl-states{position:absolute;left:0;right:0;top:0;height:13px;border-radius:4px;background:var(--panel-2);border:1px solid var(--line);overflow:hidden}
+.tl-state{position:absolute;top:0;bottom:0}
+.tl-marks{position:absolute;left:0;right:0;top:17px;height:21px}
+.tl-mark{
+  position:absolute;top:0;width:3px;height:21px;border-radius:2px;
+  transform:translateX(-1.5px);transition:height .12s,top .12s;
+}
+.tl-mark:hover,.tl-mark.on{height:27px;top:-3px;box-shadow:0 0 0 2px var(--panel)}
+.tl-play{position:absolute;top:-3px;bottom:5px;width:2px;background:var(--brand-ink);border-radius:1px;pointer-events:none;z-index:3}
+.tl-play::before{
+  content:"";position:absolute;left:50%;top:-4px;transform:translateX(-50%);
+  width:0;height:0;border-left:4.5px solid transparent;border-right:4.5px solid transparent;
+  border-top:5px solid var(--brand-ink);
+}
+.tl-axis{position:absolute;left:0;right:0;bottom:0;display:flex;justify-content:space-between;font-size:10.5px;color:var(--ink-3)}
+
+/* ---------- panel derecho ---------- */
+.tabs{display:flex;gap:4px;margin-bottom:14px;background:var(--panel-2);padding:4px;border-radius:11px;border:1px solid var(--line)}
+.tab{
+  flex:1;padding:8px 10px;border:0;background:transparent;border-radius:8px;cursor:pointer;
+  font-size:13.5px;font-weight:570;color:var(--ink-2);transition:background .13s,color .13s;
+}
+.tab:hover{background:rgba(30,77,143,.07)}
+.tab[aria-selected="true"]{background:var(--brand-blue);color:#fff;box-shadow:var(--shadow)}
+.tab .n{opacity:.62;margin-left:5px;font-variant-numeric:tabular-nums}
+
+.filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:13px}
+.chip{
+  border:1px solid var(--line-strong);background:var(--panel);border-radius:999px;
+  padding:5px 12px;font-size:12.5px;font-weight:540;color:var(--ink-2);cursor:pointer;
+  display:inline-flex;align-items:center;gap:7px;transition:all .13s;
+}
+.chip:hover{border-color:var(--brand-blue);color:var(--brand-blue)}
+.chip[aria-pressed="true"]{background:var(--brand-blue);border-color:var(--brand-blue);color:#fff}
+.chip i{width:8px;height:8px;border-radius:2px;flex:none}
+.chip[aria-pressed="true"] i{box-shadow:0 0 0 1.5px rgba(255,255,255,.75)}
+.chip .n{font-variant-numeric:tabular-nums;opacity:.72}
+
+/* lista de evidencias */
+.ev-list{display:flex;flex-direction:column;gap:8px;max-height:min(720px,72vh);overflow-y:auto;padding:2px 4px 2px 2px}
+.ev{
+  width:100%;text-align:left;display:grid;grid-template-columns:auto 1fr;gap:12px;
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--k,var(--data-blue));
+  border-radius:var(--radius-s);padding:11px 13px;cursor:pointer;
+  transition:box-shadow .13s,border-color .13s,transform .13s;
+}
+.ev:hover{box-shadow:var(--shadow-lift);transform:translateY(-1px)}
+.ev:focus-visible{outline:2px solid var(--brand-blue);outline-offset:2px}
+.ev.on{border-color:var(--brand-blue);box-shadow:0 0 0 2px rgba(30,77,143,.16),var(--shadow)}
+.ev .ts{
+  font-family:var(--mono);font-size:12.5px;font-weight:650;color:var(--brand-blue);
+  background:rgba(30,77,143,.07);border-radius:6px;padding:3px 7px;height:fit-content;
+}
+.ev .q{font-size:14.5px;line-height:1.45;color:var(--ink);margin-bottom:7px}
+.ev .tags{display:flex;gap:6px;flex-wrap:wrap}
+
+.tag{
+  display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:560;
+  padding:2px 8px;border-radius:999px;border:1px solid var(--line-strong);
+  background:var(--panel-2);color:var(--ink-2);white-space:nowrap;
+}
+.tag i{width:7px;height:7px;border-radius:2px;flex:none}
+.tag.ok{border-color:rgba(20,184,166,.45);background:rgba(20,184,166,.11);color:#0d7a6e}
+.tag.warn{border-color:rgba(217,154,31,.45);background:rgba(217,154,31,.12);color:#8a5f08}
+
+.empty-state{
+  border:1px dashed var(--line-strong);border-radius:var(--radius-s);
+  padding:26px 18px;text-align:center;color:var(--ink-3);font-size:13.5px;background:var(--panel-2);
+}
+
+/* ---------- consejo (lo más importante para el docente) ---------- */
+.sug{
+  background:linear-gradient(135deg,var(--brand-blue) 0%,#17407a 100%);
+  border-radius:var(--radius);padding:21px 24px;margin-bottom:24px;color:#fff;
+  box-shadow:var(--shadow-lift);position:relative;overflow:hidden;
+}
+.sug::after{
+  content:"";position:absolute;right:-70px;top:-70px;width:230px;height:230px;border-radius:50%;
+  background:radial-gradient(circle,rgba(20,184,166,.34) 0%,transparent 68%);pointer-events:none;
+}
+.sug-tag{
+  display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:650;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--brand-amber);margin-bottom:11px;
+}
+.sug-tag::before{content:"";width:16px;height:2px;background:var(--brand-amber);border-radius:1px}
+.sug-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:20px;position:relative;z-index:1}
+.sug-part .h{
+  font-size:11.5px;font-weight:650;letter-spacing:.05em;text-transform:uppercase;
+  color:rgba(255,255,255,.62);margin-bottom:6px;
+}
+.sug-part .b{font-size:14.5px;line-height:1.55;color:#fff}
+.sug-part .b em{color:var(--brand-amber);font-style:normal;font-weight:600}
+.sug-phrase{
+  margin-top:11px;background:rgba(255,255,255,.13);border-left:3px solid var(--brand-amber);
+  border-radius:0 8px 8px 0;padding:9px 13px;font-size:14px;line-height:1.5;color:#fff;
+}
+.sug-phrase .l{display:block;font-size:11px;letter-spacing:.05em;text-transform:uppercase;
+  color:rgba(255,255,255,.60);margin-bottom:3px;font-weight:650}
+
+/* ---------- panel "Mi clase" (lectura simple del manual) ---------- */
+.panel-intro{font-size:13.5px;color:var(--ink-2);margin:0 0 14px;line-height:1.55}
+.check{
+  background:var(--panel);border:1px solid var(--line);border-left:3px solid var(--s,var(--line-strong));
+  border-radius:var(--radius-s);padding:14px 16px;margin-bottom:9px;box-shadow:var(--shadow);
+}
+.check-top{display:flex;align-items:flex-start;gap:11px;margin-bottom:7px}
+.check-icon{
+  width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--s,var(--line-strong));color:#fff;font-size:13px;font-weight:700;margin-top:1px;
+}
+.check-h{flex:1;min-width:0}
+.check-h .q{font-size:14.5px;font-weight:600;line-height:1.35}
+.check-h .st{font-size:12px;font-weight:600;color:var(--s,var(--ink-3));margin-top:2px}
+.check-num{
+  font-family:var(--mono);font-size:19px;font-weight:680;flex:none;
+  font-variant-numeric:tabular-nums;color:var(--ink);
+}
+.check-bar{position:relative;height:6px;border-radius:3px;background:var(--panel-2);
+  border:1px solid var(--line);margin:10px 0 9px;overflow:visible}
+.check-fill{position:absolute;left:0;top:0;bottom:0;border-radius:3px;background:var(--s)}
+.check-ref{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--ink-2);border-radius:1px}
+.check-say{font-size:13px;color:var(--ink-2);line-height:1.55}
+.check-say b{color:var(--ink)}
+
+/* ---------- recomendaciones de IA ---------- */
+.tip{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:15px 17px;margin-bottom:11px;box-shadow:var(--shadow)}
+.tip-h{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tip-n{
+  width:24px;height:24px;border-radius:7px;flex:none;display:grid;place-items:center;
+  background:var(--brand-teal);color:#fff;font-size:13px;font-weight:700;
+}
+.tip-h .t{font-size:15px;font-weight:620;letter-spacing:-.008em}
+.tip-for{font-size:13px;color:var(--ink-2);line-height:1.5;margin-bottom:5px}
+.tip-how{font-size:13px;color:var(--ink-3);line-height:1.5;margin-bottom:11px}
+.prompt{
+  background:var(--brand-ink);border-radius:var(--radius-s);padding:12px 13px;position:relative;
+}
+.prompt .pl{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:7px;
+  font-size:10.5px;font-weight:650;letter-spacing:.055em;text-transform:uppercase;
+  color:rgba(255,255,255,.55);
+}
+.prompt .px{
+  font-family:var(--mono);font-size:12.5px;line-height:1.6;color:#E7ECF3;
+  white-space:pre-wrap;word-break:break-word;
+}
+.copy{
+  border:1px solid rgba(255,255,255,.26);background:rgba(255,255,255,.10);color:#fff;
+  border-radius:6px;padding:3px 10px;font-size:11.5px;font-weight:600;cursor:pointer;
+  transition:background .13s;flex:none;letter-spacing:0;text-transform:none;
+}
+.copy:hover{background:rgba(255,255,255,.20)}
+.copy.done{background:var(--brand-teal);border-color:var(--brand-teal)}
+
+
+.rub.flash{box-shadow:0 0 0 3px rgba(20,184,166,.40)}
+
+/* ---------- gráficas ---------- */
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:12px;margin-bottom:11px}
+.chart{
+  background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 16px 12px;box-shadow:var(--shadow);min-width:0;
+}
+.chart.wide{grid-column:1 / -1}
+.chart-h{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin-bottom:3px}
+.chart-h .t{font-size:13.5px;font-weight:620;letter-spacing:-.005em}
+.chart-h .r{
+  font-size:10.5px;font-weight:650;letter-spacing:.055em;color:var(--ink-3);
+  background:var(--panel-2);border:1px solid var(--line);border-radius:5px;padding:1px 6px;flex:none;
+}
+.chart-sub{font-size:12px;color:var(--ink-3);margin-bottom:11px;line-height:1.45}
+.chart svg{display:block;width:100%;height:auto;overflow:visible}
+.chart .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:11.5px;color:var(--ink-2)}
+.chart .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:-1px}
+.c-grid{stroke:var(--line);stroke-width:1}
+.c-axis{fill:var(--ink-3);font-size:10.5px;font-family:var(--mono)}
+.c-lab{fill:var(--ink);font-size:11.5px;font-weight:650;font-family:var(--mono)}
+.c-ref{stroke:var(--ink-2);stroke-width:2;stroke-dasharray:4 3}
+.c-reft{fill:var(--ink-2);font-size:10.5px;font-weight:650}
+.c-bar{transition:opacity .12s}
+.c-bar:hover{opacity:.78}
+
+/* mapa de calor del recorrido */
+.heat{position:relative;border-radius:var(--radius-s);overflow:hidden;border:1px solid var(--line)}
+.heat img{display:block;width:100%;height:auto}
+.heat-note{font-size:11.5px;color:var(--ink-3);margin-top:9px;line-height:1.45}
+
+/* ---------- mapeo Minedu ---------- */
+.map5{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:8px;margin-bottom:11px}
+.m5{
+  background:var(--panel);border:1px solid var(--line);border-top:3px solid var(--s,var(--line-strong));
+  border-radius:var(--radius-s);padding:11px 12px;text-align:center;cursor:pointer;
+  transition:box-shadow .13s,transform .13s;
+}
+.m5:hover{box-shadow:var(--shadow-lift);transform:translateY(-1px)}
+.m5 .c{font-size:15px;font-weight:720;color:var(--s,var(--ink-3));letter-spacing:-.01em}
+.m5 .n{font-size:11px;color:var(--ink-3);line-height:1.35;margin-top:3px;min-height:29px}
+.m5 .v{font-size:11.5px;font-weight:650;color:var(--ink-2);margin-top:5px}
+
+@media (max-width:760px){
+  .tabs{flex-wrap:wrap}
+  .tab{flex:1 1 44%;padding:8px 6px;font-size:12.5px}
+  .tab .n{margin-left:4px}
+}
+
+/* ---------- rúbricas ---------- */
+.rub{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:11px;overflow:hidden}
+.rub-head{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;cursor:pointer;width:100%;background:transparent;border:0;text-align:left}
+.rub-head:hover{background:var(--panel-2)}
+.rub-code{
+  font-size:13px;font-weight:700;color:#fff;background:var(--brand-blue);
+  border-radius:7px;padding:4px 9px;flex:none;letter-spacing:.02em;
+}
+.rub-t{flex:1;min-width:0}
+.rub-t .ti{font-size:14px;font-weight:600;line-height:1.35;margin-bottom:4px}
+.rub-chev{flex:none;color:var(--ink-3);transition:transform .16s;margin-top:3px}
+.rub[open] .rub-chev{transform:rotate(90deg)}
+.rub-body{padding:0 16px 15px;border-top:1px solid var(--line)}
+.mrow{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:9px 0;border-bottom:1px solid var(--line)}
+.mrow:last-child{border-bottom:0}
+.mrow .mn{font-size:13px;color:var(--ink-2);min-width:0}
+.mrow .mn small{display:block;color:var(--ink-3);font-size:11.5px;line-height:1.35;margin-top:1px}
+.mrow .mv{font-family:var(--mono);font-size:14px;font-weight:650;flex:none;font-variant-numeric:tabular-nums}
+.mv.null{color:var(--ink-3);font-weight:500;font-size:12.5px;font-family:var(--sans)}
+.limit{
+  margin-top:13px;background:rgba(244,183,64,.10);border:1px solid rgba(244,183,64,.40);
+  border-radius:var(--radius-s);padding:10px 12px;font-size:12.5px;color:#7a5406;line-height:1.5;
+}
+.limit b{color:#5e4005}
+
+/* ---------- calidad ---------- */
+.dq{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.dq-i{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius-s);padding:11px 13px}
+.dq-i .l{font-size:12px;color:var(--ink-3);margin-bottom:3px}
+.dq-i .v{font-family:var(--mono);font-size:17px;font-weight:650;font-variant-numeric:tabular-nums}
+
+.models{display:flex;flex-wrap:wrap;gap:7px;margin-top:13px}
+.model{font-size:11.5px;color:var(--ink-2);background:var(--panel-2);border:1px solid var(--line);border-radius:6px;padding:3px 9px}
+.model b{color:var(--ink);font-weight:620}
+
+/* ---------- pie ---------- */
+.foot{margin-top:30px;padding-top:18px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink-3);line-height:1.6}
+.foot b{color:var(--ink-2)}
+
+/* ---------- carga / error ---------- */
+.boot{max-width:620px;margin:80px auto;padding:26px 28px;background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.boot h2{font-size:17px;margin-bottom:9px}
+.boot p{color:var(--ink-2);font-size:14px;margin:0 0 13px}
+.boot pre{background:var(--brand-ink);color:#E7ECF3;padding:13px 15px;border-radius:var(--radius-s);overflow-x:auto;font-family:var(--mono);font-size:12.5px;margin:0 0 10px}
+.hide{display:none !important}
+
+/* ---------------------------------------------------------------------------
+   Impresión / PDF. El navegador guarda como PDF sin librerías ni servidor, así
+   que el reporte se puede llevar a una reunión aunque no haya internet.
+   En papel no sirven el video ni las pestañas: se despliegan TODAS las secciones.
+--------------------------------------------------------------------------- */
+@media print{
+  @page{ size:A4; margin:14mm 12mm; }
+  body{background:#fff}
+  .topbar{position:static;background:#fff;backdrop-filter:none;box-shadow:none}
+  .btn-pdf, .btn-ghost, .actions, .rub-tools, .sug-copy, .brand .back,
+  .tabs, .filters, .player-card, .tl, video, .copy{display:none !important}
+  .wrap{max-width:none;padding:0}
+  .cols{display:block}
+  .player-col{position:static;margin-bottom:0}
+
+  /* Todo visible: en pantalla las pestañas ocultan paneles, en papel no. */
+  .hide{display:block !important}
+  #p-ev, #p-rub, #p-ia, #p-cum, #p-graf{margin-top:14px}
+  .charts{grid-template-columns:1fr 1fr}
+  .chart{break-inside:avoid}
+  .map5{break-inside:avoid}
+  details.rub{break-inside:avoid}
+  details.rub > .rub-body{display:block !important}
+
+  .kpis{grid-template-columns:repeat(4,1fr);gap:8px}
+  .kpi, .check, .tip, .rub, .dq-i, .ev{
+    box-shadow:none;border:1px solid #D7DEE8;break-inside:avoid;
+  }
+  .sug{
+    background:#fff !important;color:var(--ink) !important;
+    border:2px solid var(--brand-blue);box-shadow:none;break-inside:avoid;
+  }
+  .sug::after{display:none}
+  .sug-tag{color:#8a5f08}
+  .sug-part .h{color:var(--ink-3)}
+  .sug-part .b{color:var(--ink)}
+  .sug-phrase{background:#F6F8FB;color:var(--ink);border-left-color:var(--brand-amber)}
+  .sug-phrase .l{color:var(--ink-3)}
+  .prompt{background:#F4F6F9;border:1px solid #D7DEE8}
+  .prompt .px{color:var(--ink)}
+  .prompt .pl{color:var(--ink-3)}
+  .ev-list{max-height:none;overflow:visible;display:block}
+  .ev{margin-bottom:6px;page-break-inside:avoid}
+  .print-only{display:block !important}
+  a[href]::after{content:""}
+}
+.print-only{display:none}
+
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:5px;border:2px solid var(--surface)}
+::-webkit-scrollbar-thumb:hover{background:var(--ink-3)}
+
+@media (max-width:1120px){
+  .cols{grid-template-columns:1fr}
+  .player-col{position:static}
+  .ev-list{max-height:none}
+}
+@media (max-width:620px){
+  .wrap{padding:16px 16px 56px}
+  .topbar-in{padding:10px 16px}
+  .disclaimer{margin-left:0;width:100%;justify-content:center}
+  .kpi .k-val{font-size:27px}
+}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-in">
+    <a class="brand" href="../" aria-label="Volver al inicio de Aula Evidente" title="Volver al inicio">
+      <span class="back" aria-hidden="true">
+        <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
+          <path d="M7.4 2.6 4 6l3.4 3.4" stroke="currentColor" stroke-width="1.7"
+                stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </span>
+      <img src="../assets/logo-cabecera.png" alt="Aula Evidente" width="900" height="201">
+    </a>
+    <div class="bar" aria-hidden="true"></div>
+    <div class="ctx" id="ctx"></div>
+    <div class="actions">
+    <button class="btn-ghost" id="btnJson" type="button">Descargar datos</button>
+    <button class="btn-pdf" id="btnPdf" type="button">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" aria-hidden="true">
+        <path d="M7 1.6v7.2m0 0L4.3 6.1M7 8.8l2.7-2.7M2 10.6v1.2a.6.6 0 0 0 .6.6h8.8a.6.6 0 0 0 .6-.6v-1.2"
+              stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      Descargar PDF
+    </button>
+    </div>
+    <div class="disclaimer">
+      <span class="dot" aria-hidden="true"></span>
+      Análisis asistido por IA · requiere revisión humana · sin nota ni nivel
+    </div>
+  </div>
+</header>
+
+<div id="boot" class="boot">
+  <h2>Cargando la ficha…</h2>
+  <p>Leyendo <span class="mono">outputs/clase/class_report.json</span></p>
+</div>
+
+<div id="bootfail" class="boot hide">
+  <h2>No se pudo leer el reporte</h2>
+  <p id="bootmsg">Abre esta página desde el servidor, no con doble clic en el archivo.</p>
+  <pre>cd espejo
+python services/serve_demo.py</pre>
+  <p style="margin:0">Luego abre <b class="mono">http://localhost:8000/</b></p>
+</div>
+
+<main id="app" class="wrap hide">
+
+  <section class="kpis" id="kpis" aria-label="Indicadores de la sesión"></section>
+
+  <section id="suggestion"></section>
+
+  <section aria-label="Las cinco rúbricas del Minedu">
+    <div class="band-title">
+      <h2>Las cinco rúbricas del Minedu</h2>
+      <span class="hint">haz clic en una para ver su evidencia</span>
+    </div>
+    <div class="map5" id="map5"></div>
+  </section>
+
+  <div class="cols">
+
+    <!-- ============ columna izquierda: video ============ -->
+    <div class="player-col">
+      <div class="player-card">
+        <video id="vid" preload="metadata" controls playsinline></video>
+
+        <div class="now">
+          <div class="now-head">
+            <span class="t" id="nowTime">—:—</span>
+            <span style="font-size:12px;color:var(--ink-3)">evidencia</span>
+          </div>
+          <div class="quote empty" id="nowQuote">Haz clic en una evidencia para saltar a ese momento.</div>
+          <div class="meta" id="nowMeta"></div>
+        </div>
+
+        <div class="tl" id="tl">
+          <div class="tl-head">
+            <h3>Línea de tiempo de la sesión</h3>
+            <div class="leg">
+              <span><i style="background:var(--data-teal)"></i>con respuesta</span>
+              <span><i style="background:var(--data-blue)"></i>sin respuesta</span>
+              <span><i style="background:var(--data-amber)"></i>muletilla</span>
+            </div>
+          </div>
+          <div class="tl-rail" id="rail" role="slider" tabindex="0"
+               aria-label="Línea de tiempo del video" aria-valuemin="0" aria-valuenow="0">
+            <div class="tl-states" id="tlStates"></div>
+            <div class="tl-marks" id="tlMarks"></div>
+            <div class="tl-play" id="tlPlay" style="left:0"></div>
+            <div class="tl-axis"><span class="mono">00:00</span><span class="mono" id="tlEnd"></span></div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ============ columna derecha: evidencias y rúbricas ============ -->
+    <div>
+      <div class="tabs" role="tablist">
+        <button class="tab" role="tab" id="tab-cum" aria-selected="true" aria-controls="p-cum">
+          Mi clase
+        </button>
+        <button class="tab" role="tab" id="tab-ev" aria-selected="false" aria-controls="p-ev">
+          Evidencias<span class="n" id="nEv"></span>
+        </button>
+        <button class="tab" role="tab" id="tab-rub" aria-selected="false" aria-controls="p-rub">
+          Rúbricas<span class="n">5</span>
+        </button>
+        <button class="tab" role="tab" id="tab-graf" aria-selected="false" aria-controls="p-graf">
+          Gráficas
+        </button>
+        <button class="tab" role="tab" id="tab-ia" aria-selected="false" aria-controls="p-ia">
+          Usa IA<span class="n" id="nIa"></span>
+        </button>
+      </div>
+
+      <section id="p-cum" role="tabpanel" aria-labelledby="tab-cum">
+        <div id="compliance"></div>
+      </section>
+
+      <section id="p-graf" role="tabpanel" aria-labelledby="tab-graf" class="hide">
+        <div class="charts" id="charts"></div>
+      </section>
+
+      <section id="p-ia" role="tabpanel" aria-labelledby="tab-ia" class="hide">
+        <p class="panel-intro">
+          Elegidas por lo que pasó en <b>esta</b> clase. Copia el texto y pégalo en tu asistente.
+        </p>
+        <div id="aiTips"></div>
+      </section>
+
+      <section id="p-ev" role="tabpanel" aria-labelledby="tab-ev" class="hide">
+        <div class="filters" id="filters"></div>
+        <div class="ev-list" id="evList"></div>
+      </section>
+
+      <section id="p-rub" role="tabpanel" aria-labelledby="tab-rub" class="hide">
+        <div class="rub-tools">
+          <button class="btn-ghost" id="btnRubs" type="button">Abrir todas</button>
+        </div>
+        <div id="rubs"></div>
+      </section>
+    </div>
+
+  </div>
+
+  <section class="dq-section" aria-label="Calidad de los datos">
+    <div class="band-title">
+      <h2>Calidad de los datos</h2>
+      <span class="hint">qué tan confiable es lo que se midió</span>
+    </div>
+    <div class="dq" id="dq"></div>
+    <div class="models" id="models"></div>
+  </section>
+
+  <footer class="foot" id="foot"></footer>
+</main>
+
+<!-- Antes del script principal: definen renderCharts y renderMinedu, que boot() llama. -->
+<script src="charts.js?v=2"></script>
+<script src="minedu.js?v=2"></script>
+
+<script>
+"use strict";
+
+/* =========================================================================
+   Configuración. Para renombrar el producto, cambia BRAND (una línea).
+   ========================================================================= */
+const BRAND       = "Aula Evidente";
+/* De dónde salen los datos.
+
+   En desarrollo (services/serve_demo.py monta el repo, la app queda en /web/app/)
+   se leen los resultados recién producidos por el motor. Publicado en Vercel la
+   raíz es web/, la app queda en /app/ y, como Vercel no deja salir de la carpeta
+   raíz, se usan los datos que viajan dentro de la web.
+
+   Se decide por la ruta y no probando URLs: tantear deja errores 404 en la
+   consola, y una consola limpia es parte de que esto esté bien hecho. El orden
+   de respaldo queda igual por si alguien monta la web de otra forma. */
+const IS_DEV = location.pathname.includes("/web/app/");
+
+const REPORT_SOURCES = IS_DEV
+  ? ["../../outputs/clase/class_report.json", "./demo/class_report.json"]
+  : ["./demo/class_report.json"];
+const HEATMAP_SOURCES = IS_DEV
+  ? ["../../outputs/clase/heatmap.png", "./demo/heatmap.png"]
+  : ["./demo/heatmap.png"];
+
+/* El video NO se publica: la clase tiene estudiantes menores de edad y el
+   repositorio es público. Fuera de desarrollo ni se pide, para no dejar un 404. */
+const VIDEO_BASE  = "../../samples/";
+let   HEATMAP_URL = HEATMAP_SOURCES[0];
+
+/* Umbrales citados en el reporte; se muestran como REFERENCIA, nunca como nota. */
+const REF_MONITORING = 0.25;  // manual Minedu, R3: al menos 25 % de la sesión
+const REF_WAIT_S     = 3.0;   // Rowe (1974, 1986)
+
+const COLOR = { answered:"var(--data-teal)", unanswered:"var(--data-blue)", tag:"var(--data-amber)" };
+
+const RUBRIC_TITLES = {
+  R1:"Involucra activamente a los estudiantes en el proceso de aprendizaje",
+  R2:"Promueve el razonamiento, la creatividad y/o el pensamiento crítico",
+  R3:"Evalúa el progreso de los aprendizajes para retroalimentar y adecuar su enseñanza",
+  R4:"Propicia un ambiente de respeto y proximidad",
+  R5:"Regula positivamente el comportamiento de los estudiantes"
+};
+
+/* Lo que el manual exige y el sistema NO puede comprobar solo. Se muestra en cada
+   rúbrica para que la ficha nunca se lea como un veredicto. */
+const RUBRIC_LIMITS = {
+  R1:"El audio y el video no verifican el interés real ni la participación de todos los estudiantes.",
+  R2:"No toda pregunta abierta promueve pensamiento crítico: hay que revisar la respuesta y el contexto.",
+  R3:"El 25 % del manual exige monitoreo pedagógico genuino. El desplazamiento por el aula no es monitoreo.",
+  R4:"El tono, el afecto y el trato no pueden inferirse con seguridad desde texto aislado.",
+  R5:"No se deduce la conducta de los estudiantes ni las sanciones fuera del encuadre observado."
+};
+
+const METRIC_LABELS = {
+  board_writing_ratio:        ["Tiempo escribiendo en la pizarra", "de espaldas a la clase", "pct"],
+  stage_interaction_count:    ["Alumnos que pasaron al frente", "eventos detectados", "int"],
+  path_length_normalized:     ["Recorrido del docente", "en anchos de pantalla", "num"],
+  monitoring_ratio:           ["Tiempo monitoreando", "guiando en carpetas o preguntando (sin doble conteo)", "pct"],
+  monitoring_video_ratio:     ["Monitoreo visto en el video", "tramos guiando en carpetas", "pct"],
+  monitoring_audio_ratio:     ["Monitoreo oído en el audio", "preguntas que un alumno respondió", "pct"],
+  meets_monitoring_threshold: ["Alcanza la referencia del 25 %", "indicativo, no es una calificación", "bool"],
+  teacher_question_count:     ["Preguntas del docente", "sin muletillas ni retóricas", "int"],
+  questions_per_minute:       ["Preguntas por minuto", "ritmo de la sesión", "num"],
+  rhetorical_question_count:  ["Muletillas o preguntas retóricas", "no cuentan como pregunta", "int"],
+  open_question_ratio:        ["Preguntas abiertas", "abiertas / (abiertas + cerradas)", "pct"],
+  mean_wait_time_s:           ["Espera promedio tras preguntar", "referencia de Rowe: 3 s", "sec"],
+  median_wait_time_s:         ["Espera mediana tras preguntar", "la mitad esperó menos que esto", "sec"],
+  wait_time_ok_ratio:         ["Preguntas con espera de 3 s o más", "umbral de Rowe", "pct"],
+  student_response_count:     ["Preguntas que un alumno respondió", "respuesta dentro de la ventana", "int"],
+  response_rate:              ["Tasa de respuesta", "respuestas / preguntas", "pct"],
+  teacher_talk_ratio:         ["Fracción de la clase en que habla el docente", "requiere diarización", "pct"]
+};
+
+const DQ_LABELS = {
+  teacher_visible_ratio:           ["Docente visible","pct"],
+  interpolated_ratio:              ["Frames interpolados","pct"],
+  discarded_path_jumps:            ["Saltos descartados","int"],
+  low_confidence_audio_ratio:      ["Audio dudoso","pct"],
+  discarded_hallucinated_segments: ["Texto inventado descartado","int"],
+  speech_ratio:                    ["Sesión con voz","pct"]
+};
+
+/* ========================= utilidades ========================= */
+const $  = (s, r=document) => r.querySelector(s);
+const el = (tag, cls, txt) => { const n=document.createElement(tag); if(cls) n.className=cls; if(txt!=null) n.textContent=txt; return n; };
+
+const mmss = s => {
+  if (s==null || !isFinite(s)) return "—:—";
+  const t=Math.max(0,Math.floor(s));
+  return String(Math.floor(t/60)).padStart(2,"0")+":"+String(t%60).padStart(2,"0");
+};
+const pct = v => v==null ? null : (v*100).toFixed(1).replace(/\.0$/,"")+" %";
+
+function fmt(value, kind){
+  if (value==null) return null;
+  switch(kind){
+    case "pct":  return pct(value);
+    case "sec":  return value.toFixed(2).replace(/\.?0+$/,"")+" s";
+    case "int":  return String(value);
+    case "bool": return value ? "sí" : "no";
+    default:     return typeof value==="number" ? value.toFixed(2).replace(/\.?0+$/,"") : String(value);
+  }
+}
+
+/* Estado de una pregunta -> color y etiqueta. Un solo lugar, para que la
+   línea de tiempo, los filtros y las tarjetas nunca se contradigan. */
+function kindOf(q){
+  if (!q.counts_as_question) return "tag";
+  return q.response ? "answered" : "unanswered";
+}
+const KIND_LABEL = { answered:"con respuesta", unanswered:"sin respuesta", tag:"muletilla" };
+
+/* ========================= estado ========================= */
+let REPORT = null, EVENTS = [], FILTER = "all", ACTIVE = -1, DURATION = 1;
+
+/* Devuelve el JSON del primer origen que responda; si ninguno, lanza el último error. */
+async function loadFirst(urls){
+  let ultimo = null;
+  for (const url of urls){
+    try{
+      const res = await fetch(url, {cache:"no-store"});
+      if (res.ok) return await res.json();
+      ultimo = new Error("HTTP "+res.status+" en "+url);
+    }catch(error){ ultimo = error; }
+  }
+  throw ultimo || new Error("sin orígenes de datos");
+}
+
+/* La primera URL que exista, o null. Para imágenes, que no son JSON. */
+async function firstThatExists(urls){
+  for (const url of urls){
+    try{
+      const res = await fetch(url, {method:"HEAD", cache:"no-store"});
+      if (res.ok) return url;
+    }catch{ /* se prueba la siguiente */ }
+  }
+  return null;
+}
+
+/* ========================= arranque ========================= */
+(async function boot(){
+  // Si en la consola no sale esta línea, el navegador está mostrando una copia
+  // guardada: recarga con Ctrl+Shift+R.
+  console.info("%cAula Evidente%c build 2026-10-31 · layout auto-fit",
+    "font-weight:700;color:#1E4D8F", "color:#7A8699");
+  document.title = BRAND + " · Ficha de evidencias";
+  try{
+    REPORT = await loadFirst(REPORT_SOURCES);
+    HEATMAP_URL = HEATMAP_SOURCES.length === 1
+      ? HEATMAP_SOURCES[0]
+      : (await firstThatExists(HEATMAP_SOURCES) || HEATMAP_SOURCES.at(-1));
+  }catch(err){
+    $("#boot").classList.add("hide");
+    $("#bootfail").classList.remove("hide");
+    $("#bootmsg").textContent =
+      (location.protocol==="file:")
+        ? "Estás abriendo el archivo con file://, y el navegador bloquea la lectura del JSON. Levanta el servidor:"
+        : "No se encontró el reporte ("+err.message+"). Genera la ficha y levanta el servidor:";
+    return;
+  }
+  render();
+  $("#boot").classList.add("hide");
+  $("#app").classList.remove("hide");
+})();
+
+/* ========================= render ========================= */
+function render(){
+  const meta = REPORT.metadata || {};
+  DURATION = meta.duration_s || 1;
+  EVENTS = (REPORT.audio_events || []).slice().sort((a,b)=>a.start_s-b.start_s);
+
+  renderContext(meta);
+  renderKpis();
+  renderSuggestion();
+  renderCompliance();
+  renderAiTips();
+  renderCharts();
+  renderMinedu();
+  renderPlayer(meta);
+  renderTimeline();
+  renderFilters();
+  renderEvidence();
+  renderRubrics();
+  renderQuality();
+  renderFooter(meta);
+  wireTabs();
+  wireKeys();
+  wirePdf();
+  wireActions();
+}
+
+function renderContext(meta){
+  const c = $("#ctx");
+  c.innerHTML = "";
+  c.append(
+    el("span", null, "Clase:"), Object.assign(el("b",null,meta.video||"—"),{}),
+    el("span","sep"), el("span",null,"Duración:"), el("b",null,meta.duration||mmss(meta.duration_s)),
+    el("span","sep"), el("span",null, meta.diarization_used ? "Con diarización" : "Sin diarización")
+  );
+  // los separadores dentro de .ctx se ven mejor como puntos
+  c.querySelectorAll(".sep").forEach(s=>{ s.className=""; s.textContent="·"; s.style.opacity=".5"; });
+}
+
+function m(name){ return (REPORT.metrics||{})[name] || {}; }
+
+function renderKpis(){
+  const host = $("#kpis");
+  host.innerHTML = "";
+
+  const monitoring = m("monitoring_ratio").value;
+  const wait       = m("mean_wait_time_s").value;
+  const questions  = m("teacher_question_count").value;
+  const respRate   = m("response_rate").value;
+  const responses  = m("student_response_count").value;
+  const perMin     = m("questions_per_minute").value;
+  const rhetorical = m("rhetorical_question_count").value;
+  const waitOk     = m("wait_time_ok_ratio").value;
+
+  // Las cuatro tarjetas llevan medidor para que la fila quede pareja: antes las dos
+  // últimas no tenían y dejaban un hueco vacío al final de la tarjeta.
+  const total = (questions ?? 0) + (rhetorical ?? 0);
+
+  host.append(
+    kpiMeter({
+      label:"Tiempo monitoreando", rubric:"R3", accent:"var(--data-blue)",
+      value: pct(monitoring) ?? "—",
+      sub:"preguntando o revisando su trabajo",
+      ratio: monitoring ?? 0, refRatio: REF_MONITORING,
+      note:"La marca es el 25 % que sugiere el manual."
+    }),
+    kpiMeter({
+      label:"Espera tras preguntar", rubric:"R2", accent:"var(--data-amber)",
+      value:(wait!=null? wait.toFixed(1).replace(/\.0$/,"") : "—"), unit:"s",
+      sub: waitOk!=null ? pct(waitOk)+" llegó a 3 s" : "",
+      ratio: wait!=null ? Math.min(wait/(REF_WAIT_S*2),1) : 0,
+      refRatio: 0.5,
+      note:"La marca son los 3 s de Rowe."
+    }),
+    kpiMeter({
+      label:"Preguntas reales", rubric:"R2 · R3", accent:"var(--data-blue)",
+      value: questions ?? "—",
+      sub: perMin!=null ? perMin.toFixed(1).replace(/\.0$/,"")+" por minuto" : "",
+      ratio: total ? questions/total : 0,
+      note: rhetorical ? `Aparte, ${rhetorical} muletillas que no cuentan.` : "Sin muletillas."
+    }),
+    kpiMeter({
+      label:"Preguntas respondidas", rubric:"R1", accent:"var(--data-teal)",
+      value: pct(respRate) ?? "—",
+      sub: responses!=null && questions!=null ? responses+" de "+questions : "",
+      ratio: respRate ?? 0,
+      note:"Un alumno respondió dentro de los 10 s."
+    })
+  );
+}
+
+function kpiShell({label,rubric,accent,value,unit,sub}){
+  const card = el("div","kpi");
+  card.style.setProperty("--accent", accent);
+  const top = el("div","k-top");
+  top.append(el("span","k-label",label), el("span","k-rub",rubric));
+  const val = el("div","k-val", String(value));
+  if (unit){ const u=el("span","u",unit); val.append(u); }
+  card.append(top, val);
+  if (sub) card.append(el("div","k-sub",sub));
+  return card;
+}
+function kpiPlain(o){ return kpiShell(o); }
+
+function kpiMeter(o){
+  const card = kpiShell(o);
+  const meter = el("div","meter");
+  const track = el("div","meter-track");
+  const fill  = el("div","meter-fill");
+  fill.style.width = (Math.max(0,Math.min(1,o.ratio))*100).toFixed(1)+"%";
+  track.append(fill);
+  if (o.refRatio != null){                 // no toda métrica tiene una referencia del manual
+    const ref = el("div","meter-ref");
+    ref.style.left = (o.refRatio*100).toFixed(1)+"%";
+    track.append(ref);
+  }
+  meter.append(track);
+  card.append(meter, el("div","meter-note",o.note));
+  return card;
+}
+
+/* =========================================================================
+   "Mi clase": el manual del Minedu leído como preguntas que el docente entiende.
+   Nunca hay nota, nivel ni rojo: el estado más bajo se llama "oportunidad".
+   ========================================================================= */
+const OK="var(--data-teal)", NEAR="var(--data-amber)", OPP="var(--data-blue)";
+const STATUS_TEXT = {
+  ok:   "En el rango que sugiere el manual",
+  near: "Muy cerca del rango",
+  opp:  "Oportunidad de mejora"
+};
+
+/* higher:true  -> más es mejor (esperar, monitorear, preguntas abiertas)
+   higher:false -> menos es mejor (tiempo de espaldas) */
+function checkDefs(){
+  const v = n => m(n).value;
+  return [
+    {
+      q:"¿Diste tiempo para pensar?", rubric:"R2",
+      value:v("mean_wait_time_s"), show:x=>x.toFixed(1).replace(".0","")+" s",
+      ref:REF_WAIT_S, max:REF_WAIT_S*2, higher:true, ok:3, near:2,
+      say:x=>`Esperaste <b>${x.toFixed(1).replace(".0","")} s</b> en promedio. Desde los `
+           +`<b>3 s</b> responden más estudiantes y con más detalle.`
+    },
+    {
+      q:"¿Recogiste evidencia de lo que entendieron?", rubric:"R3",
+      value:v("monitoring_ratio"), show:pct,
+      ref:REF_MONITORING, max:0.5, higher:true, ok:0.25, near:0.20,
+      say:x=>`<b>${pct(x)}</b> de la clase preguntando o mirando su trabajo. El manual sugiere `
+           +`<b>25 %</b>. Caminar por el aula no cuenta.`
+    },
+    {
+      q:"¿Tus preguntas los hicieron pensar?", rubric:"R2",
+      value:v("open_question_ratio"), show:pct,
+      ref:0.5, max:1, higher:true, ok:0.5, near:0.35,
+      say:x=>`<b>${pct(x)}</b> pedían explicar o predecir, no un dato ni un sí/no.`
+    },
+    {
+      q:"¿Te respondieron?", rubric:"R1",
+      value:v("response_rate"), show:pct,
+      ref:0.6, max:1, higher:true, ok:0.6, near:0.4,
+      say:x=>`<b>${v("student_response_count")}</b> de tus <b>${v("teacher_question_count")}</b> `
+           +`preguntas recibieron respuesta.`
+    },
+    {
+      q:"¿Cuánto tiempo diste la espalda?", rubric:"R1",
+      value:v("board_writing_ratio"), show:pct,
+      ref:0.2, max:0.5, higher:false, ok:0.2, near:0.35,
+      say:x=>`<b>${pct(x)}</b> del tiempo escribiendo en la pizarra. Mientras escribes no ves `
+           +`qué hacen tus estudiantes.`
+    }
+  ];
+}
+
+function statusOf(c){
+  if (c.value==null) return null;
+  if (c.higher) return c.value>=c.ok ? "ok" : c.value>=c.near ? "near" : "opp";
+  return c.value<=c.ok ? "ok" : c.value<=c.near ? "near" : "opp";
+}
+
+function renderCompliance(){
+  const host = $("#compliance");
+  host.innerHTML = "";
+  host.append(el("p","panel-intro",
+    "Referencias del manual del Minedu para orientarte. No son una calificación."));
+
+  for (const c of checkDefs()){
+    const st = statusOf(c);
+    if (st===null) continue;
+    const color = st==="ok" ? OK : st==="near" ? NEAR : OPP;
+
+    const card = el("div","check");
+    card.style.setProperty("--s", color);
+
+    const top = el("div","check-top");
+    const icon = el("div","check-icon", st==="ok" ? "✓" : st==="near" ? "→" : "○");
+    const h = el("div","check-h");
+    h.append(el("div","q",c.q), el("div","st",STATUS_TEXT[st]));
+    top.append(icon, h, el("div","check-num", c.show(c.value)));
+    card.append(top);
+
+    const bar = el("div","check-bar");
+    const fill = el("div","check-fill");
+    fill.style.width = Math.max(1.5, Math.min(100, c.value/c.max*100))+"%";
+    const ref = el("div","check-ref");
+    ref.style.left = Math.min(100, c.ref/c.max*100)+"%";
+    ref.title = "referencia: "+c.show(c.ref);
+    bar.append(fill, ref);
+    card.append(bar);
+
+    const say = el("div","check-say");
+    say.innerHTML = c.say(c.value);       // solo plantillas propias, nunca texto del reporte
+    card.append(say);
+    host.append(card);
+  }
+}
+
+/* ========================= consejo ========================= */
+function renderSuggestion(){
+  const host = $("#suggestion");
+  host.innerHTML = "";
+  const s = REPORT.one_suggestion;
+  if (!s) return;
+
+  const box = el("div","sug");
+  wireSuggestionCopy(box);
+  box.append(el("div","sug-tag","Tu próximo paso"));
+
+  const grid = el("div","sug-grid");
+  const parts = [
+    ["Lo que vimos", s.what_we_saw],
+    ["Por qué importa", s.why_it_matters],
+    ["Prueba esto", s.try_this]
+  ];
+  for (const [head, body] of parts){
+    const p = el("div","sug-part");
+    p.append(el("div","h",head), el("div","b",body));
+    grid.append(p);
+  }
+  box.append(grid);
+
+  if (s.example_phrase){
+    const ph = el("div","sug-phrase");
+    ph.append(el("span","l","Puedes decir algo así"),
+              document.createTextNode("“"+s.example_phrase+"”"));
+    box.append(ph);
+  }
+  host.append(box);
+}
+
+/* ========================= recomendaciones de IA ========================= */
+function renderAiTips(){
+  const tips = (REPORT.llm_analysis||{}).ai_tips || [];
+  $("#nIa").textContent = tips.length || "";
+  const host = $("#aiTips");
+  host.innerHTML = "";
+
+  if (!tips.length){
+    host.append(el("div","empty-state",
+      "Las recomendaciones de IA necesitan el módulo LLM activo. "
+      + "Vuelve a interpretar la clase sin --no-llm."));
+    return;
+  }
+
+  tips.forEach((t,i)=>{
+    const card = el("div","tip");
+    const head = el("div","tip-h");
+    head.append(el("div","tip-n",String(i+1)), el("div","t",t.title));
+    card.append(head,
+      el("div","tip-for",t.what_for),
+      el("div","tip-how",t.how));
+
+    const box = el("div","prompt");
+    const label = el("div","pl");
+    const btn = el("button","copy","Copiar");
+    btn.type = "button";
+    btn.addEventListener("click", async ()=>{
+      try{
+        await navigator.clipboard.writeText(t.example_prompt);
+      }catch{
+        // Sin permiso de portapapeles (http, permisos): se selecciona para copiar a mano.
+        const range = document.createRange();
+        range.selectNodeContents(box.querySelector(".px"));
+        getSelection().removeAllRanges(); getSelection().addRange(range);
+      }
+      btn.textContent = "Copiado";
+      btn.classList.add("done");
+      setTimeout(()=>{ btn.textContent="Copiar"; btn.classList.remove("done"); }, 1800);
+    });
+    label.append(el("span",null,"Pégalo en tu asistente de IA"), btn);
+    box.append(label, el("div","px",t.example_prompt));
+    card.append(box);
+    host.append(card);
+  });
+}
+
+function renderPlayer(meta){
+  const v = $("#vid");
+  if (!IS_DEV){ onVideoMissing(); return; }
+
+  v.src = VIDEO_BASE + (meta.video || "");
+  v.addEventListener("timeupdate", onTime);
+
+  // En la versión publicada el video no viaja (la clase tiene menores). Sin él,
+  // se retira el reproductor y la ficha sigue completa: las evidencias dejan de
+  // saltar al minuto, pero el minuto y la cita siguen a la vista.
+  v.addEventListener("error", onVideoMissing, {once:true});
+
+  // DURATION es SIEMPRE la duración analizada del reporte, nunca la del archivo.
+  // Si la grabación es más larga que lo analizado, el tramo sin analizar no tiene
+  // evidencias: se avisa en vez de dejar que parezca que no se encontró nada.
+  v.addEventListener("loadedmetadata", ()=>{
+    if (!isFinite(v.duration) || v.duration - DURATION <= 2) return;
+    const note = el("div","scope-note");
+    note.append(
+      el("b",null,"Analizado: 00:00 – "+mmss(DURATION)+". "),
+      document.createTextNode(
+        "La grabación dura "+mmss(v.duration)+"; el resto no se analizó."
+      )
+    );
+    $("#tl").prepend(note);
+  });
+
+  $("#tlEnd").textContent = meta.duration || mmss(DURATION);
+}
+
+let VIDEO_OK = true;
+
+function onVideoMissing(){
+  VIDEO_OK = false;
+  $("#vid").remove();
+  const aviso = el("div","no-video");
+  aviso.append(
+    el("b",null,"Reporte sin video. "),
+    document.createTextNode(
+      "La grabación no se publica porque la clase tiene estudiantes menores de edad. "
+      + "Cada evidencia conserva su minuto y su cita textual."));
+  $(".player-card").prepend(aviso);
+  const q = $("#nowQuote");
+  if (q && q.classList.contains("empty")) q.textContent = "Elige una evidencia para leerla aquí.";
+}
+
+function renderTimeline(){
+  const states = $("#tlStates");
+  states.innerHTML = "";
+  // Solo se pintan los estados informativos; "other" es el relleno y queda neutro.
+  const paint = { board_writing:"var(--brand-blue)", guide:"var(--data-teal)", not_visible:"var(--line-strong)" };
+  for (const seg of (REPORT.video_timeline||[])){
+    const color = paint[seg.label];
+    if (!color) continue;
+    const band = el("div","tl-state");
+    band.style.left  = (seg.start_s/DURATION*100)+"%";
+    band.style.width = Math.max(0.35,(seg.duration_s/DURATION*100))+"%";
+    band.style.background = color;
+    band.title = seg.label.replace("_"," ")+" · "+seg.start+"–"+seg.end;
+    states.append(band);
+  }
+
+  const marks = $("#tlMarks");
+  marks.innerHTML = "";
+  EVENTS.forEach((q,i)=>{
+    const k = kindOf(q);
+    const mk = el("button","tl-mark");
+    mk.style.left = (q.start_s/DURATION*100)+"%";
+    mk.style.background = COLOR[k];
+    mk.style.border = "0"; mk.style.padding = "0"; mk.style.cursor = "pointer";
+    mk.title = q.start+" · "+KIND_LABEL[k]+" · "+q.text;
+    mk.setAttribute("aria-label","Ir a "+q.start+": "+q.text);
+    mk.dataset.i = i;
+    mk.addEventListener("click", e=>{ e.stopPropagation(); goTo(i); });
+    marks.append(mk);
+  });
+
+  const rail = $("#rail");
+  rail.addEventListener("click", e=>{
+    const r = rail.getBoundingClientRect();
+    seek(((e.clientX-r.left)/r.width)*DURATION);
+  });
+  rail.addEventListener("keydown", e=>{
+    const v=$("#vid"); if (!v) return;
+    if (e.key==="ArrowRight"){ seek(v.currentTime+5); e.preventDefault(); }
+    if (e.key==="ArrowLeft"){  seek(v.currentTime-5); e.preventDefault(); }
+  });
+}
+
+function renderFilters(){
+  const counts = { all:EVENTS.length, answered:0, unanswered:0, tag:0, waitok:0 };
+  for (const q of EVENTS){
+    counts[kindOf(q)]++;
+    if (q.counts_as_question && q.wait_time_ok) counts.waitok++;
+  }
+  const defs = [
+    ["all","Todas",null],
+    ["answered","Con respuesta",COLOR.answered],
+    ["unanswered","Sin respuesta",COLOR.unanswered],
+    ["tag","Muletillas",COLOR.tag],
+    ["waitok","Espera ≥ 3 s",null]
+  ];
+  const host = $("#filters");
+  host.innerHTML = "";
+  for (const [key,label,color] of defs){
+    const b = el("button","chip");
+    b.type = "button";
+    b.setAttribute("aria-pressed", String(FILTER===key));
+    if (color){ const i=el("i"); i.style.background=color; b.append(i); }
+    b.append(el("span",null,label), el("span","n",String(counts[key])));
+    b.addEventListener("click", ()=>{ FILTER=key; renderFilters(); renderEvidence(); });
+    host.append(b);
+  }
+  $("#nEv").textContent = EVENTS.length;
+}
+
+function passesFilter(q){
+  if (FILTER==="all") return true;
+  if (FILTER==="waitok") return q.counts_as_question && q.wait_time_ok;
+  return kindOf(q)===FILTER;
+}
+
+function renderEvidence(){
+  const host = $("#evList");
+  host.innerHTML = "";
+  let shown = 0;
+
+  EVENTS.forEach((q,i)=>{
+    if (!passesFilter(q)) return;
+    shown++;
+    const k = kindOf(q);
+    const b = el("button","ev");
+    b.type = "button";
+    b.style.setProperty("--k", COLOR[k]);
+    b.dataset.i = i;
+    if (i===ACTIVE) b.classList.add("on");
+
+    b.append(el("span","ts",q.start));
+
+    const body = el("div");
+    body.append(el("div","q",q.text));
+
+    const tags = el("div","tags");
+    const kt = el("span","tag"+(k==="answered"?" ok":k==="tag"?" warn":""));
+    const dot = el("i"); dot.style.background = COLOR[k];
+    kt.append(dot, el("span",null,KIND_LABEL[k]));
+    tags.append(kt);
+
+    if (q.wait_time_s!=null){
+      const w = el("span","tag"+(q.wait_time_ok?" ok":""),
+        "espera "+q.wait_time_s.toFixed(1).replace(".0","")+" s");
+      tags.append(w);
+    }
+    if (q.response){
+      tags.append(el("span","tag","responde en "+q.response.start+
+        (q.response.certainty==="high" ? "" : " · certeza baja")));
+    }
+    if (!q.reliable)   tags.append(el("span","tag warn","audio dudoso"));
+    if (q.speaker_known) tags.append(el("span","tag","docente identificado"));
+
+    body.append(tags);
+    b.append(body);
+    b.addEventListener("click", ()=>goTo(i));
+    host.append(b);
+  });
+
+  if (!shown){
+    host.append(el("div","empty-state",
+      "No se observaron evidencias de este tipo en el fragmento analizado."));
+  }
+}
+
+function renderRubrics(){
+  const host = $("#rubs");
+  host.innerHTML = "";
+  const byCode = {};
+  for (const r of (REPORT.rubric_evidence||[])) byCode[r.rubric]=r;
+
+  for (const code of ["R1","R2","R3","R4","R5"]){
+    const r = byCode[code] || {rubric:code, status:"evidencia insuficiente", metrics:[], citations:[]};
+    const hasEv = r.status === "con evidencia";
+
+    const d = el("details","rub");
+    d.dataset.code = code;
+    if (code==="R3" || code==="R2") d.open = true;
+
+    const sum = document.createElement("summary");
+    sum.className = "rub-head";
+    sum.style.listStyle = "none";
+
+    const chev = el("span","rub-chev");
+    chev.innerHTML = '<svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M4.6 2.9 8.6 6.5l-4 3.6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+    const t = el("div","rub-t");
+    t.append(el("div","ti", r.title || RUBRIC_TITLES[code]));
+    const st = el("span","tag"+(hasEv?" ok":""));
+    const sd = el("i"); sd.style.background = hasEv ? "var(--data-teal)" : "var(--line-strong)";
+    st.append(sd, el("span",null, hasEv
+      ? (r.metrics||[]).length+" métricas observadas"
+      : "no se observó en el fragmento analizado"));
+    t.append(st);
+
+    sum.append(chev, el("span","rub-code",code), t);
+    d.append(sum);
+
+    const body = el("div","rub-body");
+    if ((r.metrics||[]).length){
+      for (const mm of r.metrics){
+        const [label, hint, kind] = METRIC_LABELS[mm.name] || [mm.name,"","num"];
+        const row = el("div","mrow");
+        const n = el("div","mn", label);
+        if (hint) n.append(el("small",null,hint));
+        const shown = fmt(mm.value, kind);
+        const v = el("div","mv"+(shown==null?" null":""), shown ?? "sin dato");
+        row.append(n,v);
+        body.append(row);
+      }
+    } else {
+      body.append(el("div","empty-state",
+        "Ninguna métrica de esta fase aporta evidencia a esta rúbrica. Depende del lenguaje y la cubre el módulo LLM."));
+    }
+
+    const lim = el("div","limit");
+    lim.append(el("b",null,"Requiere contexto. "), document.createTextNode(RUBRIC_LIMITS[code]));
+    body.append(lim);
+
+    d.append(body);
+    host.append(d);
+  }
+}
+
+function renderQuality(){
+  const dq = REPORT.data_quality || {};
+  const host = $("#dq");
+  host.innerHTML = "";
+  for (const [key,[label,kind]] of Object.entries(DQ_LABELS)){
+    if (dq[key]==null) continue;
+    const i = el("div","dq-i");
+    i.append(el("div","l",label), el("div","v", fmt(dq[key],kind)));
+    host.append(i);
+  }
+  const models = REPORT.metadata?.models || {};
+  const mh = $("#models");
+  mh.innerHTML = "";
+  for (const [k,v] of Object.entries(models)){
+    const chip = el("span","model");
+    chip.append(el("b",null,k+": "), document.createTextNode(v));
+    mh.append(chip);
+  }
+}
+
+function renderFooter(meta){
+  const llm = REPORT.llm_analysis || {};
+  const f = $("#foot");
+  f.innerHTML = "";
+  const l1 = el("div");
+  l1.append(el("b",null,BRAND+" no pone notas ni niveles. "),
+    document.createTextNode("Marca evidencias con su minuto para que una persona las revise. "
+      + "La interpretación oficial corresponde a un observador certificado del Minedu."));
+  const l2 = el("div");
+  l2.style.marginTop = "7px";
+  l2.append(el("b",null,"Módulo LLM: "),
+    document.createTextNode(llm.used
+      ? (llm.provider+" · "+llm.model)
+      : (llm.note || "sin análisis LLM") + " — sin él quedan vacías las preguntas abiertas/cerradas, las citas por rúbrica y el consejo final."));
+  f.append(l1,l2);
+}
+
+/* ========================= interacción ========================= */
+function seek(t){
+  const target = Math.max(0, Math.min(t, DURATION-0.05));
+  const v = $("#vid");
+  if (v) v.currentTime = target;
+  updatePlayhead(target);
+}
+
+function goTo(i){
+  const q = EVENTS[i];
+  if (!q) return;
+  ACTIVE = i;
+  seek(q.start_s);
+  if (VIDEO_OK) $("#vid")?.play().catch(()=>{ /* autoplay bloqueado: el salto igual ocurrió */ });
+  showNow(q);
+  markActive();
+  const card = $('.ev[data-i="'+i+'"]');
+  if (card) card.scrollIntoView({block:"nearest", behavior:"smooth"});
+}
+
+function showNow(q){
+  const k = kindOf(q);
+  $("#nowTime").textContent = q.start;
+  const quote = $("#nowQuote");
+  quote.textContent = q.text;
+  quote.classList.remove("empty");
+
+  const meta = $("#nowMeta");
+  meta.innerHTML = "";
+  const kt = el("span","tag"+(k==="answered"?" ok":k==="tag"?" warn":""));
+  const dot = el("i"); dot.style.background = COLOR[k];
+  kt.append(dot, el("span",null,KIND_LABEL[k]));
+  meta.append(kt);
+
+  if (q.wait_time_s!=null){
+    meta.append(el("span","tag"+(q.wait_time_ok?" ok":""),
+      "esperó "+q.wait_time_s.toFixed(1).replace(".0","")+" s"));
+  }
+  if (q.response) meta.append(el("span","tag ok","un alumno responde en "+q.response.start));
+  else if (q.counts_as_question) meta.append(el("span","tag","nadie respondió en la ventana"));
+  meta.append(el("span","tag","interpretación sujeta a revisión"));
+}
+
+function markActive(){
+  document.querySelectorAll(".ev.on").forEach(n=>n.classList.remove("on"));
+  document.querySelectorAll(".tl-mark.on").forEach(n=>n.classList.remove("on"));
+  const card = $('.ev[data-i="'+ACTIVE+'"]');  if (card) card.classList.add("on");
+  const mk   = $('.tl-mark[data-i="'+ACTIVE+'"]'); if (mk) mk.classList.add("on");
+}
+
+function updatePlayhead(t){
+  // La grabación puede ser más larga que lo analizado: el cabezal se queda en el borde.
+  $("#tlPlay").style.left = Math.min(100, t/DURATION*100)+"%";
+  $("#rail").setAttribute("aria-valuenow", Math.floor(t));
+  $("#rail").setAttribute("aria-valuetext", mmss(t));
+}
+
+/* Al reproducir, la ficha sigue sola a la pregunta que está sonando. */
+function onTime(){
+  const v = $("#vid");
+  if (!v) return;
+  const t = v.currentTime;
+  updatePlayhead(t);
+  let found = -1;
+  for (let i=0;i<EVENTS.length;i++){
+    if (EVENTS[i].start_s <= t + 0.25) found = i; else break;
+  }
+  if (found !== -1 && found !== ACTIVE && t - EVENTS[found].start_s < 12){
+    ACTIVE = found;
+    showNow(EVENTS[found]);
+    markActive();
+  }
+}
+
+function wirePdf(){
+  const btn = document.querySelector("#btnPdf");
+  if (!btn) return;
+  btn.addEventListener("click", ()=>{
+    // Las rúbricas son <details>: si están cerradas, el navegador no las imprime.
+    const cerradas = [...document.querySelectorAll("details.rub:not([open])")];
+    cerradas.forEach(d => d.open = true);
+    const restaurar = ()=>{ cerradas.forEach(d => d.open = false);
+                            window.removeEventListener("afterprint", restaurar); };
+    window.addEventListener("afterprint", restaurar);
+    window.print();
+  });
+}
+
+/* Marca un botón como hecho y lo devuelve a su texto tras un momento. */
+function flashButton(button, text = "Copiado"){
+  const antes = button.textContent;
+  button.textContent = text;
+  button.classList.add("done");
+  setTimeout(()=>{ button.textContent = antes; button.classList.remove("done"); }, 1800);
+}
+
+async function copyText(text, button, ok = "Copiado"){
+  try{
+    await navigator.clipboard.writeText(text);
+  }catch{
+    // Sin permiso de portapapeles: al menos se le avisa al usuario.
+    flashButton(button, "Usa Ctrl+C");
+    return;
+  }
+  flashButton(button, ok);
+}
+
+function wireActions(){
+  // Descargar los datos crudos: el mismo class_report.json que produce el motor.
+  const json = $("#btnJson");
+  if (json) json.addEventListener("click", ()=>{
+    const blob = new Blob([JSON.stringify(REPORT, null, 2)], {type:"application/json"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const nombre = (REPORT.metadata?.video || "clase").replace(/\.[^.]+$/, "");
+    a.href = url; a.download = `aula-evidente-${nombre}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    flashButton(json, "Descargado");
+  });
+
+  // Abrir o cerrar todas las fichas de rúbrica de una vez.
+  const rubs = $("#btnRubs");
+  if (rubs) rubs.addEventListener("click", ()=>{
+    const fichas = [...document.querySelectorAll("details.rub")];
+    const abrir = fichas.some(d => !d.open);
+    fichas.forEach(d => d.open = abrir);
+    rubs.textContent = abrir ? "Cerrar todas" : "Abrir todas";
+  });
+}
+
+function wireSuggestionCopy(box){
+  const s = REPORT.one_suggestion;
+  if (!s) return;
+  const button = el("button","sug-copy","Copiar consejo");
+  button.type = "button";
+  button.addEventListener("click", ()=>{
+    const texto = s.text || [s.what_we_saw, s.why_it_matters, s.try_this].join("\n\n");
+    copyText(texto, button, "Copiado");
+  });
+  box.append(button);
+}
+
+function wireTabs(){
+  const tabs = [
+    ["#tab-cum","#p-cum"], ["#tab-ev","#p-ev"], ["#tab-rub","#p-rub"],
+    ["#tab-graf","#p-graf"], ["#tab-ia","#p-ia"]
+  ];
+  for (const [tid,pid] of tabs){
+    $(tid).addEventListener("click", ()=>{
+      for (const [t,p] of tabs){
+        const on = t===tid;
+        $(t).setAttribute("aria-selected", String(on));
+        $(p).classList.toggle("hide", !on);
+      }
+    });
+  }
+}
+
+function wireKeys(){
+  document.addEventListener("keydown", e=>{
+    const tag = (e.target.tagName||"").toLowerCase();
+    if (tag==="input" || tag==="textarea") return;
+    const v = $("#vid");
+    if (v && e.key===" " && tag!=="button"){ e.preventDefault(); v.paused ? v.play() : v.pause(); }
+    if (e.key==="j"){ e.preventDefault(); goTo(Math.max(0, ACTIVE-1)); }
+    if (e.key==="k"){ e.preventDefault(); goTo(Math.min(EVENTS.length-1, ACTIVE+1)); }
+  });
+}
+</script>
+</body>
+</html>

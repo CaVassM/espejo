@@ -1,0 +1,73 @@
+<svg width="1600" height="420" viewBox="0 0 1600 420" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="gradAqua" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#18C5B8"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+    <style>
+      .titleA { font: 700 128px 'Inter', 'Segoe UI', Arial, sans-serif; fill: #1E4D8F; }
+      .titleB { font: 700 128px 'Inter', 'Segoe UI', Arial, sans-serif; fill: url(#gradAqua); }
+      .tagline { font: 500 42px 'Inter', 'Segoe UI', Arial, sans-serif; fill: #2E3440; }
+      .stroke-blue { stroke: #1E4D8F; }
+      .fill-blue { fill: #1E4D8F; }
+      .fill-aqua { fill: #14B8A6; }
+      .fill-aqua2 { fill: #46CFC2; }
+      .fill-gold { fill: #F4B740; }
+      .fill-dark { fill: #2E3440; }
+      .stroke-aqua { stroke: #14B8A6; }
+      .linecap-round { stroke-linecap: round; }
+      .linejoin-round { stroke-linejoin: round; }
+    </style>
+  </defs>
+
+  <!-- ICON -->
+  <g transform="translate(30,34)">
+    <!-- phone frame -->
+    <rect x="0" y="0" width="285" height="285" rx="34" fill="none" stroke="#1E4D8F" stroke-width="16"/>
+    <rect x="122" y="12" width="56" height="10" rx="5" fill="#D7E1F0"/>
+
+    <!-- recording corner marks -->
+    <path d="M30 73V40C30 34.4772 34.4772 30 40 30H73" stroke="#1E4D8F" stroke-width="12" class="linecap-round"/>
+    <path d="M212 30H245C250.523 30 255 34.4772 255 40V73" stroke="#1E4D8F" stroke-width="12" class="linecap-round"/>
+    <path d="M30 212V245C30 250.523 34.4772 255 40 255H73" stroke="#1E4D8F" stroke-width="12" class="linecap-round"/>
+    <path d="M212 255H245C250.523 255 255 250.523 255 245V212" stroke="#1E4D8F" stroke-width="12" class="linecap-round"/>
+
+    <!-- board -->
+    <rect x="104" y="92" width="114" height="86" rx="10" fill="#F8FBFF" stroke="#BFD4E8" stroke-width="4"/>
+    <line x1="124" y1="113" x2="205" y2="113" stroke="#14B8A6" stroke-width="8" class="linecap-round"/>
+    <line x1="124" y1="134" x2="200" y2="134" stroke="#14B8A6" stroke-width="8" class="linecap-round" opacity="0.95"/>
+    <line x1="124" y1="155" x2="183" y2="155" stroke="#14B8A6" stroke-width="8" class="linecap-round" opacity="0.9"/>
+    <line x1="104" y1="178" x2="218" y2="178" stroke="#1E4D8F" stroke-width="6" class="linecap-round"/>
+
+    <!-- teacher -->
+    <circle cx="80" cy="126" r="22" fill="#1E4D8F"/>
+    <path d="M64 117C68 100 88 97 97 108C92 119 77 128 64 117Z" fill="#3866AC"/>
+    <path d="M53 200V165C53 145 69 136 84 136C102 136 113 145 119 159L137 150C142 148 147 150 149 154C151 159 149 164 144 166L116 181C111 184 106 183 101 179L90 169V200H53Z" fill="#1E4D8F"/>
+
+    <!-- students -->
+    <circle cx="42" cy="220" r="17" fill="#3C8FCA"/>
+    <circle cx="88" cy="220" r="17" fill="#46A8D7"/>
+    <circle cx="134" cy="220" r="17" fill="#5CBEE0"/>
+    <path d="M22 249C22 237 31 228 42 228C53 228 62 237 62 249V258H22V249Z" fill="#3C8FCA"/>
+    <path d="M68 249C68 237 77 228 88 228C99 228 108 237 108 249V258H68V249Z" fill="#46A8D7"/>
+    <path d="M114 249C114 237 123 228 134 228C145 228 154 237 154 249V258H114V249Z" fill="#5CBEE0"/>
+
+    <!-- speech bubble -->
+    <path d="M238 76C269 76 294 99 294 128C294 157 269 180 238 180H230L207 202V174C188 165 176 148 176 128C176 99 201 76 232 76H238Z" fill="url(#gradAqua)"/>
+    <rect x="215" y="108" width="8" height="40" rx="4" fill="white"/>
+    <rect x="231" y="95" width="8" height="66" rx="4" fill="white"/>
+    <rect x="247" y="101" width="8" height="54" rx="4" fill="white"/>
+    <rect x="263" y="111" width="8" height="34" rx="4" fill="white"/>
+
+    <!-- check badge -->
+    <circle cx="236" cy="222" r="34" fill="#F4B740"/>
+    <path d="M219 223L231 235L255 210" stroke="white" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+
+  <!-- WORDMARK -->
+  <g transform="translate(380,102)">
+    <text x="0" y="128" class="titleA">Aula</text>
+    <text x="350" y="128" class="titleB">Evidente</text>
+    <text x="4" y="205" class="tagline">Observación de aula con evidencia y retroalimentación</text>
+  </g>
+</svg>

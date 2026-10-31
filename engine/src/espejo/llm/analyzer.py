@@ -5,6 +5,7 @@ from dataclasses import replace
 
 from espejo.audio.schemas import Question, QuestionCategory, TranscriptSegment
 from espejo.config import LlmConfig
+from espejo.llm.ai_tips import AiTipsWriter
 from espejo.llm.classification import LlmClassifier
 from espejo.llm.clients import ClientChoice, build_llm_client
 from espejo.llm.schemas import Evidence, LlmAnalysis, SuggestionFocus
@@ -109,6 +110,25 @@ class LlmAnalyzer:
         return replace(
             analysis,
             suggestion=outcome.suggestion,
+            usage=analysis.usage.plus(outcome.usage),
+            note=note,
+        )
+
+    def add_ai_tips(
+        self, analysis: LlmAnalysis, observations: list[str], topic: str | None
+    ) -> LlmAnalysis:
+        """Tres formas de usar IA para preparar la próxima clase, según lo observado."""
+        client = self.choice.client
+        if not analysis.used or client is None:
+            return analysis
+
+        outcome = AiTipsWriter(client, self.config).write(observations, topic)
+        note = analysis.note
+        if outcome.note:
+            note += f"; {outcome.note}"
+        return replace(
+            analysis,
+            ai_tips=outcome.tips,
             usage=analysis.usage.plus(outcome.usage),
             note=note,
         )

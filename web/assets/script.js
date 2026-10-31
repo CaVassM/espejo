@@ -146,13 +146,14 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ---------- CONTACT FORM (demo submit) ---------- */
     var form = document.getElementById('contactForm');
     var status = document.getElementById('formStatus');
-    form.addEventListener('submit', function (e) {
+    // Sin formulario en la página, addEventListener sobre null cortaba el resto del script.
+    if (form) form.addEventListener('submit', function (e) {
         e.preventDefault();
         if (!form.checkValidity()) {
             form.classList.add('was-validated');
             return;
         }
-        status.innerHTML = '<div class="alert alert-success mt-2 mb-0" style="border-radius:12px;"><i class="bi bi-check-circle-fill me-2"></i>Thanks! Your message has been sent.</div>';
+        if (status) status.innerHTML = '<div class="alert alert-success mt-2 mb-0" style="border-radius:12px;"><i class="bi bi-check-circle-fill me-2"></i>Thanks! Your message has been sent.</div>';
         form.reset();
         form.classList.remove('was-validated');
     });

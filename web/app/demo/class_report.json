@@ -1,0 +1,1952 @@
+{
+  "metadata": {
+    "video": "frag_02.mp4",
+    "duration_s": 302.08,
+    "sample_fps": 2.0,
+    "models": {
+      "teacher": "teacher.pt",
+      "teacher_class": "teacher",
+      "behavior": "behavior.pt",
+      "tracker": "bytetrack.yaml",
+      "whisper": "large-v3-turbo (cuda)",
+      "vad": "silero-vad (incluido en faster-whisper)",
+      "diarization": "diarización con pyannote/speaker-diarization-3.1"
+    },
+    "video_available": true,
+    "audio_available": true,
+    "diarization_used": true,
+    "duration": "05:02"
+  },
+  "video_timeline": [
+    {
+      "label": "other",
+      "start_s": 0.0,
+      "end_s": 172.52,
+      "start": "00:00",
+      "end": "02:53",
+      "duration_s": 172.52
+    },
+    {
+      "label": "board_writing",
+      "start_s": 172.52,
+      "end_s": 176.52,
+      "start": "02:53",
+      "end": "02:57",
+      "duration_s": 4.0
+    },
+    {
+      "label": "other",
+      "start_s": 176.52,
+      "end_s": 253.52,
+      "start": "02:57",
+      "end": "04:14",
+      "duration_s": 77.0
+    },
+    {
+      "label": "not_visible",
+      "start_s": 253.52,
+      "end_s": 256.52,
+      "start": "04:14",
+      "end": "04:17",
+      "duration_s": 3.0
+    },
+    {
+      "label": "other",
+      "start_s": 256.52,
+      "end_s": 302.08,
+      "start": "04:17",
+      "end": "05:02",
+      "duration_s": 45.56
+    }
+  ],
+  "stage_interaction_events": [],
+  "audio_events": [
+    {
+      "text": "¿cierto?",
+      "start_s": 3.18,
+      "question_end_s": 3.34,
+      "start": "00:03",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 1.17,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Qué vamos a hacer después?",
+      "start_s": 4.08,
+      "question_end_s": 5.34,
+      "start": "00:04",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Si no?",
+      "start_s": 8.62,
+      "question_end_s": 9.62,
+      "start": "00:09",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.69,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿qué me han dicho?",
+      "start_s": 65.84,
+      "question_end_s": 66.98,
+      "start": "01:06",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 74.91,
+        "end_s": 75.06,
+        "start": "01:15",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Qué me han dicho, hija?",
+      "start_s": 67.22,
+      "question_end_s": 68.0,
+      "start": "01:07",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
+      "wait_time_s": 1.25,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 74.91,
+        "end_s": 75.06,
+        "start": "01:15",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿no?",
+      "start_s": 70.2,
+      "question_end_s": 70.36,
+      "start": "01:10",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
+      "wait_time_s": 1.07,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 74.91,
+        "end_s": 75.06,
+        "start": "01:15",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿De qué tratará?",
+      "start_s": 81.5,
+      "question_end_s": 82.9,
+      "start": "01:22",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 1.1,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 83.31,
+        "end_s": 85.17,
+        "start": "01:23",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Qué más?",
+      "start_s": 88.38,
+      "question_end_s": 89.46,
+      "start": "01:28",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 1.17,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Cómo será?",
+      "start_s": 89.84,
+      "question_end_s": 91.0,
+      "start": "01:30",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.84,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Cómo será el suceso?",
+      "start_s": 91.34,
+      "question_end_s": 92.76,
+      "start": "01:31",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Qué pasará al inicio?",
+      "start_s": 92.86,
+      "question_end_s": 94.66,
+      "start": "01:33",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.86,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Después qué sucederá y al final qué pasará?",
+      "start_s": 95.14,
+      "question_end_s": 97.96,
+      "start": "01:35",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 2.81,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿qué pasará?",
+      "start_s": 101.62,
+      "question_end_s": 102.04,
+      "start": "01:42",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 3.53,
+      "wait_time_ok": true,
+      "response": {
+        "start_s": 109.55,
+        "end_s": 112.15,
+        "start": "01:50",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Dónde habrá sucedido?",
+      "start_s": 104.86,
+      "question_end_s": 107.8,
+      "start": "01:45",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 109.55,
+        "end_s": 112.15,
+        "start": "01:50",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Dónde habrá pasado?",
+      "start_s": 107.92,
+      "question_end_s": 108.96,
+      "start": "01:48",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 109.55,
+        "end_s": 112.15,
+        "start": "01:50",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Qué habrá sucedido?",
+      "start_s": 113.82,
+      "question_end_s": 115.24,
+      "start": "01:54",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 118.73,
+        "end_s": 120.21,
+        "start": "01:59",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Cuántos hijos habrá tenido el labrador?",
+      "start_s": 115.32,
+      "question_end_s": 118.22,
+      "start": "01:55",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.76,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 118.73,
+        "end_s": 120.21,
+        "start": "01:59",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Cierto?",
+      "start_s": 123.98,
+      "question_end_s": 124.5,
+      "start": "02:04",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 124.91,
+        "end_s": 127.0,
+        "start": "02:05",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Cuántos hijos habrá tenido?",
+      "start_s": 124.94,
+      "question_end_s": 125.94,
+      "start": "02:05",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_closed",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 124.91,
+        "end_s": 127.0,
+        "start": "02:05",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Por qué hija más de uno?",
+      "start_s": 128.0,
+      "question_end_s": 129.66,
+      "start": "02:08",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 129.55,
+        "end_s": 131.62,
+        "start": "02:10",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿no?",
+      "start_s": 148.96,
+      "question_end_s": 149.16,
+      "start": "02:29",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.6,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Ya?",
+      "start_s": 161.26,
+      "question_end_s": 161.78,
+      "start": "02:41",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 2.89,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿no?",
+      "start_s": 165.46,
+      "question_end_s": 165.58,
+      "start": "02:45",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 1.59,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿no?",
+      "start_s": 176.12,
+      "question_end_s": 176.26,
+      "start": "02:56",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 1.73,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Qué más?",
+      "start_s": 179.12,
+      "question_end_s": 180.36,
+      "start": "02:59",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 189.25,
+        "end_s": 190.31,
+        "start": "03:09",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Qué más sucederá?",
+      "start_s": 180.42,
+      "question_end_s": 181.4,
+      "start": "03:00",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.97,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 189.25,
+        "end_s": 190.31,
+        "start": "03:09",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿qué pasará?",
+      "start_s": 182.96,
+      "question_end_s": 183.36,
+      "start": "03:03",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.55,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 189.25,
+        "end_s": 190.31,
+        "start": "03:09",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿qué es lo que va a pasar?",
+      "start_s": 186.44,
+      "question_end_s": 188.38,
+      "start": "03:06",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 2.34,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 189.25,
+        "end_s": 190.31,
+        "start": "03:09",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿felices no?",
+      "start_s": 190.32,
+      "question_end_s": 191.3,
+      "start": "03:10",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿por qué me dicen que van a estar felices?",
+      "start_s": 191.56,
+      "question_end_s": 194.34,
+      "start": "03:12",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿por qué?",
+      "start_s": 194.46,
+      "question_end_s": 194.72,
+      "start": "03:14",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 3.07,
+      "wait_time_ok": true,
+      "response": null
+    },
+    {
+      "text": "¿no?",
+      "start_s": 198.36,
+      "question_end_s": 198.52,
+      "start": "03:18",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿qué cosa?",
+      "start_s": 204.88,
+      "question_end_s": 206.34,
+      "start": "03:25",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 5.85,
+      "wait_time_ok": true,
+      "response": null
+    },
+    {
+      "text": "¿cómo nos sentimos?",
+      "start_s": 215.52,
+      "question_end_s": 216.34,
+      "start": "03:36",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.56,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 216.81,
+        "end_s": 218.8,
+        "start": "03:37",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿no?",
+      "start_s": 223.06,
+      "question_end_s": 223.22,
+      "start": "03:43",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": true,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.75,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿cómo vivirá esta familia?",
+      "start_s": 227.6,
+      "question_end_s": 230.2,
+      "start": "03:48",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 1.45,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 236.7,
+        "end_s": 238.17,
+        "start": "03:57",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿cómo van a estar?",
+      "start_s": 231.0,
+      "question_end_s": 232.04,
+      "start": "03:51",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.0,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 236.7,
+        "end_s": 238.17,
+        "start": "03:57",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿cómo será la historia?",
+      "start_s": 232.2,
+      "question_end_s": 233.06,
+      "start": "03:52",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 1.21,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 236.7,
+        "end_s": 238.17,
+        "start": "03:57",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿cómo empezará?",
+      "start_s": 233.78,
+      "question_end_s": 234.86,
+      "start": "03:54",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 1.78,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 236.7,
+        "end_s": 238.17,
+        "start": "03:57",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Algo habrá sucedido acá?",
+      "start_s": 236.34,
+      "question_end_s": 238.0,
+      "start": "03:56",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 6.16,
+      "wait_time_ok": true,
+      "response": {
+        "start_s": 236.7,
+        "end_s": 238.17,
+        "start": "03:57",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿qué sucederá, qué pasará?",
+      "start_s": 247.7,
+      "question_end_s": 249.2,
+      "start": "04:08",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 2.19,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 257.34,
+        "end_s": 259.52,
+        "start": "04:17",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿qué sucederá en el cuento?",
+      "start_s": 254.18,
+      "question_end_s": 256.7,
+      "start": "04:14",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_open",
+      "counts_as_question": true,
+      "wait_time_s": 0.68,
+      "wait_time_ok": false,
+      "response": {
+        "start_s": 257.34,
+        "end_s": 259.52,
+        "start": "04:17",
+        "speaker": "SPEAKER_01",
+        "certainty": "high"
+      }
+    },
+    {
+      "text": "¿Quieren enterarse qué es lo que va a suceder?",
+      "start_s": 265.48,
+      "question_end_s": 267.76,
+      "start": "04:25",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 0.95,
+      "wait_time_ok": false,
+      "response": null
+    },
+    {
+      "text": "¿Quieren saber?",
+      "start_s": 268.48,
+      "question_end_s": 269.22,
+      "start": "04:28",
+      "speaker": "SPEAKER_00",
+      "speaker_known": true,
+      "reliable": true,
+      "is_tag": false,
+      "llm_category": "question_rhetorical",
+      "counts_as_question": false,
+      "wait_time_s": 2.14,
+      "wait_time_ok": false,
+      "response": null
+    }
+  ],
+  "metrics": {
+    "board_writing_ratio": {
+      "value": 0.013,
+      "rubric": [
+        "R1"
+      ],
+      "description": "Tiempo escribiendo en la pizarra, de espaldas a la clase",
+      "note": null
+    },
+    "stage_interaction_count": {
+      "value": 0,
+      "rubric": [
+        "R1"
+      ],
+      "description": "Veces que un alumno pasó al frente",
+      "note": null
+    },
+    "path_length_normalized": {
+      "value": 11.507,
+      "rubric": [
+        "R4"
+      ],
+      "description": "Recorrido del docente en anchos de frame (evidencia visual: heatmap.png)",
+      "note": null
+    },
+    "monitoring_ratio": {
+      "value": 0.243,
+      "rubric": [
+        "R3"
+      ],
+      "description": "Tiempo monitoreando: guiando en carpetas o preguntando a la clase (sin doble conteo)",
+      "note": null
+    },
+    "monitoring_video_ratio": {
+      "value": 0.0,
+      "rubric": [
+        "R3"
+      ],
+      "description": "Parte del monitoreo que ve el video: guiando en las carpetas",
+      "note": null
+    },
+    "monitoring_audio_ratio": {
+      "value": 0.243,
+      "rubric": [
+        "R3"
+      ],
+      "description": "Parte del monitoreo que se oye: desde cada pregunta hasta su respuesta",
+      "note": null
+    },
+    "meets_monitoring_threshold": {
+      "value": false,
+      "rubric": [
+        "R3"
+      ],
+      "description": "Monitorea al menos el 25% de la sesión, como pide el manual",
+      "note": null
+    },
+    "teacher_question_count": {
+      "value": 33,
+      "rubric": [
+        "R2",
+        "R3"
+      ],
+      "description": "Preguntas",
+      "note": null
+    },
+    "questions_per_minute": {
+      "value": 6.555,
+      "rubric": [
+        "R2",
+        "R3"
+      ],
+      "description": "Preguntas por minuto",
+      "note": null
+    },
+    "rhetorical_question_count": {
+      "value": 11,
+      "rubric": [
+        "R2"
+      ],
+      "description": "Muletillas o preguntas retóricas (no cuentan como preguntas)",
+      "note": null
+    },
+    "open_question_ratio": {
+      "value": 0.848,
+      "rubric": [
+        "R2"
+      ],
+      "description": "Preguntas abiertas / (abiertas + cerradas), según el LLM",
+      "note": null
+    },
+    "mean_wait_time_s": {
+      "value": 1.218,
+      "rubric": [
+        "R2"
+      ],
+      "description": "Espera promedio después de preguntar (solo audio confiable)",
+      "note": null
+    },
+    "median_wait_time_s": {
+      "value": 0.842,
+      "rubric": [
+        "R2"
+      ],
+      "description": "Espera mediana después de preguntar (solo audio confiable)",
+      "note": null
+    },
+    "wait_time_ok_ratio": {
+      "value": 0.121,
+      "rubric": [
+        "R2"
+      ],
+      "description": "Preguntas con al menos 3 s de espera (umbral de Rowe)",
+      "note": null
+    },
+    "student_response_count": {
+      "value": 24,
+      "rubric": [
+        "R1"
+      ],
+      "description": "Preguntas que recibieron respuesta",
+      "note": null
+    },
+    "response_rate": {
+      "value": 0.727,
+      "rubric": [
+        "R1"
+      ],
+      "description": "Respuestas / preguntas",
+      "note": null
+    },
+    "teacher_talk_ratio": {
+      "value": 0.649,
+      "rubric": [
+        "R1"
+      ],
+      "description": "Fracción de la clase en que habla el docente",
+      "note": null
+    }
+  },
+  "data_quality": {
+    "teacher_visible_ratio": 0.99,
+    "interpolated_ratio": 0.058,
+    "discarded_path_jumps": 0,
+    "low_confidence_audio_ratio": 0.0,
+    "discarded_hallucinated_segments": 5,
+    "speech_ratio": 0.55,
+    "diarization_used": true,
+    "diarization_note": "diarización con pyannote/speaker-diarization-3.1",
+    "notes": []
+  },
+  "rubric_evidence": [
+    {
+      "rubric": "R1",
+      "title": "Involucra activamente a los estudiantes en el proceso de aprendizaje",
+      "status": "con evidencia",
+      "metrics": [
+        {
+          "name": "board_writing_ratio",
+          "value": 0.013
+        },
+        {
+          "name": "stage_interaction_count",
+          "value": 0
+        },
+        {
+          "name": "student_response_count",
+          "value": 24
+        },
+        {
+          "name": "response_rate",
+          "value": 0.727
+        },
+        {
+          "name": "teacher_talk_ratio",
+          "value": 0.649
+        }
+      ],
+      "citations": [
+        {
+          "timestamp": "01:09",
+          "label": "participation_invitation",
+          "quote": "¿Qué me han dicho, hija? [NOMBRE], ¿no?",
+          "reason": "Llama a una alumna por su nombre para que responda."
+        },
+        {
+          "timestamp": "02:08",
+          "label": "participation_invitation",
+          "quote": "¿por qué hija más de uno?",
+          "reason": "Se dirige a una alumna específica con 'hija'."
+        },
+        {
+          "timestamp": "04:03",
+          "label": "participation_invitation",
+          "quote": "a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
+          "reason": "Invita a una alumna con 'a ver usted, hija'."
+        }
+      ]
+    },
+    {
+      "rubric": "R2",
+      "title": "Promueve el razonamiento, la creatividad y/o el pensamiento crítico",
+      "status": "con evidencia",
+      "metrics": [
+        {
+          "name": "teacher_question_count",
+          "value": 33
+        },
+        {
+          "name": "questions_per_minute",
+          "value": 6.555
+        },
+        {
+          "name": "rhetorical_question_count",
+          "value": 11
+        },
+        {
+          "name": "open_question_ratio",
+          "value": 0.848
+        },
+        {
+          "name": "mean_wait_time_s",
+          "value": 1.218
+        },
+        {
+          "name": "median_wait_time_s",
+          "value": 0.842
+        },
+        {
+          "name": "wait_time_ok_ratio",
+          "value": 0.121
+        }
+      ],
+      "citations": [
+        {
+          "timestamp": "00:04",
+          "label": "question_open",
+          "quote": "¿Qué vamos a hacer después?",
+          "reason": "pide predecir acciones futuras"
+        },
+        {
+          "timestamp": "01:06",
+          "label": "question_closed",
+          "quote": "¿qué me han dicho?",
+          "reason": "pide recordar información ya dada"
+        },
+        {
+          "timestamp": "01:07",
+          "label": "question_closed",
+          "quote": "¿Qué me han dicho, hija?",
+          "reason": "pide recordar información ya dada"
+        },
+        {
+          "timestamp": "01:10",
+          "label": "question_closed",
+          "quote": "¿no?",
+          "reason": "La pregunta es una afirmación que busca confirmación, no razonamiento."
+        },
+        {
+          "timestamp": "01:22",
+          "label": "question_open",
+          "quote": "¿De qué tratará?",
+          "reason": "pide inferir el tema del cuento"
+        },
+        {
+          "timestamp": "01:28",
+          "label": "question_open",
+          "quote": "¿Qué más?",
+          "reason": "pide agregar detalles al tema"
+        },
+        {
+          "timestamp": "01:30",
+          "label": "question_open",
+          "quote": "¿Cómo será?",
+          "reason": "pide describir la naturaleza del suceso"
+        },
+        {
+          "timestamp": "01:31",
+          "label": "question_open",
+          "quote": "¿Cómo será el suceso?",
+          "reason": "pide detallar el desarrollo del suceso"
+        },
+        {
+          "timestamp": "01:33",
+          "label": "question_open",
+          "quote": "¿Qué pasará al inicio?",
+          "reason": "pide predecir el inicio del cuento"
+        },
+        {
+          "timestamp": "01:35",
+          "label": "question_open",
+          "quote": "¿Después qué sucederá y al final qué pasará?",
+          "reason": "pide predecir desarrollo y final"
+        },
+        {
+          "timestamp": "01:42",
+          "label": "question_open",
+          "quote": "¿qué pasará?",
+          "reason": "pide predecir eventos generales"
+        },
+        {
+          "timestamp": "01:45",
+          "label": "question_open",
+          "quote": "¿Dónde habrá sucedido?",
+          "reason": "pide inferir la ubicación"
+        },
+        {
+          "timestamp": "01:48",
+          "label": "question_open",
+          "quote": "¿Dónde habrá pasado?",
+          "reason": "La pregunta invita a inferir y predecir un lugar basado en el contexto."
+        },
+        {
+          "timestamp": "01:54",
+          "label": "question_open",
+          "quote": "¿Qué habrá sucedido?",
+          "reason": "pide inferir eventos específicos"
+        },
+        {
+          "timestamp": "01:55",
+          "label": "question_open",
+          "quote": "¿Cuántos hijos habrá tenido el labrador?",
+          "reason": "pide inferir cantidad de hijos"
+        },
+        {
+          "timestamp": "02:04",
+          "label": "question_closed",
+          "quote": "¿Cierto?",
+          "reason": "La pregunta busca confirmar una afirmación, no requiere razonamiento."
+        },
+        {
+          "timestamp": "02:05",
+          "label": "question_closed",
+          "quote": "¿Cuántos hijos habrá tenido?",
+          "reason": "repite la pregunta 16 sin nueva información"
+        },
+        {
+          "timestamp": "02:08",
+          "label": "question_open",
+          "quote": "¿Por qué hija más de uno?",
+          "reason": "pide justificar la respuesta anterior"
+        },
+        {
+          "timestamp": "02:59",
+          "label": "question_open",
+          "quote": "¿Qué más?",
+          "reason": "pide agregar nuevos eventos"
+        },
+        {
+          "timestamp": "03:00",
+          "label": "question_open",
+          "quote": "¿Qué más sucederá?",
+          "reason": "pide predecir eventos futuros"
+        },
+        {
+          "timestamp": "03:03",
+          "label": "question_open",
+          "quote": "¿qué pasará?",
+          "reason": "pide predecir eventos generales"
+        },
+        {
+          "timestamp": "03:06",
+          "label": "question_open",
+          "quote": "¿qué es lo que va a pasar?",
+          "reason": "pide detallar eventos específicos"
+        },
+        {
+          "timestamp": "03:12",
+          "label": "question_open",
+          "quote": "¿por qué me dicen que van a estar felices?",
+          "reason": "pide justificar la predicción de felicidad"
+        },
+        {
+          "timestamp": "03:14",
+          "label": "question_open",
+          "quote": "¿por qué?",
+          "reason": "pide justificar la respuesta anterior"
+        },
+        {
+          "timestamp": "03:25",
+          "label": "question_open",
+          "quote": "¿qué cosa?",
+          "reason": "pide identificar elementos visuales"
+        },
+        {
+          "timestamp": "03:36",
+          "label": "question_open",
+          "quote": "¿cómo nos sentimos?",
+          "reason": "pide describir sentimientos en el campo"
+        },
+        {
+          "timestamp": "03:48",
+          "label": "question_open",
+          "quote": "¿cómo vivirá esta familia?",
+          "reason": "pide inferir el estilo de vida"
+        },
+        {
+          "timestamp": "03:51",
+          "label": "question_open",
+          "quote": "¿cómo van a estar?",
+          "reason": "pide predecir el estado emocional"
+        },
+        {
+          "timestamp": "03:52",
+          "label": "question_open",
+          "quote": "¿cómo será la historia?",
+          "reason": "pide describir la trama"
+        },
+        {
+          "timestamp": "03:54",
+          "label": "question_open",
+          "quote": "¿cómo empezará?",
+          "reason": "pide predecir el inicio"
+        },
+        {
+          "timestamp": "03:56",
+          "label": "question_open",
+          "quote": "¿Algo habrá sucedido acá?",
+          "reason": "pide inferir eventos iniciales"
+        },
+        {
+          "timestamp": "04:08",
+          "label": "question_open",
+          "quote": "¿qué sucederá, qué pasará?",
+          "reason": "pide predecir eventos específicos"
+        },
+        {
+          "timestamp": "04:14",
+          "label": "question_open",
+          "quote": "¿qué sucederá en el cuento?",
+          "reason": "pide predecir eventos en el cuento"
+        }
+      ]
+    },
+    {
+      "rubric": "R3",
+      "title": "Evalúa el progreso de los aprendizajes",
+      "status": "con evidencia",
+      "metrics": [
+        {
+          "name": "monitoring_ratio",
+          "value": 0.243
+        },
+        {
+          "name": "monitoring_video_ratio",
+          "value": 0.0
+        },
+        {
+          "name": "monitoring_audio_ratio",
+          "value": 0.243
+        },
+        {
+          "name": "meets_monitoring_threshold",
+          "value": false
+        },
+        {
+          "name": "teacher_question_count",
+          "value": 33
+        },
+        {
+          "name": "questions_per_minute",
+          "value": 6.555
+        }
+      ],
+      "citations": [
+        {
+          "timestamp": "00:09",
+          "label": "feedback_elemental",
+          "quote": "¡Muy bien!",
+          "reason": "Respuesta breve de validación sin detalles."
+        },
+        {
+          "timestamp": "02:16",
+          "label": "feedback_elemental",
+          "quote": "Muy bien, felicitaciones hija",
+          "reason": "Validación con felicitación, sin detalles específicos."
+        },
+        {
+          "timestamp": "03:17",
+          "label": "feedback_elemental",
+          "quote": "ah, muy bien hija",
+          "reason": "Respuesta breve de validación sin explicación."
+        },
+        {
+          "timestamp": "04:22",
+          "label": "feedback_elemental",
+          "quote": "Muy bien, los hijos estarán ayudando infelices, muy bien.",
+          "reason": "Repite la respuesta del alumno sin corregir ni ampliar."
+        }
+      ]
+    },
+    {
+      "rubric": "R4",
+      "title": "Propicia un ambiente de respeto y proximidad",
+      "status": "con evidencia",
+      "metrics": [
+        {
+          "name": "path_length_normalized",
+          "value": 11.507
+        }
+      ],
+      "citations": []
+    },
+    {
+      "rubric": "R5",
+      "title": "Regula positivamente el comportamiento de los estudiantes",
+      "status": "evidencia insuficiente",
+      "metrics": [],
+      "citations": []
+    }
+  ],
+  "llm_analysis": {
+    "used": true,
+    "note": "cohere con command-a-03-2025",
+    "provider": "cohere",
+    "model": "command-a-03-2025",
+    "usage": {
+      "input_tokens": 19098,
+      "output_tokens": 3215,
+      "seconds": 371.34,
+      "cost_usd": 0.0,
+      "calls": 5
+    },
+    "question_labels": [
+      {
+        "timestamp_s": 3.18,
+        "timestamp": "00:03",
+        "label": "question_rhetorical",
+        "quote": "¿cierto?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 0,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 4.08,
+        "timestamp": "00:04",
+        "label": "question_open",
+        "quote": "¿Qué vamos a hacer después?",
+        "reason": "pide predecir acciones futuras",
+        "confidence": "alta",
+        "question_id": 1,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 8.62,
+        "timestamp": "00:09",
+        "label": "question_rhetorical",
+        "quote": "¿Si no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 2,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 65.84,
+        "timestamp": "01:06",
+        "label": "question_closed",
+        "quote": "¿qué me han dicho?",
+        "reason": "pide recordar información ya dada",
+        "confidence": "alta",
+        "question_id": 3,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 67.22,
+        "timestamp": "01:07",
+        "label": "question_closed",
+        "quote": "¿Qué me han dicho, hija?",
+        "reason": "pide recordar información ya dada",
+        "confidence": "alta",
+        "question_id": 4,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 81.5,
+        "timestamp": "01:22",
+        "label": "question_open",
+        "quote": "¿De qué tratará?",
+        "reason": "pide inferir el tema del cuento",
+        "confidence": "alta",
+        "question_id": 6,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 88.38,
+        "timestamp": "01:28",
+        "label": "question_open",
+        "quote": "¿Qué más?",
+        "reason": "pide agregar detalles al tema",
+        "confidence": "alta",
+        "question_id": 7,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 89.84,
+        "timestamp": "01:30",
+        "label": "question_open",
+        "quote": "¿Cómo será?",
+        "reason": "pide describir la naturaleza del suceso",
+        "confidence": "alta",
+        "question_id": 8,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 91.34,
+        "timestamp": "01:31",
+        "label": "question_open",
+        "quote": "¿Cómo será el suceso?",
+        "reason": "pide detallar el desarrollo del suceso",
+        "confidence": "alta",
+        "question_id": 9,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 92.86,
+        "timestamp": "01:33",
+        "label": "question_open",
+        "quote": "¿Qué pasará al inicio?",
+        "reason": "pide predecir el inicio del cuento",
+        "confidence": "alta",
+        "question_id": 10,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 95.14,
+        "timestamp": "01:35",
+        "label": "question_open",
+        "quote": "¿Después qué sucederá y al final qué pasará?",
+        "reason": "pide predecir desarrollo y final",
+        "confidence": "alta",
+        "question_id": 11,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 101.62,
+        "timestamp": "01:42",
+        "label": "question_open",
+        "quote": "¿qué pasará?",
+        "reason": "pide predecir eventos generales",
+        "confidence": "alta",
+        "question_id": 12,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 104.86,
+        "timestamp": "01:45",
+        "label": "question_open",
+        "quote": "¿Dónde habrá sucedido?",
+        "reason": "pide inferir la ubicación",
+        "confidence": "alta",
+        "question_id": 13,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 113.82,
+        "timestamp": "01:54",
+        "label": "question_open",
+        "quote": "¿Qué habrá sucedido?",
+        "reason": "pide inferir eventos específicos",
+        "confidence": "alta",
+        "question_id": 15,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 115.32,
+        "timestamp": "01:55",
+        "label": "question_open",
+        "quote": "¿Cuántos hijos habrá tenido el labrador?",
+        "reason": "pide inferir cantidad de hijos",
+        "confidence": "alta",
+        "question_id": 16,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 124.94,
+        "timestamp": "02:05",
+        "label": "question_closed",
+        "quote": "¿Cuántos hijos habrá tenido?",
+        "reason": "repite la pregunta 16 sin nueva información",
+        "confidence": "alta",
+        "question_id": 18,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 128.0,
+        "timestamp": "02:08",
+        "label": "question_open",
+        "quote": "¿Por qué hija más de uno?",
+        "reason": "pide justificar la respuesta anterior",
+        "confidence": "alta",
+        "question_id": 19,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 148.96,
+        "timestamp": "02:29",
+        "label": "question_rhetorical",
+        "quote": "¿no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 20,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 161.26,
+        "timestamp": "02:41",
+        "label": "question_rhetorical",
+        "quote": "¿Ya?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 21,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 165.46,
+        "timestamp": "02:45",
+        "label": "question_rhetorical",
+        "quote": "¿no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 22,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 176.12,
+        "timestamp": "02:56",
+        "label": "question_rhetorical",
+        "quote": "¿no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 23,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 179.12,
+        "timestamp": "02:59",
+        "label": "question_open",
+        "quote": "¿Qué más?",
+        "reason": "pide agregar nuevos eventos",
+        "confidence": "alta",
+        "question_id": 24,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 180.42,
+        "timestamp": "03:00",
+        "label": "question_open",
+        "quote": "¿Qué más sucederá?",
+        "reason": "pide predecir eventos futuros",
+        "confidence": "alta",
+        "question_id": 25,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 182.96,
+        "timestamp": "03:03",
+        "label": "question_open",
+        "quote": "¿qué pasará?",
+        "reason": "pide predecir eventos generales",
+        "confidence": "alta",
+        "question_id": 26,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 186.44,
+        "timestamp": "03:06",
+        "label": "question_open",
+        "quote": "¿qué es lo que va a pasar?",
+        "reason": "pide detallar eventos específicos",
+        "confidence": "alta",
+        "question_id": 27,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 190.32,
+        "timestamp": "03:10",
+        "label": "question_rhetorical",
+        "quote": "¿felices no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 28,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 191.56,
+        "timestamp": "03:12",
+        "label": "question_open",
+        "quote": "¿por qué me dicen que van a estar felices?",
+        "reason": "pide justificar la predicción de felicidad",
+        "confidence": "alta",
+        "question_id": 29,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 194.46,
+        "timestamp": "03:14",
+        "label": "question_open",
+        "quote": "¿por qué?",
+        "reason": "pide justificar la respuesta anterior",
+        "confidence": "alta",
+        "question_id": 30,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 198.36,
+        "timestamp": "03:18",
+        "label": "question_rhetorical",
+        "quote": "¿no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 31,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 204.88,
+        "timestamp": "03:25",
+        "label": "question_open",
+        "quote": "¿qué cosa?",
+        "reason": "pide identificar elementos visuales",
+        "confidence": "alta",
+        "question_id": 32,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 215.52,
+        "timestamp": "03:36",
+        "label": "question_open",
+        "quote": "¿cómo nos sentimos?",
+        "reason": "pide describir sentimientos en el campo",
+        "confidence": "alta",
+        "question_id": 33,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 223.06,
+        "timestamp": "03:43",
+        "label": "question_rhetorical",
+        "quote": "¿no?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 34,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 227.6,
+        "timestamp": "03:48",
+        "label": "question_open",
+        "quote": "¿cómo vivirá esta familia?",
+        "reason": "pide inferir el estilo de vida",
+        "confidence": "alta",
+        "question_id": 35,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 231.0,
+        "timestamp": "03:51",
+        "label": "question_open",
+        "quote": "¿cómo van a estar?",
+        "reason": "pide predecir el estado emocional",
+        "confidence": "alta",
+        "question_id": 36,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 232.2,
+        "timestamp": "03:52",
+        "label": "question_open",
+        "quote": "¿cómo será la historia?",
+        "reason": "pide describir la trama",
+        "confidence": "alta",
+        "question_id": 37,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 233.78,
+        "timestamp": "03:54",
+        "label": "question_open",
+        "quote": "¿cómo empezará?",
+        "reason": "pide predecir el inicio",
+        "confidence": "alta",
+        "question_id": 38,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 236.34,
+        "timestamp": "03:56",
+        "label": "question_open",
+        "quote": "¿Algo habrá sucedido acá?",
+        "reason": "pide inferir eventos iniciales",
+        "confidence": "alta",
+        "question_id": 39,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 247.7,
+        "timestamp": "04:08",
+        "label": "question_open",
+        "quote": "¿qué sucederá, qué pasará?",
+        "reason": "pide predecir eventos específicos",
+        "confidence": "alta",
+        "question_id": 40,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 254.18,
+        "timestamp": "04:14",
+        "label": "question_open",
+        "quote": "¿qué sucederá en el cuento?",
+        "reason": "pide predecir eventos en el cuento",
+        "confidence": "alta",
+        "question_id": 41,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 265.48,
+        "timestamp": "04:25",
+        "label": "question_rhetorical",
+        "quote": "¿Quieren enterarse qué es lo que va a suceder?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 42,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 268.48,
+        "timestamp": "04:28",
+        "label": "question_rhetorical",
+        "quote": "¿Quieren saber?",
+        "reason": "muletilla sin esperar respuesta",
+        "confidence": "alta",
+        "question_id": 43,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 70.2,
+        "timestamp": "01:10",
+        "label": "question_closed",
+        "quote": "¿no?",
+        "reason": "La pregunta es una afirmación que busca confirmación, no razonamiento.",
+        "confidence": "alta",
+        "question_id": 5,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 107.92,
+        "timestamp": "01:48",
+        "label": "question_open",
+        "quote": "¿Dónde habrá pasado?",
+        "reason": "La pregunta invita a inferir y predecir un lugar basado en el contexto.",
+        "confidence": "alta",
+        "question_id": 14,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 123.98,
+        "timestamp": "02:04",
+        "label": "question_closed",
+        "quote": "¿Cierto?",
+        "reason": "La pregunta busca confirmar una afirmación, no requiere razonamiento.",
+        "confidence": "alta",
+        "question_id": 17,
+        "addressee": null
+      }
+    ],
+    "feedback": [
+      {
+        "timestamp_s": 9.0,
+        "timestamp": "00:09",
+        "label": "feedback_elemental",
+        "quote": "¡Muy bien!",
+        "reason": "Respuesta breve de validación sin detalles.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 136.0,
+        "timestamp": "02:16",
+        "label": "feedback_elemental",
+        "quote": "Muy bien, felicitaciones hija",
+        "reason": "Validación con felicitación, sin detalles específicos.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 197.0,
+        "timestamp": "03:17",
+        "label": "feedback_elemental",
+        "quote": "ah, muy bien hija",
+        "reason": "Respuesta breve de validación sin explicación.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": null
+      },
+      {
+        "timestamp_s": 262.0,
+        "timestamp": "04:22",
+        "label": "feedback_elemental",
+        "quote": "Muy bien, los hijos estarán ayudando infelices, muy bien.",
+        "reason": "Repite la respuesta del alumno sin corregir ni ampliar.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": null
+      }
+    ],
+    "regulation": [],
+    "participation": [
+      {
+        "timestamp_s": 69.0,
+        "timestamp": "01:09",
+        "label": "participation_invitation",
+        "quote": "¿Qué me han dicho, hija? [NOMBRE], ¿no?",
+        "reason": "Llama a una alumna por su nombre para que responda.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": "[NOMBRE]"
+      },
+      {
+        "timestamp_s": 128.0,
+        "timestamp": "02:08",
+        "label": "participation_invitation",
+        "quote": "¿por qué hija más de uno?",
+        "reason": "Se dirige a una alumna específica con 'hija'.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": "hija"
+      },
+      {
+        "timestamp_s": 243.0,
+        "timestamp": "04:03",
+        "label": "participation_invitation",
+        "quote": "a ver, a ver usted, hija, ¿qué sucederá, qué pasará?",
+        "reason": "Invita a una alumna con 'a ver usted, hija'.",
+        "confidence": "alta",
+        "question_id": null,
+        "addressee": "hija"
+      }
+    ],
+    "respect": [],
+    "rejected_evidence": [],
+    "one_suggestion": {
+      "weakness": "short_wait",
+      "timestamp": "00:04",
+      "quote": "¿Qué vamos a hacer después?",
+      "what_we_saw": "En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.",
+      "why_it_matters": "Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.",
+      "try_this": "Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar.",
+      "example_phrase": "¿Qué crees que pasará después en el cuento de Los hijos del labrador?",
+      "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.\nPrueba esto: Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar. Por ejemplo: \"¿Qué crees que pasará después en el cuento de Los hijos del labrador?\""
+    },
+    "ai_tips": [
+      {
+        "title": "Generar repreguntas",
+        "what_for": "Ayuda a profundizar en las preguntas que ya haces, para que los estudiantes expliquen más y piensen mejor.",
+        "how": "Pídele a la IA que cree repreguntas basadas en las que ya usas en clase, para que los estudiantes amplíen sus respuestas.",
+        "example_prompt": "Crea una lista de 5 repreguntas para usar en mi clase de comunicación del segundo grado de secundaria sobre el cuento 'Los hijos del labrador'. Las repreguntas deben ayudar a los estudiantes a analizar los motivos de los personajes y las consecuencias de sus acciones. Por ejemplo, si pregunto: '¿Por qué el labrador decide enviar a sus hijos al bosque?', una repregunta podría ser: '¿Qué crees que sentirían los hijos al escuchar esa decisión?'"
+      },
+      {
+        "title": "Reducir muletillas",
+        "what_for": "Te ayuda a identificar y reemplazar las muletillas que usas, para que tus preguntas sean más claras y efectivas.",
+        "how": "Pídele a la IA que te sugiera alternativas a las muletillas que usas con frecuencia, para que tus preguntas sean más directas y fomenten la participación.",
+        "example_prompt": "Quiero reducir el uso de muletillas como '¿no?' o '¿ya?' en mi clase de comunicación del segundo grado de secundaria. Proporciona una lista de 5 alternativas que pueda usar en su lugar para hacer preguntas más claras y directas sobre el cuento 'Los hijos del labrador'. Por ejemplo, en lugar de decir: '¿Qué les parece el final, no?', sugiere: '¿Qué opinan sobre el final del cuento y por qué?'"
+      },
+      {
+        "title": "Crear actividades de evidencia",
+        "what_for": "Aumenta el tiempo dedicado a recoger evidencia de lo que entienden los estudiantes, con actividades cortas y enfocadas.",
+        "how": "Pídele a la IA que diseñe actividades rápidas para evaluar la comprensión de los estudiantes sobre el cuento, que puedas usar durante la clase.",
+        "example_prompt": "Diseña 3 actividades cortas para mi clase de comunicación del segundo grado de secundaria sobre el cuento 'Los hijos del labrador'. Las actividades deben ayudarme a evaluar si los estudiantes comprenden los temas principales del cuento, como la justicia y la venganza. Cada actividad debe durar menos de 5 minutos y no requerir materiales adicionales."
+      }
+    ]
+  },
+  "one_suggestion": {
+    "weakness": "short_wait",
+    "timestamp": "00:04",
+    "quote": "¿Qué vamos a hacer después?",
+    "what_we_saw": "En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.",
+    "why_it_matters": "Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.",
+    "try_this": "Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar.",
+    "example_phrase": "¿Qué crees que pasará después en el cuento de Los hijos del labrador?",
+    "text": "Lo que vimos: En el minuto 00:04 preguntaste \"¿Qué vamos a hacer después?\" y la pausa antes de que alguien hablara fue de 0,0 s. En promedio esperaste 1,2 s después de cada pregunta.\nPor qué importa: Dar tiempo para pensar después de una pregunta ayuda a que más estudiantes participen y respondan con más detalles.\nPrueba esto: Después de hacer una pregunta, cuenta hasta tres en silencio antes de continuar. Por ejemplo: \"¿Qué crees que pasará después en el cuento de Los hijos del labrador?\""
+  }
+}

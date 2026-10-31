@@ -7,6 +7,7 @@ import logging
 from dataclasses import dataclass, replace
 from pathlib import Path
 
+from espejo.analysis.ai_observations import observations_from
 from espejo.analysis.focus import FocusThresholds, choose_focus
 from espejo.analysis.llm_stage import with_llm_labels
 from espejo.analysis.report_builder import AudioSide, ReportConfigs, VideoSide, build_class_report
@@ -119,6 +120,7 @@ def interpret_run(
     report = build_class_report(video, audio, report_configs, llm_analysis)
     if analyzer is not None and audio is not None:
         report = add_suggestion(analyzer, report, audio, configs)
+        report = add_ai_tips(analyzer, report, audio, configs)
         analyzer.release()
     save_class_report(report, run_dir / REPORT_FILENAME)
 
@@ -152,6 +154,19 @@ def add_suggestion(
     analysis = analyzer.add_suggestion(
         report.llm, focus, audio.interpretation.segments, audio.capture.topic
     )
+    return replace(report, llm=analysis)
+
+
+def add_ai_tips(
+    analyzer: LlmAnalyzer, report: ClassReport, audio: AudioSide, configs: AllConfigs
+) -> ClassReport:
+    """Cómo puede el docente apoyarse en IA para preparar la próxima clase."""
+    observations = observations_from(
+        report.metrics,
+        configs.audio.wait_time.ok_threshold_s,
+        configs.analysis.monitoring.threshold,
+    )
+    analysis = analyzer.add_ai_tips(report.llm, observations, audio.capture.topic)
     return replace(report, llm=analysis)
 
 

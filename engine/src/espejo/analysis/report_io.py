@@ -9,7 +9,7 @@ from espejo.analysis.schemas import ClassReport, MetricValue, RubricEvidence, Ru
 from espejo.audio.schemas import Question, StudentResponse
 from espejo.common.json_io import write_json
 from espejo.common.time_format import format_mmss, round_seconds
-from espejo.llm.schemas import Evidence, LlmAnalysis, RejectedEvidence, Suggestion
+from espejo.llm.schemas import AiTip, Evidence, LlmAnalysis, RejectedEvidence, Suggestion
 from espejo.vision.schemas import Segment
 
 RATIO_DECIMALS = 3
@@ -123,6 +123,16 @@ def llm_to_dict(analysis: LlmAnalysis) -> dict[str, Any]:
         "respect": list_of_dicts(analysis.respect, evidence_to_dict),
         "rejected_evidence": list_of_dicts(analysis.rejected, rejected_to_dict),
         "one_suggestion": suggestion_to_dict(analysis.suggestion),
+        "ai_tips": list_of_dicts(analysis.ai_tips, ai_tip_to_dict),
+    }
+
+
+def ai_tip_to_dict(tip: AiTip) -> dict[str, Any]:
+    return {
+        "title": tip.title,
+        "what_for": tip.what_for,
+        "how": tip.how,
+        "example_prompt": tip.example_prompt,
     }
 
 

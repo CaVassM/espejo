@@ -15,6 +15,7 @@ from app.services.analyses import (
     AnalysisNotFoundError,
     AnalysisService,
     InvalidAccessCodeError,
+    InvalidTeacherKeyError,
     same_secret,
 )
 
@@ -34,10 +35,14 @@ def not_found() -> HTTPException:
 
 @router.post("", status_code=status.HTTP_201_CREATED)
 def create_analysis(body: CreateAnalysisRequest, request: Request) -> CreatedAnalysis:
+    service = service_of(request)
+    api_base_url = service.settings.public_api_url or str(request.base_url).rstrip("/")
     try:
-        return service_of(request).create(body.access_code, body.topic)
+        return service.create(body.access_code, body.topic, api_base_url, body.teacher_key)
     except InvalidAccessCodeError as error:
         raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Código de acceso inválido.") from error
+    except InvalidTeacherKeyError as error:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Clave del docente inválida.") from error
 
 
 @router.get("/{analysis_id}")

@@ -23,6 +23,8 @@ STAGE_ERROR = "Error"
 class CreateAnalysisRequest(BaseModel):
     access_code: str
     topic: str | None = None
+    # Opcional: la clave de un análisis anterior, para agruparlos en el mismo asistente
+    teacher_key: str | None = None
 
 
 class UploadInstructions(BaseModel):
@@ -47,6 +49,9 @@ class AnalysisView(BaseModel):
 
 class CreatedAnalysis(AnalysisView):
     upload: UploadInstructions
+    # Se muestra una sola vez y solo al docente: no se puede volver a pedir
+    teacher_key: str
+    assistant_url: str
 
 
 class RawReceived(BaseModel):

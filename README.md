@@ -261,6 +261,32 @@ frontend: [`docs/api_contract.md`](docs/api_contract.md).
 - En tu PC: `cd services/api && uvicorn app.main:create_app --factory --reload` (usa SQLite si
   no hay `DATABASE_URL`).
 
+## Conecta tu asistente de IA (MCP)
+
+La API tiene un servidor MCP de **solo lectura**: un asistente (Claude, ChatGPT u otro que
+acepte servidores MCP remotos) puede consultar las clases del docente y ayudarle a planificar.
+
+1. Al crear un análisis, la web te muestra una sola vez el **enlace para tu asistente**
+   (`https://espejo-api-o8td.onrender.com/mcp/<tu clave>`). Guárdalo: quien lo tenga ve tus
+   reportes.
+2. En tu asistente, agrega un "conector" o "servidor MCP remoto" con ese enlace (transporte
+   HTTP). En Claude: Configuración → Conectores → Agregar conector personalizado.
+3. Pregúntale, por ejemplo: "¿Qué clases tengo?", "Muéstrame el reporte de mi última clase",
+   "¿Qué evidencias hay en R2?", "Compara mis dos últimas clases" o usa el prompt
+   "planificar_proxima_clase".
+
+| Herramienta | Qué hace |
+|---|---|
+| `listar_mis_clases` | Id, fecha, tema y duración de tus clases |
+| `ver_reporte(id)` | Ficha R1 a R5, métricas principales y el consejo en 3 partes |
+| `ver_evidencias(id, rubrica)` | Citas con su minuto para una rúbrica |
+| `comparar_clases(id_a, id_b)` | Espera, % de preguntas abiertas, monitoreo y retroalimentaciones |
+
+Solo se ven datos ya anonimizados (nunca video, audio, texto de alumnos ni nombres) y ninguna
+herramienta modifica nada. La clave nunca se guarda (solo su hash) ni queda en los logs. Para
+probarlo: `npx @modelcontextprotocol/inspector` y conectar a tu enlace con transporte
+"Streamable HTTP".
+
 ## Manual de rúbricas del Minedu
 
 Las definiciones se tomaron del manual vigente (5 desempeños): *Rúbricas de observación de aula
@@ -327,6 +353,8 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 
 ## Mejoras futuras
 
+- **OAuth en vez de la clave en la URL** para el asistente de IA: cada docente inicia sesión
+  y puede revocar el acceso, sin un enlace que funcione para cualquiera que lo tenga.
 - **Dataset de aulas peruanas etiquetado** (200 a 300 cuadros para empezar: pizarra, guiar,
   alumno al frente) para reentrenar el modelo de conductas en el contexto real.
 - **Probar un modelo de visión y lenguaje sin entrenamiento** sobre el recorte del docente

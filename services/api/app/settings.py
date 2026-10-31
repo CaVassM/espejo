@@ -22,6 +22,7 @@ class ApiSettings:
     cors_origin_regex: str
     frontend_origins: list[str]
     worker_timeout_s: float
+    public_api_url: str | None = None
 
 
 def sqlalchemy_url(database_url: str) -> str:
@@ -52,4 +53,6 @@ def load_settings(config_path: Path = API_CONFIG_PATH) -> ApiSettings:
         cors_origin_regex=raw["cors_origin_regex"],
         frontend_origins=split_origins(os.environ.get("FRONTEND_ORIGINS")),
         worker_timeout_s=raw["worker_timeout_s"],
+        # Render la entrega sola (RENDER_EXTERNAL_URL); sirve para armar el enlace del asistente
+        public_api_url=(os.environ.get("RENDER_EXTERNAL_URL") or "").rstrip("/") or None,
     )

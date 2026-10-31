@@ -277,10 +277,14 @@ acepte servidores MCP remotos) puede consultar las clases del docente y ayudarle
 
 | Herramienta | Qué hace |
 |---|---|
-| `listar_mis_clases` | Id, fecha, tema y duración de tus clases |
-| `ver_reporte(id)` | Ficha R1 a R5, métricas principales y el consejo en 3 partes |
-| `ver_evidencias(id, rubrica)` | Citas con su minuto para una rúbrica |
-| `comparar_clases(id_a, id_b)` | Espera, % de preguntas abiertas, monitoreo y retroalimentaciones |
+| `listar_mis_clases` | Tus 10 clases más recientes: id, fecha, tema y duración |
+| `ver_reporte(id)` | Resumen: 5 métricas clave, el consejo en 3 partes y cuántas evidencias hay por rúbrica |
+| `ver_evidencias(id, rubrica, pagina=1)` | Citas con su minuto, de 8 en 8, primero las de confianza alta |
+| `comparar_clases(id_a, id_b)` | Solo lo que cambió, ya calculado ("Espera: 1,2 s → 2,8 s") |
+| `ver_fragmento(id, minuto)` | Lo que se dijo ±60 s alrededor de un minuto, ya anonimizado |
+
+Las respuestas son texto corto (tope de ~6.000 caracteres en `configs/api.yaml`; si se pasa,
+se recorta y se avisa) y el detalle se pide aparte. Nunca se entrega la transcripción completa.
 
 Solo se ven datos ya anonimizados (nunca video, audio, texto de alumnos ni nombres) y ninguna
 herramienta modifica nada. La clave nunca se guarda (solo su hash) ni queda en los logs. Para

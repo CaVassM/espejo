@@ -55,52 +55,66 @@ def answer(query: Callable[..., Any], *args: Any) -> Any:
 
 
 def build_mcp_server(queries: AssistantQueries) -> MCPServer:
+    """Respuestas en texto corto; el detalle (citas, fragmentos) solo bajo pedido."""
     server = MCPServer(name="Espejo", instructions=INSTRUCTIONS)
 
     @server.tool(
         name="listar_mis_clases",
         description=(
-            "Lista las clases analizadas del docente: id, fecha, tema, duración en minutos y "
-            "estado. Úsala primero para saber qué id pasar a las otras herramientas."
+            "Lista las 10 clases más recientes del docente: id, fecha, tema y duración. "
+            "Úsala primero para saber qué id pasar a las otras herramientas."
         ),
         annotations=READ_ONLY,
     )
-    def listar_mis_clases(ctx: Context) -> list[dict[str, Any]]:
+    def listar_mis_clases(ctx: Context) -> str:
         return queries.list_classes(key_hash_of(ctx))
 
     @server.tool(
         name="ver_reporte",
         description=(
-            "Muestra el reporte de una clase: la ficha por rúbrica (R1 a R5, con su estado y "
-            "métricas), las métricas principales (preguntas, % abiertas, espera, monitoreo, "
-            "respuestas) y el consejo en 3 partes (lo que vimos, por qué importa, prueba esto)."
+            "Resumen de una clase: 5 métricas clave (preguntas, % abiertas, espera, respuestas, "
+            "monitoreo), el consejo en 3 partes y cuántas evidencias hay por rúbrica (R1 a R5). "
+            "No trae citas: para eso usa ver_evidencias."
         ),
         annotations=READ_ONLY,
     )
-    def ver_reporte(id: str, ctx: Context) -> dict[str, Any]:
+    def ver_reporte(id: str, ctx: Context) -> str:
         return answer(queries.report, key_hash_of(ctx), id)
 
     @server.tool(
         name="ver_evidencias",
         description=(
-            "Muestra las citas del docente, con su minuto, que respaldan una rúbrica (R1, R2, "
-            "R3, R4 o R5) en una clase. Úsala para explicar con ejemplos concretos."
+            "Citas del docente con su minuto para una rúbrica (R1, R2, R3, R4 o R5), de 8 en 8, "
+            "primero las de confianza alta. Si hay más, pide la siguiente con pagina=2, 3..."
         ),
         annotations=READ_ONLY,
     )
-    def ver_evidencias(id: str, rubrica: str, ctx: Context) -> dict[str, Any]:
-        return answer(queries.evidence, key_hash_of(ctx), id, rubrica)
+    def ver_evidencias(id: str, rubrica: str, ctx: Context, pagina: int = 1) -> str:
+        return answer(queries.evidence, key_hash_of(ctx), id, rubrica, pagina)
 
     @server.tool(
         name="comparar_clases",
         description=(
-            "Compara dos clases del mismo docente: espera promedio después de preguntar, % de "
-            "preguntas abiertas, monitoreo y tipos de retroalimentación. Úsala para ver avances."
+            "Compara dos clases del mismo docente y devuelve solo lo que cambió (espera, % de "
+            "preguntas abiertas, monitoreo, preguntas y retroalimentación), ya calculado: "
+            '"Espera promedio: 1,2 s → 2,8 s". Úsala para ver avances.'
         ),
         annotations=READ_ONLY,
     )
-    def comparar_clases(id_a: str, id_b: str, ctx: Context) -> dict[str, Any]:
+    def comparar_clases(id_a: str, id_b: str, ctx: Context) -> str:
         return answer(queries.compare, key_hash_of(ctx), id_a, id_b)
+
+    @server.tool(
+        name="ver_fragmento",
+        description=(
+            "Lo que se dijo alrededor de un minuto de la clase (máximo ±60 s), ya anonimizado: "
+            "lo de los alumnos aparece como [ALUMNO responde] y los nombres como [NOMBRE]. "
+            'El minuto va como "3" o "03:12". Úsala solo si hace falta el contexto de una cita.'
+        ),
+        annotations=READ_ONLY,
+    )
+    def ver_fragmento(id: str, minuto: str, ctx: Context) -> str:
+        return answer(queries.fragment, key_hash_of(ctx), id, minuto)
 
     @server.prompt(
         name="planificar_proxima_clase",

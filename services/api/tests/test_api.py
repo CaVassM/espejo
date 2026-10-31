@@ -61,12 +61,14 @@ class World:
         repository = AnalysisRepository(sessionmaker(engine, expire_on_commit=False))
         self.worker = FakeWorker()
         self.interpreted: list[Any] = []
+        # El reporte que "arma" la interpretación simulada (se puede cambiar entre análisis)
+        self.report = report or REPORT
 
         def interpreter(detections: Any, audio_raw: Any) -> dict[str, Any]:
             if fail_interpretation:
                 raise RuntimeError("sin LLM")
             self.interpreted.append((detections, audio_raw))
-            return report or REPORT
+            return self.report
 
         service = AnalysisService(
             repository, self.worker, interpreter, SETTINGS, now=lambda: 1_000.0

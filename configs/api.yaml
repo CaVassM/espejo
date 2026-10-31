@@ -15,3 +15,10 @@ cors_origin_regex: "https://.*\\.vercel\\.app|http://localhost(:\\d+)?|http://12
 local_database_url: sqlite:///./espejo_api.db
 
 worker_timeout_s: 120            # llamados al worker (estado y resultado)
+
+# Asistente de IA (servidor MCP en /mcp/{teacher_key}): respuestas cortas, detalle bajo pedido
+assistant:
+  max_response_chars: 6000       # tope por respuesta; si se pasa, se recorta y se avisa
+  max_classes: 10                # listar_mis_clases: las más recientes
+  evidence_page_size: 8          # ver_evidencias: citas por página
+  fragment_window_s: 60          # ver_fragmento: máximo ±60 s alrededor del minuto pedido

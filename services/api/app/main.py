@@ -20,10 +20,10 @@ from app.mcp_server import (
 from app.repositories.analyses import AnalysisRepository, create_db_engine, create_tables
 from app.routers import analyses, health
 from app.services.analyses import AnalysisService
-from app.services.assistant import AssistantQueries
+from app.services.assistant import AssistantQueries, load_assistant_settings
 from app.services.interpretation import interpret_raw
 from app.services.worker_client import WorkerClient
-from app.settings import ApiSettings, load_settings
+from app.settings import API_CONFIG_PATH, ApiSettings, load_settings
 
 API_PREFIX = "/api"
 ACCESS_LOGGER = "uvicorn.access"
@@ -47,7 +47,8 @@ def create_app(
     settings = settings or load_settings()
     service = service or build_service(settings)
 
-    mcp_server = build_mcp_server(AssistantQueries(service.repository))
+    assistant_settings = load_assistant_settings(API_CONFIG_PATH)
+    mcp_server = build_mcp_server(AssistantQueries(service.repository, assistant_settings))
     mcp_app = build_mcp_app(mcp_server)
 
     @asynccontextmanager

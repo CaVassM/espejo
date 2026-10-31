@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from enum import StrEnum
 
 UNKNOWN_SPEAKER = "unknown"
+# Privacidad (audio/privacy.py): son parte del formato de audio_raw.json, no se configuran
+STUDENT_PLACEHOLDER = "[ALUMNO responde]"
+NAME_PLACEHOLDER = "[NOMBRE]"
 
 
 class SpeakerRole(StrEnum):

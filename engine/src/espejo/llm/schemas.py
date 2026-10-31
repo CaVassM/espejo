@@ -8,9 +8,12 @@ from espejo.audio.schemas import QuestionCategory
 
 
 class FeedbackType(StrEnum):
-    """Tipos de retroalimentación del manual (R3)."""
+    """Tipos de retroalimentación del manual (R3).
 
-    INCORRECT = "feedback_incorrect"
+    La retroalimentación incorrecta del manual no está: el LLM ya no ve lo que respondió el
+    alumno (privacidad), así que no puede juzgar si el docente dio por buena una respuesta mala.
+    """
+
     ELEMENTAL = "feedback_elemental"
     DESCRIPTIVE = "feedback_descriptive"
     DISCOVERY = "feedback_discovery"

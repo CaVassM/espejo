@@ -29,6 +29,8 @@ class SpeakerDiarizer:
     def __init__(self, config: DiarizationConfig, sample_rate_hz: int) -> None:
         self.config = config
         self.sample_rate_hz = sample_rate_hz
+        # Se carga en el primer video y se reutiliza (el worker procesa varios por contenedor)
+        self.pipeline = None
 
     def diarize(self, audio_path: Path) -> DiarizationOutcome:
         """Nunca lanza excepciones: si algo falla, devuelve el motivo y el pipeline sigue."""
@@ -60,11 +62,14 @@ class SpeakerDiarizer:
         from faster_whisper.audio import decode_audio
         from pyannote.audio import Pipeline
 
-        pipeline = Pipeline.from_pretrained(self.config.model, use_auth_token=token)
-        if pipeline is None:
-            raise PermissionError(GATED_MODEL_HINT)
-        if torch.cuda.is_available():
-            pipeline.to(torch.device("cuda"))
+        if self.pipeline is None:
+            pipeline = Pipeline.from_pretrained(self.config.model, use_auth_token=token)
+            if pipeline is None:
+                raise PermissionError(GATED_MODEL_HINT)
+            if torch.cuda.is_available():
+                pipeline.to(torch.device("cuda"))
+            self.pipeline = pipeline
+        pipeline = self.pipeline
 
         # Se pasa la onda en memoria para no depender del backend de audio de torchaudio
         samples = decode_audio(str(audio_path), sampling_rate=self.sample_rate_hz)

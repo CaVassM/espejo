@@ -23,7 +23,6 @@ INSUFFICIENT = "evidencia insuficiente"
 RUBRICS_BY_LABEL = {
     QuestionCategory.OPEN: ["R2"],
     QuestionCategory.CLOSED: ["R2"],
-    FeedbackType.INCORRECT: ["R3"],
     FeedbackType.ELEMENTAL: ["R3"],
     FeedbackType.DESCRIPTIVE: ["R3"],
     FeedbackType.DISCOVERY: ["R3"],

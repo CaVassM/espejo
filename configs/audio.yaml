@@ -94,3 +94,19 @@ quality:
   # Los mismos umbrales usa Whisper internamente para descartar segmentos dudosos.
   min_avg_logprob: -1.0
   max_no_speech_prob: 0.6
+
+privacy:
+  # Al terminar VER (antes de guardar audio_raw.json): lo que no es del docente pasa a
+  # "[ALUMNO responde]" y los nombres que dice el docente, a "[NOMBRE]". Ver audio/privacy.py.
+  enabled: true
+  spacy_model: es_core_news_sm
+  # El modelo pequeño confunde etiquetas: "María" sale MISC, "Pedro" LOC y "¿Qué" o "Claro"
+  # salen PER. Se tapa una entidad con estas etiquetas solo si todas sus palabras son nombres
+  # propios.
+  person_labels: [PER]
+  proper_noun_labels: [MISC, LOC]
+  # Nunca se tapan (se comparan sin tildes ni mayúsculas). Las palabras del tema tampoco.
+  keep_words: [hija, hijo, hijas, hijos, niño, niña, niños, niñas, chicos, chicas, alumnos,
+               profesor, profesora, miss, mamá, papá, señor, señora, comunicación, matemática,
+               matemáticas, ciencia, tecnología, arte, inglés, religión, personal social,
+               educación física, perú, lima, dios]

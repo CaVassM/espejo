@@ -207,6 +207,15 @@ class QualityConfig:
 
 
 @dataclass(frozen=True)
+class PrivacyConfig:
+    enabled: bool
+    spacy_model: str
+    person_labels: list[str]
+    proper_noun_labels: list[str]
+    keep_words: list[str]
+
+
+@dataclass(frozen=True)
 class AudioConfig:
     extraction: ExtractionConfig
     transcription: TranscriptionConfig
@@ -217,6 +226,7 @@ class AudioConfig:
     responses: ResponsesConfig
     hallucinations: HallucinationConfig
     quality: QualityConfig
+    privacy: PrivacyConfig
 
 
 def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
@@ -231,6 +241,7 @@ def load_audio_config(path: Path = DEFAULT_AUDIO_CONFIG) -> AudioConfig:
         responses=ResponsesConfig(**raw["responses"]),
         hallucinations=HallucinationConfig(**raw["hallucinations"]),
         quality=QualityConfig(**raw["quality"]),
+        privacy=PrivacyConfig(**raw["privacy"]),
     )
 
 

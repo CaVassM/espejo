@@ -1,0 +1,67 @@
+/* Tarjeta "Conecta tu asistente de IA" y la página "Analiza tu clase".
+   Usa los colores de la ficha; los valores después de la coma son por si una página no los define. */
+
+.mcp-card{background:var(--panel,#fff);border:1px solid var(--line,#E2E7EE);border-radius:var(--radius,14px);
+  box-shadow:var(--shadow,0 1px 2px rgba(46,52,64,.06));padding:18px 20px;margin-bottom:16px}
+.mcp-head{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.mcp-head h3{font-size:16px;font-weight:650;margin:0;color:var(--ink,#2E3440)}
+.mcp-badge{font:600 11px/1 var(--mono,monospace);letter-spacing:.06em;color:#fff;background:var(--brand-blue,#1E4D8F);
+  border-radius:6px;padding:5px 7px}
+.mcp-lead{margin:0 0 12px;color:#4C566A;font-size:14px}
+.mcp-link{display:flex;gap:8px;flex-wrap:wrap}
+.mcp-url{flex:1 1 260px;min-width:0;font:13px var(--mono,monospace);padding:10px 12px;border:1px solid var(--line-strong,#CDD5E0);
+  border-radius:var(--radius-s,9px);background:#F5F7FA;color:var(--ink,#2E3440)}
+.mcp-copy{cursor:pointer;border:0;border-radius:var(--radius-s,9px);background:var(--brand-blue,#1E4D8F);color:#fff;
+  font-weight:600;font-size:14px;padding:10px 14px}
+.mcp-copy:hover{background:#17407a}
+.mcp-copy.done{background:var(--brand-teal,#14B8A6)}
+.mcp-warn{margin:10px 0 0;font-size:13px;color:#8A5A00;background:rgba(244,183,64,.14);border-radius:8px;padding:8px 10px}
+.mcp-steps{margin-top:14px}
+.mcp-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.mcp-tab{cursor:pointer;border:1px solid var(--line-strong,#CDD5E0);background:#fff;border-radius:999px;padding:5px 12px;
+  font-size:13px;color:#4C566A}
+.mcp-tab.on{border-color:var(--brand-blue,#1E4D8F);color:var(--brand-blue,#1E4D8F);background:rgba(30,77,143,.07);font-weight:600}
+.mcp-list{margin:0;padding-left:20px;font-size:14px;color:var(--ink,#2E3440)}
+.mcp-list li{margin:4px 0;overflow-wrap:anywhere}
+.mcp-ask{margin-top:12px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mcp-ask-t{font-size:13px;color:#4C566A;margin-right:2px}
+.mcp-chip{font-size:12.5px;background:#F0F4FA;border:1px solid var(--line,#E2E7EE);border-radius:999px;padding:4px 10px;color:#2A5FA8}
+
+/* ---------- Página "Analiza tu clase" ---------- */
+.up-wrap{max-width:760px;margin:28px auto;padding:0 16px}
+.up-card{background:var(--panel,#fff);border:1px solid var(--line,#E2E7EE);border-radius:var(--radius,14px);
+  box-shadow:var(--shadow,0 1px 2px rgba(46,52,64,.06));padding:22px 24px;margin-bottom:16px}
+.up-card h1{font-size:22px;margin:0 0 4px;letter-spacing:-.01em}
+.up-card .sub{color:#4C566A;margin:0 0 16px;font-size:14.5px}
+.up-field{display:flex;flex-direction:column;gap:5px;margin-bottom:12px}
+.up-field label{font-size:13.5px;font-weight:600;color:var(--ink,#2E3440)}
+.up-field input[type=text],.up-field input[type=password]{font-size:15px;padding:10px 12px;border:1px solid var(--line-strong,#CDD5E0);
+  border-radius:var(--radius-s,9px)}
+.up-drop{border:2px dashed var(--line-strong,#CDD5E0);border-radius:var(--radius,14px);padding:22px;text-align:center;cursor:pointer;
+  color:#4C566A;background:#FAFBFD}
+.up-drop.over,.up-drop:hover{border-color:var(--brand-blue,#1E4D8F);background:rgba(30,77,143,.04)}
+.up-drop b{color:var(--ink,#2E3440)}
+.up-hint{font-size:12.5px;color:#7A8699;margin-top:4px}
+.up-check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;margin:6px 0 12px;color:#4C566A}
+.up-go{width:100%;cursor:pointer;border:0;border-radius:var(--radius-s,9px);background:var(--brand-blue,#1E4D8F);color:#fff;
+  font-weight:650;font-size:15.5px;padding:12px}
+.up-go:disabled{opacity:.55;cursor:not-allowed}
+.up-error{margin-top:10px;color:#B42318;font-size:14px}
+.up-steps{list-style:none;margin:6px 0 0;padding:0}
+.up-step{display:flex;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line,#E2E7EE);color:#7A8699}
+.up-step:last-child{border-bottom:0}
+.up-dot{width:22px;height:22px;border-radius:50%;border:2px solid var(--line-strong,#CDD5E0);flex:none;display:grid;place-items:center;
+  font-size:12px;color:#fff}
+.up-step.now{color:var(--ink,#2E3440);font-weight:600}
+.up-step.now .up-dot{border-color:var(--brand-blue,#1E4D8F);border-top-color:transparent;animation:upspin 1s linear infinite}
+.up-step.ok{color:var(--ink,#2E3440)}
+.up-step.ok .up-dot{background:var(--brand-teal,#14B8A6);border-color:var(--brand-teal,#14B8A6)}
+.up-step.bad .up-dot{background:#B42318;border-color:#B42318}
+.up-bar{height:8px;background:#EEF2F7;border-radius:99px;overflow:hidden;margin-top:6px;flex:1 1 auto}
+.up-bar i{display:block;height:100%;width:0;background:var(--brand-blue,#1E4D8F);transition:width .2s}
+.up-step .up-pct{font:12px var(--mono,monospace);color:#4C566A;min-width:44px;text-align:right}
+.up-done{display:inline-flex;gap:8px;align-items:center;margin-top:14px;text-decoration:none;border-radius:var(--radius-s,9px);
+  background:var(--brand-teal,#14B8A6);color:#fff;font-weight:650;padding:11px 16px}
+.up-note{font-size:13px;color:#4C566A;margin-top:10px}
+@keyframes upspin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.up-step.now .up-dot{animation:none}}

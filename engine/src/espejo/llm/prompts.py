@@ -261,6 +261,8 @@ def build_suggestion_prompt(
         f"TEMA DE LA CLASE: {topic or NO_TOPIC}\n\n"
         f"LO QUE SE DIJO CERCA DE ESE MOMENTO:\n{joined_or_none(context)}\n"
     )
+
+
 AI_TIPS_COUNT = 3
 
 AI_TIPS_SCHEMA: dict[str, Any] = {

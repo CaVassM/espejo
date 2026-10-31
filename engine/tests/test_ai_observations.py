@@ -18,7 +18,9 @@ def test_sin_metricas_no_hay_observaciones():
 
 
 def test_una_metrica_sin_valor_no_inventa_una_frase():
-    assert observations_from([metric("mean_wait_time_s", None)], WAIT_OK_S, MONITORING_THRESHOLD) == []
+    assert (
+        observations_from([metric("mean_wait_time_s", None)], WAIT_OK_S, MONITORING_THRESHOLD) == []
+    )
 
 
 def test_la_espera_corta_se_menciona_y_la_suficiente_no():

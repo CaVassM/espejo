@@ -13,16 +13,19 @@ from modal.exception import NotFoundError
 from espejo_worker.settings import load_settings
 
 # --- Rutas: en tu PC salen del repo; dentro de los contenedores, de /root/espejo ---
-REMOTE_ROOT = Path("/root/espejo")
-REMOTE_ENGINE = REMOTE_ROOT / "engine"
-REMOTE_CONFIGS = REMOTE_ROOT / "configs"
+# Las rutas del contenedor son texto con "/": Path en Windows las escribiría con "\"
+REMOTE_ROOT = "/root/espejo"
+REMOTE_ENGINE = f"{REMOTE_ROOT}/engine"
+REMOTE_CONFIGS = f"{REMOTE_ROOT}/configs"
 MODELS_DIR = "/models"
 JOBS_DIR = "/jobs"
 PYTHON_PACKAGES = "/usr/local/lib/python3.11/site-packages"
-CONFIGS_DIR = REMOTE_CONFIGS
+CONFIGS_DIR = Path(REMOTE_CONFIGS)
+ENGINE_DIR = Path(REMOTE_ENGINE)
 if modal.is_local():
     REPO_ROOT = Path(__file__).resolve().parents[2]
     CONFIGS_DIR = REPO_ROOT / "configs"
+    ENGINE_DIR = REPO_ROOT / "engine"
 
 SETTINGS = load_settings(CONFIGS_DIR / "worker.yaml")
 REQUIRED_SECRET_KEYS = ["HF_TOKEN", "WORKER_TOKEN", "UPLOAD_ACCESS_CODE"]
@@ -31,7 +34,7 @@ CACHE_IGNORE = ["**/__pycache__", "**/*.egg-info", "**/.pytest_cache"]
 web_image = (
     modal.Image.debian_slim(python_version="3.11")
     .pip_install("fastapi[standard]>=0.115", "python-multipart>=0.0.9", "pyyaml>=6.0")
-    .add_local_dir(CONFIGS_DIR, str(REMOTE_CONFIGS))
+    .add_local_dir(CONFIGS_DIR, REMOTE_CONFIGS)
     .add_local_python_source("espejo_worker")
 )
 
@@ -39,12 +42,7 @@ gpu_image = (
     modal.Image.debian_slim(python_version="3.11")
     .apt_install("ffmpeg", "libgl1", "libglib2.0-0")
     # El motor se copia en la imagen y se instala editable: así configs/ queda en su lugar
-    .add_local_dir(
-        REPO_ROOT / "engine" if modal.is_local() else REMOTE_ENGINE,
-        str(REMOTE_ENGINE),
-        copy=True,
-        ignore=CACHE_IGNORE,
-    )
+    .add_local_dir(ENGINE_DIR, REMOTE_ENGINE, copy=True, ignore=CACHE_IGNORE)
     .run_commands(
         f"pip install -e '{REMOTE_ENGINE}[vision,audio]' 'torch==2.5.1' 'torchaudio==2.5.1'",
         "python -m spacy download es_core_news_md",
@@ -61,7 +59,7 @@ gpu_image = (
             "YOLO_CONFIG_DIR": "/tmp/ultralytics",
         }
     )
-    .add_local_dir(CONFIGS_DIR, str(REMOTE_CONFIGS))
+    .add_local_dir(CONFIGS_DIR, REMOTE_CONFIGS)
     .add_local_python_source("espejo_worker")
 )
 

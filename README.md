@@ -223,6 +223,23 @@ el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles 
 - El LLM corre al final, cuando YOLO y Whisper ya liberaron la GPU, y al terminar libera la suya.
 - El reporte guarda proveedor, modelo, tokens, tiempo y costo (0 con Ollama).
 
+## Worker en Modal (VER en la nube)
+
+El worker ([`services/worker/`](services/worker/)) corre VER en una GPU T4 de Modal y entrega
+`detections.json`, `audio_raw.json` (anonimizado) y el heatmap. El contrato con el backend está
+en [`docs/worker_contract.md`](docs/worker_contract.md).
+
+```bash
+python scripts/upload_weights.py         # sube teacher.pt y behavior.pt al Volume espejo-models
+python scripts/sync_modal_secrets.py     # crea o actualiza el Secret espejo-secrets desde .env
+modal deploy services/worker/modal_app.py
+python scripts/check_modal_worker.py     # /health y pesos en el Volume
+python scripts/test_modal_worker.py --video samples/clip.mp4 --delete-after
+```
+
+En GitHub, `deploy-modal.yml` despliega solo cuando cambia el motor, el worker o los configs en
+`main`, y solo si la CI pasa.
+
 ## Manual de rúbricas del Minedu
 
 Las definiciones se tomaron del manual vigente (5 desempeños): *Rúbricas de observación de aula

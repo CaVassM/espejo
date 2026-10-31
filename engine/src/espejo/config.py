@@ -156,6 +156,7 @@ class TranscriptionConfig:
     min_free_gpu_memory_gb: float
     beam_size: int
     condition_on_previous_text: bool
+    prompt_style: str
 
 
 @dataclass(frozen=True)

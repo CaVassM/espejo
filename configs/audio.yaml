@@ -18,6 +18,11 @@ transcription:
   beam_size: 5
   # Sin condicionar en el texto previo, Whisper repite menos frases en bucle en tramos de ruido
   condition_on_previous_text: false
+  # Texto de inicio para Whisper (initial_prompt), antes del tema. Whisper imita su estilo:
+  # con preguntas bien puntuadas mantiene los signos "¿?" y las tildes. Sin esto, en otra GPU
+  # transcribió "donde habrá sucedido" en vez de "¿Dónde habrá sucedido?" y se perdían
+  # preguntas. Es genérico a propósito: palabras de una clase concreta podrían inventarse.
+  prompt_style: "Clase en español, con preguntas a los alumnos: ¿Qué piensan? ¿Por qué? ¿Cómo lo saben?"
 
 voice_activity:
   threshold: 0.5                 # probabilidad de voz de Silero para marcar un frame como voz
@@ -111,4 +116,4 @@ privacy:
   keep_words: [hija, hijo, hijas, hijos, niño, niña, niños, niñas, chicos, chicas, alumnos,
                profesor, profesora, miss, mamá, papá, señor, señora, comunicación, matemática,
                matemáticas, ciencia, tecnología, arte, inglés, religión, personal social,
-               educación física, perú, lima, dios]
+               educación física, perú, lima, dios, felicitaciones, gracias, bien]

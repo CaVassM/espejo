@@ -109,8 +109,8 @@ def low_monitoring_focus(
     if ratio is None or ratio >= thresholds.monitoring:
         return None
     what_we_saw = (
-        f"Recogiste evidencia de lo que entienden tus estudiantes (preguntando o recorriendo "
-        f"sus lugares) durante el {format_percent(ratio)} de la clase; el manual pide al menos "
+        f"Recogiste evidencia de lo que entienden tus estudiantes (preguntas que alguien "
+        f"respondió) durante el {format_percent(ratio)} de la clase; el manual pide al menos "
         f"el {format_percent(thresholds.monitoring)}."
     )
     return SuggestionFocus(Weakness.LOW_MONITORING, what_we_saw)

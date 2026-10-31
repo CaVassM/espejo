@@ -53,7 +53,9 @@ def raw_payload(analysis_id: str) -> dict[str, Any]:
 
 
 class World:
-    def __init__(self, fail_interpretation: bool = False) -> None:
+    def __init__(
+        self, fail_interpretation: bool = False, report: dict[str, Any] | None = None
+    ) -> None:
         engine = create_db_engine(SETTINGS.database_url)
         create_tables(engine)
         repository = AnalysisRepository(sessionmaker(engine, expire_on_commit=False))
@@ -64,7 +66,7 @@ class World:
             if fail_interpretation:
                 raise RuntimeError("sin LLM")
             self.interpreted.append((detections, audio_raw))
-            return REPORT
+            return report or REPORT
 
         service = AnalysisService(
             repository, self.worker, interpreter, SETTINGS, now=lambda: 1_000.0

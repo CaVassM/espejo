@@ -58,7 +58,7 @@ Prioridad: **board_writing > guide > other**.
 | Estado | Cuándo |
 |---|---|
 | `board_writing` | Una caja board_writing se superpone con la del docente (IoU ≥ `behavior_iou_threshold`). |
-| `guide` | Una caja guide con confianza ≥ `guide_min_conf` se superpone con la del docente y no hay board_writing. Los tramos de guide más cortos que `min_guide_s` pasan a `other`. |
+| `guide` | Una caja guide con confianza ≥ `guide_min_conf` (0.65) se superpone con la del docente y no hay board_writing. Los tramos de guide más cortos que `min_guide_s` pasan a `other`. **Experimental.** |
 | `other` | No se detectó una acción del docente. **No es una clase aprendida**: es el relleno. |
 | `not_visible` | No se encontró al docente en el frame. No es una conducta: alimenta `teacher_visible_ratio`. |
 
@@ -109,7 +109,7 @@ Prioridad: **board_writing > guide > other**.
 
 | Métrica | Rúbrica | Cálculo |
 |---|---|---|
-| `board_writing_ratio` | R1 | Tiempo en `board_writing` / duración analizada. "Tiempo escribiendo en la pizarra, de espaldas a la clase". |
+| `board_writing_ratio` | R1 | Tiempo en `board_writing` / duración analizada. **Experimental** (`experimental: true`); `null` con nota "no disponible" si no hubo ninguna detección confiable (≥ `board_writing_min_conf`, 0.6). |
 | `stage_interaction_count` | R1 | Número de eventos stage_interaction. |
 | `student_response_count` | R1 | Preguntas con `student_response`. |
 | `response_rate` | R1 | `student_response_count / teacher_question_count` (`null` si no hay preguntas). |
@@ -120,10 +120,10 @@ Prioridad: **board_writing > guide > other**.
 | `questions_per_minute` | R2, R3 | `teacher_question_count / (duración del audio en minutos)`. |
 | `mean_wait_time_s`, `median_wait_time_s` | R2 | Sobre preguntas `reliable` con `wait_time_s` no nulo. |
 | `wait_time_ok_ratio` | R2 | Fracción de esas preguntas con `wait_time_ok`. |
-| `monitoring_ratio` | R3 | Unión, sin doble conteo, de los tramos `guide` (video) y los episodios de pregunta (audio), dividida entre la duración analizada. |
-| `monitoring_video_ratio` | R3 | Solo los tramos `guide`. |
+| `monitoring_ratio` | R3 | **Cifra principal**: episodios de pregunta con respuesta (audio) / duración analizada. Sin audio, `null`. |
+| `monitoring_video_ratio` | R3 | **Complemento experimental**: solo los tramos `guide` (video). No suma a la cifra principal; `null` con nota "no disponible" si no hubo detecciones confiables de guide. |
 | `monitoring_audio_ratio` | R3 | Solo los episodios de pregunta: preguntas reales (no muletillas), en audio confiable y **con** `student_response`. Cada episodio va desde el inicio de la pregunta hasta el fin de la respuesta, con un máximo de `max_episode_s`. |
-| `meets_monitoring_threshold` | R3 | `monitoring_ratio >= 0.25` (el manual pide monitorear al menos el 25 % de la sesión). Sin audio se calcula solo con video y se avisa. |
+| `meets_monitoring_threshold` | R3 | `monitoring_ratio >= 0.25` (el manual pide monitorear al menos el 25 % de la sesión). Sin audio, `null`. |
 | `path_length_normalized` | R4 | Recorrido del punto de los pies en anchos de frame: mediana móvil de `median_window_frames` y descarte de pasos mayores a `max_step_ratio` × ancho (se cuentan). Es evidencia visual junto a `heatmap.png`, no un estado. |
 
 ### Calidad de los datos (`data_quality`)
@@ -131,6 +131,14 @@ Prioridad: **board_writing > guide > other**.
 `teacher_visible_ratio`, `interpolated_ratio`, `discarded_path_jumps`,
 `low_confidence_audio_ratio`, `discarded_hallucinated_segments`, `speech_ratio`,
 `diarization_used`, `diarization_note` y una lista de avisos (`notes`).
+
+## Métricas experimentales
+
+Cada métrica trae `experimental` (true o false). Las experimentales (`board_writing_ratio`,
+`monitoring_video_ratio`) dependen de conductas que el modelo de video casi no reconoce en aulas
+peruanas: se muestran, pero **una rúbrica no pasa a "con evidencia" solo por ellas**. Al
+interpretar se ignora la clase `answer` (`ignored_classes`): en aulas peruanas cae sobre el
+docente explicando.
 
 ## Privacidad (al final de VER)
 

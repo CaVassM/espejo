@@ -25,15 +25,25 @@ teacher:
   class_name: teacher
 
 behavior:
-  detection_conf: 0.25
+  detection_conf: 0.25           # VER guarda todas las cajas desde aquí; los umbrales de abajo son al INTERPRETAR
   behavior_iou_threshold: 0.3    # solape mínimo entre la caja de conducta y la del docente
+  # Umbrales elegidos mirando, caja por caja, dos fragmentos de un aula peruana en 720p:
+  # - board_writing >= 0.6: arriba, la docente escribiendo en la pizarra; abajo (0.40-0.45), la
+  #   docente con la mano levantada.
+  # - guide >= 0.65: arriba (0.68-0.82), la docente entre las carpetas con una hoja; abajo, una
+  #   alumna escribiendo (0.62) o la docente solo parada hablando.
+  # Igual son EXPERIMENTALES: el modelo se entrenó con aulas de otro país y casi no reconoce
+  # estas conductas en aulas peruanas (ver README, Limitaciones).
   guide_class: guide
-  guide_min_conf: 0.5            # guide solo cuenta con esta confianza mínima...
+  guide_min_conf: 0.65           # guide solo cuenta con esta confianza mínima...
   min_guide_s: 2.0               # ...y si dura al menos esto (estar parado junto a una carpeta no es guiar)
   board_writing_class: board_writing
+  board_writing_min_conf: 0.6
   # Evento de alumnos: nunca se asigna al docente, se cuenta como evento (R1).
-  # "answer" también se detecta y queda en detections.json, pero no se usa en el reporte.
   stage_interaction_class: stage_interaction
+  # Clases que se ignoran al interpretar. "answer" cae sobre la docente explicando, incluso
+  # con 0.93 de confianza, y nunca sobre un alumno respondiendo: ningún umbral la arregla.
+  ignored_classes: [answer]
 
 pose:
   # Desactivado: con el docente pequeño y de espaldas, la pose "ve" la cara y se equivoca.

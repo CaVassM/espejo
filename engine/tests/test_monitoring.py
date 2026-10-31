@@ -46,25 +46,25 @@ def test_separate_intervals_add_up() -> None:
     assert union_duration_s(intervals) == pytest.approx(15)
 
 
-def test_video_and_audio_union_without_double_counting() -> None:
-    # Guía 0-20 s (video); pregunta 15-25 s (audio): se solapan 5 s, la unión es 25 s
-    video = [TimeInterval(0, 20)]
+def test_main_figure_is_audio_and_video_goes_apart() -> None:
+    # Guía 0-30 s (video, experimental); pregunta 15-25 s (audio): la principal es solo audio
+    video = [TimeInterval(0, 30)]
     audio = [TimeInterval(15, 25)]
 
     result = compute_monitoring(video, audio, DURATION_S, THRESHOLD)
 
-    assert result.video_ratio == pytest.approx(0.20)
+    assert result.video_ratio == pytest.approx(0.30)
     assert result.audio_ratio == pytest.approx(0.10)
-    assert result.ratio == pytest.approx(0.25)
-    assert result.meets_threshold is True
-
-
-def test_without_audio_uses_only_video() -> None:
-    result = compute_monitoring([TimeInterval(0, 10)], None, DURATION_S, THRESHOLD)
-
-    assert result.audio_ratio is None
     assert result.ratio == pytest.approx(0.10)
     assert result.meets_threshold is False
+
+
+def test_without_audio_there_is_no_main_figure() -> None:
+    result = compute_monitoring([TimeInterval(0, 30)], None, DURATION_S, THRESHOLD)
+
+    assert result.video_ratio == pytest.approx(0.30)
+    assert result.ratio is None
+    assert result.meets_threshold is None
 
 
 def test_guide_intervals_come_from_guide_segments() -> None:

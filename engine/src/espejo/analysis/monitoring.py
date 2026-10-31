@@ -20,10 +20,10 @@ class TimeInterval:
 class MonitoringResult:
     """video_ratio o audio_ratio son None cuando esa fuente no estuvo disponible."""
 
-    ratio: float
+    ratio: float | None
     video_ratio: float | None
     audio_ratio: float | None
-    meets_threshold: bool
+    meets_threshold: bool | None
 
 
 def interval_start(interval: TimeInterval) -> float:
@@ -83,17 +83,18 @@ def compute_monitoring(
     duration_s: float,
     threshold: float,
 ) -> MonitoringResult:
-    """Pasa None en una fuente si no estuvo disponible (p. ej. --no-audio)."""
-    all_intervals: list[TimeInterval] = []
+    """La cifra principal es la del audio (preguntas con respuesta). La del video (guiando en
+    carpetas) es un complemento experimental: el modelo casi no reconoce esa conducta en aulas
+    peruanas, así que no suma a la principal. Sin audio, no hay cifra principal.
+    """
     video_ratio = None
     audio_ratio = None
-
     if video_intervals is not None:
-        all_intervals += video_intervals
         video_ratio = safe_ratio(union_duration_s(video_intervals), duration_s)
     if audio_intervals is not None:
-        all_intervals += audio_intervals
         audio_ratio = safe_ratio(union_duration_s(audio_intervals), duration_s)
 
-    ratio = safe_ratio(union_duration_s(all_intervals), duration_s)
-    return MonitoringResult(ratio, video_ratio, audio_ratio, ratio >= threshold)
+    meets_threshold = None
+    if audio_ratio is not None:
+        meets_threshold = audio_ratio >= threshold
+    return MonitoringResult(audio_ratio, video_ratio, audio_ratio, meets_threshold)

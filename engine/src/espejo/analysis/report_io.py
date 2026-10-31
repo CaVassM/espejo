@@ -74,6 +74,7 @@ def metric_to_dict(metric: RubricMetric) -> dict[str, Any]:
         "rubric": metric.rubrics,
         "description": metric.description,
         "note": metric.note,
+        "experimental": metric.experimental,
     }
 
 
@@ -158,7 +159,13 @@ def suggestion_to_dict(suggestion: Suggestion | None) -> dict[str, Any] | None:
 def rubric_evidence_to_dict(item: RubricEvidence) -> dict[str, Any]:
     metrics = []
     for metric in item.metrics:
-        metrics.append({"name": metric.name, "value": round_value(metric.value)})
+        metrics.append(
+            {
+                "name": metric.name,
+                "value": round_value(metric.value),
+                "experimental": metric.experimental,
+            }
+        )
     citations = []
     for citation in item.citations:
         citations.append(

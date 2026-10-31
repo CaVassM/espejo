@@ -35,20 +35,37 @@ def assign_teacher_state(
 
     Solo cuentan las conductas del docente que se superponen con su caja. answer y
     stage_interaction son de alumnos y nunca se asignan al docente, aunque se superpongan.
-    guide exige además guide_min_conf: con poca confianza suele ser el docente parado
-    junto a una carpeta, sin revisar el trabajo de nadie.
+    Cada una exige su confianza mínima (board_writing_min_conf y guide_min_conf): con poca
+    confianza suele ser el docente parado, sin escribir ni revisar el trabajo de nadie.
     """
     if teacher_box is None:
         return Behavior.NOT_VISIBLE
 
     board_class = config.board_writing_class
-    if has_overlapping_class(detections, board_class, teacher_box, config, config.detection_conf):
+    board_min_conf = config.board_writing_min_conf
+    if has_overlapping_class(detections, board_class, teacher_box, config, board_min_conf):
         return Behavior.BOARD_WRITING
     if has_overlapping_class(
         detections, config.guide_class, teacher_box, config, config.guide_min_conf
     ):
         return Behavior.GUIDE
     return Behavior.OTHER
+
+
+def reportable_behaviors(detections: list[Detection], config: BehaviorConfig) -> list[Detection]:
+    """Sin las clases ignoradas (p. ej. answer) ni las conductas del docente bajo su umbral."""
+    min_conf_by_class = {
+        config.board_writing_class: config.board_writing_min_conf,
+        config.guide_class: config.guide_min_conf,
+    }
+    kept = []
+    for detection in detections:
+        if detection.class_name in config.ignored_classes:
+            continue
+        if detection.confidence < min_conf_by_class.get(detection.class_name, 0.0):
+            continue
+        kept.append(detection)
+    return kept
 
 
 def has_stage_interaction(detections: list[Detection], config: BehaviorConfig) -> bool:

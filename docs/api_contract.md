@@ -50,7 +50,24 @@ profesor. Respuesta `201`:
 }
 ```
 
-`401` si el código es incorrecto.
+`401` si el código es incorrecto. La respuesta trae además, **solo esta vez**:
+
+```json
+  "teacher_key": "Xq3...43 caracteres",
+  "assistant_url": "https://espejo-api-o8td.onrender.com/mcp/Xq3..."
+```
+
+- `teacher_key`: la clave del docente. La API guarda solo su hash: no se puede volver a pedir.
+- `assistant_url`: el enlace para conectar su asistente de IA (servidor MCP, ver README).
+- Para agrupar varias clases del mismo docente, enviar `"teacher_key"` (la que ya tiene) al
+  crear el siguiente análisis; si no existe, responde `401`.
+
+**Dónde mostrarla en la web:** solo al docente que creó el análisis, en la pantalla de "Listo"
+(o justo después de crear), en una tarjeta "Conecta tu asistente de IA" con un botón **"Copiar
+enlace para mi asistente"** (copia `assistant_url`) y un aviso: "Guárdalo: quien tenga este
+enlace puede ver tus reportes. No lo compartas". No mostrarla en ninguna página pública, no
+ponerla en la URL de la web ni guardarla en analytics. Si la web la recuerda (por ejemplo, para
+reutilizarla), solo en el navegador del docente (`localStorage`).
 
 ## 2. Subir el video (directo a Modal)
 

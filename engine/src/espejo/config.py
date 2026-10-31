@@ -45,7 +45,9 @@ class BehaviorConfig:
     guide_min_conf: float
     min_guide_s: float
     board_writing_class: str
+    board_writing_min_conf: float
     stage_interaction_class: str
+    ignored_classes: list[str]
 
 
 @dataclass(frozen=True)

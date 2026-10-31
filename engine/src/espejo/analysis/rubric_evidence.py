@@ -61,20 +61,30 @@ def metrics_for(rubric: str, metrics: list[RubricMetric]) -> list[MetricEvidence
     selected = []
     for metric in metrics:
         if rubric in metric.rubrics and metric.value is not None:
-            selected.append(MetricEvidence(metric.name, metric.value))
+            selected.append(MetricEvidence(metric.name, metric.value, metric.experimental))
     return selected
+
+
+def has_main_evidence(metrics: list[MetricEvidence]) -> bool:
+    for metric in metrics:
+        if not metric.experimental:
+            return True
+    return False
 
 
 def build_rubric_evidence(
     metrics: list[RubricMetric], analysis: LlmAnalysis
 ) -> list[RubricEvidence]:
-    """Sin métricas ni citas para una rúbrica, la ficha dice "evidencia insuficiente"."""
+    """Sin métricas principales ni citas, la ficha dice "evidencia insuficiente".
+
+    Las métricas experimentales se muestran, pero solas no bastan.
+    """
     rubric_evidence = []
     for rubric, title in RUBRIC_TITLES.items():
         rubric_metrics = metrics_for(rubric, metrics)
         citations = citations_for(rubric, analysis)
         status = SUFFICIENT
-        if not rubric_metrics and not citations:
+        if not has_main_evidence(rubric_metrics) and not citations:
             status = INSUFFICIENT
         rubric_evidence.append(RubricEvidence(rubric, title, status, rubric_metrics, citations))
     return rubric_evidence

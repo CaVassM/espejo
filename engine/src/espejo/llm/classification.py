@@ -171,7 +171,7 @@ class LlmClassifier:
         usage = LlmUsage()
         failed_windows = 0
 
-        windows = build_windows(lines, candidates, self.config.windows)
+        windows = build_windows(lines, candidates, self.config.active_windows())
         for position, window in enumerate(windows, start=1):
             logger.info("LLM: ventana %d de %d", position, len(windows))
             try:

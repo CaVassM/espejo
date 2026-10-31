@@ -312,6 +312,7 @@ def load_dataset_config(path: Path = DEFAULT_DATASET_CONFIG) -> DatasetConfig:
 # --- LLM ------------------------------------------------------------------------------------
 
 DEFAULT_LLM_CONFIG = CONFIGS_DIR / "llm.yaml"
+PROVIDER_COHERE = "cohere"
 
 
 @dataclass(frozen=True)
@@ -354,15 +355,43 @@ class SuggestionConfig:
 
 
 @dataclass(frozen=True)
+class CohereConfig:
+    model: str
+    api_key_env_var: str
+    temperature: float
+    max_tokens: int
+    request_timeout_s: float
+    max_calls_per_minute: int
+    rate_limit_retries: int
+    rate_limit_wait_s: float
+    input_usd_per_million_tokens: float
+    output_usd_per_million_tokens: float
+    windows: WindowConfig
+
+
+@dataclass(frozen=True)
 class LlmConfig:
     provider: str
     definitions_path: Path
     max_attempts: int
     ollama: OllamaConfig
     anthropic: AnthropicConfig
+    cohere: CohereConfig
     windows: WindowConfig
     validation: LlmValidationConfig
     suggestion: SuggestionConfig
+
+    def active_windows(self) -> WindowConfig:
+        """Cohere tiene contexto grande: ventanas más largas, menos llamados (límite de la key)."""
+        if self.provider == PROVIDER_COHERE:
+            return self.cohere.windows
+        return self.windows
+
+
+def load_cohere_config(raw: dict) -> CohereConfig:
+    fields = dict(raw)
+    fields["windows"] = WindowConfig(**raw["windows"])
+    return CohereConfig(**fields)
 
 
 def load_llm_config(path: Path = DEFAULT_LLM_CONFIG) -> LlmConfig:
@@ -373,6 +402,7 @@ def load_llm_config(path: Path = DEFAULT_LLM_CONFIG) -> LlmConfig:
         max_attempts=raw["max_attempts"],
         ollama=OllamaConfig(**raw["ollama"]),
         anthropic=AnthropicConfig(**raw["anthropic"]),
+        cohere=load_cohere_config(raw["cohere"]),
         windows=WindowConfig(**raw["windows"]),
         validation=LlmValidationConfig(**raw["validation"]),
         suggestion=SuggestionConfig(**raw["suggestion"]),

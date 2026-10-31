@@ -51,7 +51,7 @@ cambiar umbrales: `python scripts/interpret.py --run outputs/<video>/`.
 | Whisper large-v3-turbo | No (preentrenado) | Transcribir: qué se dijo |
 | Silero VAD | No (preentrenado) | Cuándo hay voz |
 | pyannote speaker-diarization-3.1 | No (preentrenado) | Quién habla |
-| LLM: Qwen 2.5 en Ollama (local) o Anthropic `claude-sonnet-5-5` | No (preentrenado) | Entender el significado de lo que dice el docente |
+| LLM: Cohere `command-a-03-2025`, Qwen 2.5 en Ollama (local) o Anthropic `claude-sonnet-5-5` | No (preentrenado) | Entender el significado de lo que dice el docente |
 
 Resultados de los modelos entrenados (YOLOv8s, 30 épocas, imgsz 640, split val del autor):
 
@@ -196,13 +196,21 @@ Sin diarización, todas las líneas dicen `HABLANTE`. Los segmentos de baja conf
 El LLM **solo recibe texto**: la transcripción (`[mm:ss] DOCENTE: ...`), las preguntas que marcó
 el audio y las métricas. Nunca recibe audio ni video. No pone notas ni niveles I-IV.
 
-- **Proveedor** en [`configs/llm.yaml`](configs/llm.yaml): `ollama` (por defecto, local y sin
-  costo) o `anthropic`. Con Ollama se usa `qwen2.5:14b` si la GPU tiene 12 GB o más; si no,
-  `qwen2.5:7b`. Instalación: `winget install Ollama.Ollama` y `ollama pull qwen2.5:7b`. Con
-  Anthropic, la clave va en `.env` como `ANTHROPIC_API_KEY`; si no está, no falla.
+- **Proveedor** en [`configs/llm.yaml`](configs/llm.yaml): `cohere` (por defecto), `ollama`
+  (local y sin costo) o `anthropic`. La clave de cada uno va en `.env` (ver `.env.example`); si
+  falta, no falla: el reporte sale con las reglas de respaldo y dice "sin análisis LLM".
+  - **Cohere:** `command-a-03-2025` (JSON con esquema, 256k de contexto, multilingüe), con su
+    SDK oficial y `COHERE_API_KEY` (https://dashboard.cohere.com/api-keys). La key de prueba es
+    gratis, con 20 llamados por minuto y 1.000 al mes: el cliente espacia los llamados (3 s) y
+    usa ventanas de 10 min, unos 11 a 16 llamados por clase de 45 min.
+  - **Ollama:** `qwen2.5:14b` si la GPU tiene 12 GB o más; si no, `qwen2.5:7b`. Instalación:
+    `winget install Ollama.Ollama` y `ollama pull qwen2.5:7b`.
+  - **Anthropic:** `ANTHROPIC_API_KEY`.
+  - No se usa LangChain: cada proveedor es un cliente pequeño con la misma interfaz (prompt y
+    esquema → JSON validado).
 - **Parte fija del prompt:** [`docs/rubric_definitions.md`](docs/rubric_definitions.md), con las
   definiciones del manual del Minedu citadas textualmente y con su página.
-- **Ventanas** de ~3 min con 20 s de solapamiento. Por ventana hay dos llamados (eventos y
+- **Ventanas** de ~3 min (10 min con Cohere) con 20 s de solapamiento. Por ventana hay dos llamados (eventos y
   preguntas) y la unión elimina los duplicados.
 - **Validación anti-invento:** toda cita debe existir textualmente en la transcripción, en la
   línea de su minuto (±2 s); si no, se descarta y se cuenta como evidencia rechazada. Las clases

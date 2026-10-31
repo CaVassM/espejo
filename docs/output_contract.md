@@ -147,8 +147,9 @@ Antes de guardar `audio_raw.json`:
 ## LLM (solo texto)
 
 El LLM recibe la transcripción, las preguntas candidatas y las métricas; nunca audio ni video.
-Proveedor en `configs/llm.yaml` (`ollama` por defecto, `anthropic` opcional). Parte fija del
-prompt: `docs/rubric_definitions.md`. Ventanas de `window_s` con `overlap_s` de solapamiento;
+Proveedor en `configs/llm.yaml` (`cohere` por defecto; `ollama` y `anthropic` opcionales). Parte
+fija del prompt: `docs/rubric_definitions.md`. Ventanas de `window_s` con `overlap_s` de
+solapamiento (Cohere usa las suyas, `cohere.windows`, más largas);
 por ventana, un llamado de eventos y otro de preguntas; la unión elimina duplicados.
 
 | Clase | Rúbrica | Qué marca |

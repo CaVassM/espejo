@@ -5,6 +5,7 @@ import logging
 import time
 import urllib.error
 import urllib.request
+from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -12,7 +13,13 @@ import jsonschema
 
 from espejo.common.env import read_secret
 from espejo.common.gpu import read_gpu_memory
-from espejo.config import AnthropicConfig, LlmConfig, OllamaConfig
+from espejo.config import (
+    PROVIDER_COHERE,
+    AnthropicConfig,
+    CohereConfig,
+    LlmConfig,
+    OllamaConfig,
+)
 from espejo.llm.schemas import JsonReply, LlmUsage, RawReply
 
 logger = logging.getLogger(__name__)
@@ -26,6 +33,22 @@ NANOSECONDS_PER_SECOND = 1_000_000_000
 TOKENS_PER_MILLION = 1_000_000
 REFUSAL_STOP_REASON = "refusal"
 SERVER_FALLBACK_MODE = "default"
+SECONDS_PER_MINUTE = 60
+COHERE_MAX_TOKENS_REASON = "MAX_TOKENS"
+COHERE_TEXT_CONTENT = "text"
+# Cohere pide pedir el JSON también en el mensaje: si no, puede generar texto sin fin
+COHERE_JSON_INSTRUCTION = "\n\nResponde solo con un objeto JSON que siga el esquema indicado."
+# Palabras del esquema JSON que Cohere no admite (docs.cohere.com/docs/structured-outputs).
+# Se quitan solo al enviar: la validación local (complete_json) usa el esquema completo.
+COHERE_UNSUPPORTED_SCHEMA_KEYS = {
+    "minLength",
+    "maxLength",
+    "minimum",
+    "maximum",
+    "minItems",
+    "maxItems",
+    "uniqueItems",
+}
 
 
 class LlmError(RuntimeError):
@@ -158,6 +181,124 @@ class AnthropicClient:
         )
 
 
+def schema_for_cohere(node: Any) -> Any:
+    """Copia del esquema sin las palabras que Cohere no admite (respeta los nombres de campos)."""
+    if isinstance(node, list):
+        cleaned_items = []
+        for item in node:
+            cleaned_items.append(schema_for_cohere(item))
+        return cleaned_items
+    if not isinstance(node, dict):
+        return node
+
+    cleaned = {}
+    for key, value in node.items():
+        if key in COHERE_UNSUPPORTED_SCHEMA_KEYS:
+            continue
+        if key == "properties":
+            properties = {}
+            for name, sub_schema in value.items():
+                properties[name] = schema_for_cohere(sub_schema)
+            cleaned[key] = properties
+        else:
+            cleaned[key] = schema_for_cohere(value)
+    return cleaned
+
+
+class CohereClient:
+    """Cohere por su SDK oficial (Chat API v2), con salida estructurada y el ritmo de la key."""
+
+    provider = PROVIDER_COHERE
+
+    def __init__(
+        self,
+        config: CohereConfig,
+        api_key: str,
+        sdk_client: Any | None = None,
+        sleep: Callable[[float], None] = time.sleep,
+        clock: Callable[[], float] = time.monotonic,
+    ) -> None:
+        """sdk_client, sleep y clock se inyectan en los tests (sin llamar a Cohere)."""
+        if sdk_client is None:
+            # Import local: el SDK solo hace falta si se elige este proveedor
+            import cohere
+
+            sdk_client = cohere.ClientV2(api_key=api_key, timeout=config.request_timeout_s)
+        self.config = config
+        self.model = config.model
+        self.sdk_client = sdk_client
+        self.sleep = sleep
+        self.clock = clock
+        self.last_call_s: float | None = None
+
+    def send(self, prompt: str, schema: dict[str, Any]) -> RawReply:
+        started = time.perf_counter()
+        cohere_schema = schema_for_cohere(schema)
+        response = self.chat_with_retries(prompt + COHERE_JSON_INSTRUCTION, cohere_schema)
+        if response.finish_reason == COHERE_MAX_TOKENS_REASON:
+            logger.warning("Cohere cortó la respuesta (max_tokens): el JSON puede venir incompleto")
+
+        text = ""
+        for item in response.message.content or []:
+            if item.type == COHERE_TEXT_CONTENT:
+                text += item.text
+        return RawReply(text, self.usage_from(response.usage, time.perf_counter() - started))
+
+    def wait_for_turn(self) -> None:
+        """Respeta el límite por minuto de la key espaciando los llamados."""
+        min_interval_s = SECONDS_PER_MINUTE / self.config.max_calls_per_minute
+        if self.last_call_s is not None:
+            wait_s = min_interval_s - (self.clock() - self.last_call_s)
+            if wait_s > 0:
+                self.sleep(wait_s)
+        self.last_call_s = self.clock()
+
+    def chat_with_retries(self, prompt: str, schema: dict[str, Any]) -> Any:
+        from cohere.core.api_error import ApiError
+        from cohere.errors import TooManyRequestsError
+
+        for attempt in range(1, self.config.rate_limit_retries + 2):
+            self.wait_for_turn()
+            try:
+                return self.sdk_client.chat(
+                    model=self.config.model,
+                    messages=[{"role": "user", "content": prompt}],
+                    response_format={"type": "json_object", "schema": schema},
+                    temperature=self.config.temperature,
+                    max_tokens=self.config.max_tokens,
+                )
+            except TooManyRequestsError as error:
+                if attempt > self.config.rate_limit_retries:
+                    raise LlmError(
+                        "Cohere: se superó el límite de la key (20 llamados por minuto "
+                        "o 1.000 al mes)."
+                    ) from error
+                logger.warning("Cohere pidió esperar (intento %d)", attempt)
+                self.sleep(self.config.rate_limit_wait_s)
+            except ApiError as error:
+                # Key inválida, modelo inexistente, etc.: la ventana queda sin clasificar
+                raise LlmError(f"Cohere respondió con error {error.status_code}.") from error
+        raise LlmError("Cohere no respondió.")
+
+    def release(self) -> None:
+        """Cohere corre en la nube: no hay nada local que liberar."""
+
+    def usage_from(self, sdk_usage: Any, seconds: float) -> LlmUsage:
+        input_tokens = 0
+        output_tokens = 0
+        tokens = None
+        if sdk_usage is not None:
+            tokens = sdk_usage.billed_units or sdk_usage.tokens
+        if tokens is not None:
+            input_tokens = int(tokens.input_tokens or 0)
+            output_tokens = int(tokens.output_tokens or 0)
+        cost_usd = (
+            input_tokens * self.config.input_usd_per_million_tokens
+            + output_tokens * self.config.output_usd_per_million_tokens
+        ) / TOKENS_PER_MILLION
+        return LlmUsage(input_tokens, output_tokens, seconds, cost_usd, calls=1)
+
+
 def post_json(url: str, body: dict[str, Any], timeout_s: float) -> dict[str, Any]:
     request = urllib.request.Request(
         url,
@@ -207,10 +348,23 @@ def build_anthropic_client(config: AnthropicConfig) -> ClientChoice:
     return ClientChoice(AnthropicClient(config, api_key), f"Anthropic con {config.model}")
 
 
+def build_cohere_client(config: CohereConfig) -> ClientChoice:
+    api_key = read_secret(config.api_key_env_var)
+    if api_key is None:
+        return ClientChoice(None, f"falta {config.api_key_env_var} en .env")
+    try:
+        client = CohereClient(config, api_key)
+    except ImportError:
+        return ClientChoice(None, "falta instalar el SDK de Cohere (pip install cohere)")
+    return ClientChoice(client, f"Cohere con {config.model}")
+
+
 def build_llm_client(config: LlmConfig) -> ClientChoice:
     """Nunca lanza excepciones: si no hay LLM, devuelve None y el motivo."""
     if config.provider == PROVIDER_OLLAMA:
         return build_ollama_client(config.ollama)
     if config.provider == PROVIDER_ANTHROPIC:
         return build_anthropic_client(config.anthropic)
+    if config.provider == PROVIDER_COHERE:
+        return build_cohere_client(config.cohere)
     return ClientChoice(None, f"proveedor LLM '{config.provider}'")

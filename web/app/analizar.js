@@ -187,13 +187,36 @@ async function analizar(evento) {
   location.href = `./?analysis=${encodeURIComponent(analisis.analysis_id)}`;
 }
 
+/* Deja el archivo en el input y refresca lo que se ve. */
+function ponerArchivo(file) {
+  if (!file) return;
+  const datos = new DataTransfer();
+  datos.items.add(file);
+  $("#video").files = datos.files;
+  $("#video").dispatchEvent(new Event("change", { bubbles: true }));
+}
+
 function arrancar() {
   $("#formulario").addEventListener("submit", analizar);
+
+  // El botón abre el diálogo por JavaScript. Un <label for> apuntando a un input
+  // oculto no siempre lo consigue, y entonces el botón parece no hacer nada.
+  $("#elegir").addEventListener("click", () => $("#video").click());
 
   $("#video").addEventListener("change", () => {
     const file = $("#video").files[0];
     $("#archivo").textContent = file ? describirArchivo(file) : "Ningún archivo elegido";
   });
+
+  // Soltar el video sobre la zona también sirve.
+  const zona = $("#zona");
+  for (const evento of ["dragenter", "dragover"]) {
+    zona.addEventListener(evento, (e) => { e.preventDefault(); zona.classList.add("encima"); });
+  }
+  for (const evento of ["dragleave", "drop"]) {
+    zona.addEventListener(evento, (e) => { e.preventDefault(); zona.classList.remove("encima"); });
+  }
+  zona.addEventListener("drop", (e) => ponerArchivo(e.dataTransfer.files[0]));
 
   // El botón solo se habilita con consentimiento marcado y archivo elegido.
   const revisar = () => {

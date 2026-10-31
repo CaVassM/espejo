@@ -108,9 +108,20 @@ Requiere Python 3.11+, ffmpeg y, de preferencia, una GPU NVIDIA.
 
 ```bash
 conda activate ml_env
-pip install -r requirements.txt
-pip install -e .
+pip install -e "engine[vision,audio,dev]"   # motor completo, para correr VER en tu máquina
 ```
+
+El motor (`engine/`) es un paquete con dependencias por partes:
+
+| Extra | Para qué | Incluye |
+|---|---|---|
+| (base) | INTERPRETAR: métricas, timeline, ficha por rúbrica y LLM | numpy, pyyaml, python-dotenv, jsonschema, anthropic (sin torch) |
+| `vision` | VER el video, heatmap, video de depuración y dataset | torch, ultralytics, opencv, lap, huggingface_hub |
+| `audio` | VER el audio | torch, faster-whisper (trae Silero), pyannote.audio |
+| `dev` | tests y estilo | pytest, ruff |
+
+La API (`services/api`) instala solo la base; el worker (`services/worker`), `vision` y
+`audio`.
 
 `pyannote.audio` 3.x puede intentar actualizar torch. Para conservar tu versión con CUDA,
 instálalo fijando torch, por ejemplo con un archivo de restricciones (`torch==2.5.1`,
@@ -265,32 +276,40 @@ desenfocado al punto de que no se reconoce a nadie y, si se pide, el video de de
 ## Tests y calidad
 
 ```bash
-pytest
-ruff format .
-ruff check .
+pytest engine/tests                 # motor
+cd services/api && pytest           # API (pip install -r requirements-dev.txt)
+ruff format . && ruff check .       # todo el repo (configuración en ruff.toml)
 ```
 
 Los tests cubren la lógica pura (selección del docente, prioridades, unión del monitoreo,
 respuestas con y sin diarización, wait time, recorrido robusto, preguntas y muletillas, texto
 inventado, calidad, métricas y el módulo LLM con un cliente simulado) y no necesitan modelos,
-GPU, audio real ni conexión a ningún LLM.
+GPU, audio real ni conexión a ningún LLM. Un test verifica que la parte de INTERPRETAR no
+importa torch, ultralytics, Whisper, pyannote ni OpenCV.
 
 ## Estructura
 
 ```
-configs/            vision.yaml, audio.yaml, analysis.yaml, llm.yaml y YAML de los datasets
-docs/               output_contract.md (fuente de verdad) y rubric_definitions.md
-scripts/            analyze_class, interpret, analyze_video, analyze_audio, dataset y train
-src/espejo/
-  config.py         configuración en dataclasses tipadas
-  common/           rutas, JSON, mm:ss, secretos (.env) y convivencia de librerías CUDA
-  dataset/          descarga, inspección, preparación y preview de SCB-Dataset
-  training.py       entrenamiento y evaluación de los detectores
-  vision/           VER (detection_run) e INTERPRETAR (interpretation) del video
-  audio/            VER (capture) e INTERPRETAR (interpretation) del audio
-  analysis/         unión: monitoreo, métricas por rúbrica, ficha por rúbrica y class_report
-  llm/              clientes (Ollama, Anthropic), ventanas, prompts, validación y consejo
-tests/              tests de la lógica pura
+espejo/
+├── engine/                 el motor de Espejo, paquete instalable (pyproject.toml propio)
+│   ├── src/espejo/
+│   │   ├── config.py       configuración en dataclasses tipadas
+│   │   ├── common/         rutas, JSON, mm:ss, secretos (.env) y convivencia de librerías CUDA
+│   │   ├── vision/         VER (detection_run) e INTERPRETAR (interpretation) del video
+│   │   ├── audio/          VER (capture) e INTERPRETAR (interpretation) del audio
+│   │   ├── llm/            clientes (Ollama, Anthropic), ventanas, prompts, validación y consejo
+│   │   ├── analysis/       unión: capture (VER), runner (INTERPRETAR), métricas, ficha y reporte
+│   │   ├── dataset/        descarga, inspección, preparación y preview de SCB-Dataset
+│   │   └── training.py     entrenamiento y evaluación de los detectores
+│   └── tests/              tests de la lógica pura
+├── services/
+│   ├── api/                API para Render (por capas: routers, services, repositories, schemas)
+│   └── worker/             worker para Modal: corre VER con el motor completo
+├── web/                    frontend (landing page y app)
+├── configs/                vision.yaml, audio.yaml, analysis.yaml, llm.yaml y YAML de los datasets
+├── scripts/                analyze_class, interpret, analyze_video, analyze_audio, dataset y train
+├── docs/                   output_contract.md (fuente de verdad) y rubric_definitions.md
+└── README.md
 ```
 
 ## Dataset y licencia

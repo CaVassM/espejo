@@ -1,0 +1,3 @@
+# Worker (Modal). El motor completo: VER necesita los modelos de video y de audio.
+# La ruta del motor es relativa a services/worker, la carpeta desde donde se instala.
+../../engine[vision,audio]

@@ -5,7 +5,8 @@ from typing import Any
 
 import yaml
 
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
+# engine/src/espejo/common/config_io.py: la raíz del repo está cuatro carpetas arriba
+PROJECT_ROOT = Path(__file__).resolve().parents[4]
 CONFIGS_DIR = PROJECT_ROOT / "configs"
 OUTPUTS_DIR = PROJECT_ROOT / "outputs"
 

@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "espejo"
+version = "0.1.0"
+description = "Retroalimentación para docentes a partir del video de su clase"
+requires-python = ">=3.11"
+# Base: INTERPRETAR (métricas, timeline, ficha por rúbrica y LLM). Liviana: sin torch.
+dependencies = [
+    "numpy>=1.26",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0",
+    "jsonschema>=4.0",
+    "anthropic>=0.40",
+]
+
+[project.optional-dependencies]
+# VER (video): YOLO y OpenCV; también el heatmap, el video de depuración y el dataset
+vision = [
+    "torch>=2.1",
+    "ultralytics>=8.3",
+    "lap>=0.5.12",
+    "opencv-python>=4.9",
+    "huggingface_hub>=0.24",
+]
+# VER (audio): Whisper y Silero (vienen en faster-whisper) y pyannote para saber quién habla.
+# Instala pyannote fijando tu versión de torch (ver README) para no perder CUDA.
+audio = [
+    "torch>=2.1",
+    "faster-whisper>=1.1",
+    "pyannote.audio>=3.3,<4",
+    "nvidia-ml-py>=12.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

@@ -1,0 +1,9 @@
+line-length = 100
+target-version = "py311"
+src = ["engine/src", "services/api"]
+extend-exclude = ["data", "runs", "outputs", "weights", "samples", "web"]
+
+[lint]
+select = ["E", "F", "W", "I", "B", "UP", "N", "SIM"]
+# SIM110 pide reemplazar bucles por any()/all(); el equipo prefiere el bucle explícito
+ignore = ["SIM110"]
